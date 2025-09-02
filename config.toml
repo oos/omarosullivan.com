@@ -1,0 +1,26 @@
+baseURL = "/"
+languageCode = "en-us"
+title = "Omar O’Sullivan — Portfolio"
+theme = "PaperMod"
+paginate = 9
+
+[params]
+  defaultTheme = "auto"
+  ShowBreadCrumbs = true
+  ShowReadingTime = true
+  displayFullLangName = true
+  description = "Work, notes, and experiments."
+
+[menu]
+  [[menu.main]]
+    name = "Portfolio"
+    url = "/portfolio/"
+    weight = 10
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 20
+  [[menu.main]]
+    name = "Contact"
+    url = "/contact/"
+    weight = 30
