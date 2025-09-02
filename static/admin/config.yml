@@ -1,6 +1,12 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: oos/omarosullivan.com
   branch: main
+  base_url: https://omar-cms-oauth.netlify.app
+  auth_endpoint: /oauth/authorize
+
+site_url: https://omarosullivan.com
+display_url: https://omarosullivan.com
 
 media_folder: "static/uploads"
 public_folder: "/uploads"
@@ -8,7 +14,6 @@ public_folder: "/uploads"
 collections:
   - name: "portfolio"
     label: "Portfolio"
-    label_singular: "Work"
     folder: "content/portfolio"
     create: true
     slug: "{{slug}}"
