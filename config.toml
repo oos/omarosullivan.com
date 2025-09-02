@@ -2,7 +2,8 @@ baseURL = "/"
 languageCode = "en-us"
 title = "Omar O’Sullivan — Portfolio"
 theme = "PaperMod"
-paginate = 9
+[pagination]
+  pagerSize = 9
 
 [params]
   defaultTheme = "auto"

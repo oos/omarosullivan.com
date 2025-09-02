@@ -1,7 +1,11 @@
 ---
 title: "Example Painting — Sunrise Over Wicklow"
 date: 2025-09-02T10:00:00Z
-cover: "/uploads/example.jpg"
+cover:
+  image: "/uploads/example.jpg"
+  alt: "Sunrise Over Wicklow"
+  caption: ""
+  relative: false
 description: "Oil on canvas, 60×40cm"
 tags: ["oil", "landscape"]
 draft: false

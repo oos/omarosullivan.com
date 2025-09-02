@@ -1,12 +1,14 @@
 ---
 title: "{{ replace .Name "-" " " | title }}"
 date: {{ .Date }}
-cover: ""
+cover:
+  image: ""
+  alt: ""
+  caption: ""
+  relative: false
 description: ""
 tags: []
 draft: false
 ---
 
-Describe the work here. You can embed images with Markdown:
-
-![Alt text](/uploads/example.jpg)
+Describe the work here…
