@@ -6,8 +6,7 @@
     <title>Content Manager (Custom Auth)</title>
   </head>
   <body>
-    <h3 style="font-family: system-ui; color:#333;">CMS Authentication - Custom Implementation</h3>
-    <pre id="debug" style="padding:10px;background:#f6f6f6;border:1px solid #ccc;max-height:400px;overflow-y:scroll;"></pre>
+    <h3 style="font-family: system-ui; color:#333;">Content Management System</h3>
 
     <div id="login-section" style="text-align:center;margin:20px;">
       <h4>Login with GitHub</h4>
@@ -36,7 +35,6 @@
 
     <script>
       (function () {
-        const out = document.getElementById('debug');
         const loginSection = document.getElementById('login-section');
         const cmsInterface = document.getElementById('cms-interface');
         const loginBtn = document.getElementById('login-btn');
@@ -47,6 +45,7 @@
         let isAuthenticated = false;
 
         function log(msg, kind) {
+          // Debug logging disabled for production - only console logging
           if (kind === 'token') {
             console.log('%c' + msg, 'background:#222;color:#0f0;font-weight:bold;padding:2px 6px;');
           } else if (kind === 'error') {
@@ -54,8 +53,6 @@
           } else {
             console.log(msg);
           }
-          out.textContent += msg + '\n';
-          out.scrollTop = out.scrollHeight;
         }
 
         function extractTokenFromStorage() {
