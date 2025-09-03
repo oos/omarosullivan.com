@@ -5,100 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-    <script>
-      // Prevent automatic initialization
-      window.CMS_MANUAL_INIT = true;
-      
-      // Enhanced authentication handling
-      function initializeCMS() {
-        console.log('Initializing Decap CMS...');
-        
-        // Initialize CMS
-        CMS.init({
-          config: {
-            load_config_file: true
-          }
-        });
-        
-        // Wait for CMS to be ready, then handle authentication
-        CMS.registerEventListener({
-          name: 'cms:ready',
-          handler: function() {
-            console.log('CMS is ready, checking authentication...');
-            handleAuthentication();
-          }
-        });
-      }
-      
-      function handleAuthentication() {
-        // Check if we have a token in the URL (from OAuth callback)
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('access_token');
-        
-        if (token) {
-          console.log('Token found in URL, storing and authenticating...');
-          // Store token
-          localStorage.setItem('netlify-cms-token', token);
-          sessionStorage.setItem('netlify-cms-token', token);
-          
-          // Clear URL parameters
-          window.history.replaceState({}, document.title, window.location.pathname);
-          
-          // Set authentication state
-          if (CMS.auth) {
-            CMS.auth.token = token;
-            CMS.auth.isAuthenticated = true;
-          }
-          
-          // Trigger authentication event
-          setTimeout(() => {
-            if (CMS.auth && CMS.auth.isAuthenticated) {
-              console.log('Authentication successful');
-              // Reload to show authenticated interface
-              window.location.reload();
-            } else {
-              console.log('Authentication failed, retrying...');
-              retryAuthentication(token);
-            }
-          }, 1000);
-        } else {
-          // Check for stored token
-          const storedToken = localStorage.getItem('netlify-cms-token') || sessionStorage.getItem('netlify-cms-token');
-          if (storedToken && CMS.auth) {
-            console.log('Using stored token...');
-            CMS.auth.token = storedToken;
-            CMS.auth.isAuthenticated = true;
-          }
-        }
-      }
-      
-      function retryAuthentication(token, attempts = 0) {
-        if (attempts >= 5) {
-          console.error('Authentication failed after 5 attempts');
-          return;
-        }
-        
-        setTimeout(() => {
-          if (CMS.auth) {
-            CMS.auth.token = token;
-            CMS.auth.isAuthenticated = true;
-            
-            if (CMS.auth.isAuthenticated) {
-              console.log('Authentication successful on retry');
-              window.location.reload();
-            } else {
-              console.log(`Authentication retry ${attempts + 1}/5`);
-              retryAuthentication(token, attempts + 1);
-            }
-          }
-        }, 500 * (attempts + 1));
-      }
-      
-      // Initialize when DOM is ready
-      document.addEventListener('DOMContentLoaded', initializeCMS);
-    </script>
   </head>
   <body>
     <!-- Decap CMS will inject its interface here -->
+    <script>
+      // Simple initialization - let Decap CMS handle everything
+      console.log('Loading Decap CMS...');
+    </script>
   </body>
 </html>
