@@ -3,59 +3,69 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Content Manager</title>
+    <title>Content Manager (Debug)</title>
     <script>
-      // Prevent auto-init; we’ll init after token handling
-      window.CMS_MANUAL_INIT = true;
+      window.CMS_MANUAL_INIT = true; // manual init
     </script>
   </head>
   <body>
-    <!-- Use the classic Netlify CMS bundle -->
+    <h3 style="font-family: system-ui; color: #333;">Decap CMS Debug Mode</h3>
+    <pre id="debug" style="padding:10px; background:#f6f6f6; border:1px solid #ccc;"></pre>
+
     <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
     <script>
       (function () {
         const KEY = 'netlify-cms.oauth';
+        const out = document.getElementById('debug');
+
+        function log(msg) {
+          console.log(msg);
+          out.textContent += msg + "\n";
+        }
 
         function saveAndReload(tokenStr) {
           try {
             localStorage.setItem(KEY, tokenStr);
-            console.log('[oauth] token stored:', tokenStr.slice(0, 40) + '…');
-            location.reload();
+            log('[oauth] token stored: ' + tokenStr);
+            setTimeout(() => location.reload(), 1500); // give you 1.5s to see it
           } catch (e) {
-            console.warn('[oauth] failed to save token', e);
+            log('[oauth] failed to save token: ' + e.message);
           }
         }
 
-        // Listen for BOTH formats the popup may send
+        // Listen for popup messages
         window.addEventListener('message', (e) => {
+          log('[message] ' + JSON.stringify(e.data));
           const m = e.data;
           if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
             saveAndReload(m);
-          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success' && m.token) {
-            saveAndReload(`authorization:github:success:${m.token}`);
+          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success') {
+            saveAndReload('authorization:github:success:' + m.token);
           }
         });
 
-        // Fallback: if token arrives via URL hash or query (?token=…)
+        // Fallback: check URL for ?token= or #token=
         try {
           const hashParams = new URLSearchParams(location.hash.replace(/^#\/?/, ''));
           const queryParams = new URLSearchParams(location.search);
           const urlToken = hashParams.get('token') || queryParams.get('token');
           if (urlToken) {
-            saveAndReload(`authorization:github:success:${urlToken}`);
+            saveAndReload('authorization:github:success:' + urlToken);
             history.replaceState(null, '', location.pathname + '#/');
-            return; // reload happens in saveAndReload
+            return;
           }
-        } catch (e) {}
+        } catch (e) {
+          log('[error parsing url] ' + e.message);
+        }
 
-        // Boot CMS once it’s available
+        // Boot CMS once available
         function boot() {
           if (typeof window.CMS !== 'object') {
-            console.warn('[admin] CMS not present yet, retrying…');
+            log('[admin] CMS not present yet, retrying…');
             return setTimeout(boot, 120);
           }
-          console.log('[admin] CMS present, calling CMS.init()');
+          log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
         }
         boot();
