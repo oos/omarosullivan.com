@@ -6,62 +6,25 @@
     <title>Content Manager</title>
   </head>
   <body>
-    <!-- Load Decap CMS -->
+    <!-- Decap CMS -->
     <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
 
+    <!-- Save token when popup returns; Decap should pick it up on the fly -->
     <script>
-      (function () {
-        const KEY = 'netlify-cms.oauth';
-
-        function saveTokenFromMessage(d) {
+      window.addEventListener('message', (e) => {
+        const d = e.data;
+        try {
           if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-            localStorage.setItem(KEY, d);
+            localStorage.setItem('netlify-cms.oauth', d);
             console.log('[oauth] saved (string)');
-            return true;
-          }
-          if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-            const s = 'authorization:github:success:' + String(d.token).trim();
-            localStorage.setItem(KEY, s);
+          } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + String(d.token).trim());
             console.log('[oauth] saved (object)');
-            return true;
           }
-          return false;
+        } catch (err) {
+          console.warn('[oauth] storage error:', err);
         }
-
-        function replayTokenBurst(label) {
-          const v = localStorage.getItem(KEY);
-          if (!v || !v.startsWith('authorization:github:success:')) return;
-
-          const token = v.split('authorization:github:success:')[1];
-          let count = 0;
-          const max = 20;          // ~6s total at 300ms
-          const every = 300;
-
-          console.log(`[oauth] replay burst start (${label})`);
-          const id = setInterval(() => {
-            count++;
-            // Replay both formats so whichever listener Decap attached will catch it
-            window.postMessage(v, '*');
-            if (token) window.postMessage({ provider: 'github', type: 'success', token }, '*');
-            if (count >= max) {
-              clearInterval(id);
-              console.log('[oauth] replay burst stop');
-            }
-          }, every);
-        }
-
-        // 1) Save token when popup posts back, then start a burst of replays
-        window.addEventListener('message', (e) => {
-          if (saveTokenFromMessage(e.data)) {
-            replayTokenBurst('from-popup');
-          }
-        });
-
-        // 2) Also, if a token is already in storage (return visit / reload), replay it for a few seconds
-        if (localStorage.getItem(KEY)) {
-          replayTokenBurst('on-load');
-        }
-      })();
+      });
     </script>
   </body>
 </html>
