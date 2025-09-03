@@ -337,9 +337,11 @@
         // CRUD Functions
         function showAddPortfolioForm() {
           const form = document.createElement('div');
+          form.id = 'add-portfolio-modal';
           form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
           form.innerHTML = `
-            <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;">
+            <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+              <button onclick="document.getElementById('add-portfolio-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
               <h3>Add New Portfolio Item</h3>
               <form id="add-portfolio-form">
                 <div style="margin-bottom:15px;">
@@ -363,7 +365,7 @@
                   <textarea id="portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;"></textarea>
                 </div>
                 <div style="text-align:right;">
-                  <button type="button" onclick="this.closest('div').closest('div').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                  <button type="button" onclick="document.getElementById('add-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                   <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Create</button>
                 </div>
               </form>
@@ -488,9 +490,11 @@ ${content}
 
             // Show edit form
             const form = document.createElement('div');
+            form.id = 'edit-portfolio-modal';
             form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
             form.innerHTML = `
-              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;">
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-portfolio-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
                 <h3>Edit Portfolio Item</h3>
                 <form id="edit-portfolio-form">
                   <div style="margin-bottom:15px;">
@@ -514,7 +518,7 @@ ${content}
                     <textarea id="edit-portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
                   </div>
                   <div style="text-align:right;">
-                    <button type="button" onclick="this.closest('div').closest('div').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="button" onclick="document.getElementById('edit-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                     <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
                   </div>
                 </form>
@@ -665,9 +669,11 @@ ${content}
 
             // Show edit form
             const form = document.createElement('div');
+            form.id = 'edit-page-modal';
             form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
             form.innerHTML = `
-              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;">
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-page-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
                 <h3>Edit ${title} Page</h3>
                 <form id="edit-page-form">
                   <div style="margin-bottom:15px;">
@@ -679,7 +685,7 @@ ${content}
                     <textarea id="edit-page-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;">${body}</textarea>
                   </div>
                   <div style="text-align:right;">
-                    <button type="button" onclick="this.closest('div').closest('div').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="button" onclick="document.getElementById('edit-page-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                     <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
                   </div>
                 </form>
