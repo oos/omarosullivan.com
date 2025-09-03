@@ -4,43 +4,79 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+    <script>window.CMS_MANUAL_INIT = true;</script>
   </head>
   <body>
-    <!-- Load Decap CMS (auto init so the login button always shows) -->
-    <script src="https://unpkg.com/decap-cms@3.6.2/dist/decap-cms.js"></script>
+    <!-- Classic Netlify CMS bundle (v2) -->
+    <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js?v=2"></script>
 
-    <!-- Save OAuth token and do a one-time reload so Decap sees it -->
     <script>
       (function () {
-        const ONCE = 'cms.oauth.reloaded';
+        const KEY = 'netlify-cms.oauth';
 
-        // If we already reloaded once for this login, clear the flag so we don't loop
-        if (sessionStorage.getItem(ONCE) === '1') {
-          sessionStorage.removeItem(ONCE);
+        function saveTokenFromMessage(msg) {
+          try {
+            if (typeof msg === 'string' && msg.startsWith('authorization:github:success:')) {
+              localStorage.setItem(KEY, msg);
+              console.log('[admin] saved string token');
+              return true;
+            }
+            if (msg && typeof msg === 'object' && msg.provider === 'github' && msg.type === 'success' && msg.token) {
+              localStorage.setItem(KEY, JSON.stringify(msg));
+              console.log('[admin] saved object token');
+              return true;
+            }
+          } catch (e) {
+            console.warn('[admin] failed to save token', e);
+          }
+          return false;
         }
 
-        window.addEventListener('message', (e) => {
-          const d = e.data;
-          let saved = false;
-
+        function extractTokenFromStorage() {
+          const raw = localStorage.getItem(KEY);
+          if (!raw) return null;
           try {
-            if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-              localStorage.setItem('netlify-cms.oauth', d);
-              saved = true;
-            } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-              localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + String(d.token).trim());
-              saved = true;
+            if (raw[0] === '{') {
+              const obj = JSON.parse(raw);
+              return obj && obj.token ? obj.token : null;
+            } else {
+              const m = /authorization:github:success:([^:]+)$/.exec(raw);
+              return m && m[1] ? m[1] : null;
             }
-          } catch (err) {
-            console.warn('OAuth storage error:', err);
+          } catch (e) {
+            return null;
           }
+        }
 
-          // After saving the token, reload ONCE so Decap re-checks auth
-          if (saved && !sessionStorage.getItem(ONCE)) {
-            sessionStorage.setItem(ONCE, '1');
-            location.reload();
-          }
+        function replayTokenToCMS() {
+          const token = extractTokenFromStorage();
+          if (!token) return false;
+          window.postMessage('authorization:github:success:' + token, '*');
+          window.postMessage({ provider: 'github', type: 'success', token }, '*');
+          console.log('[admin] replayed token to CMS');
+          return true;
+        }
+
+        // 1) Save token from OAuth popup, then reload once to cleanly bootstrap
+        window.addEventListener('message', (e) => {
+          const saved = saveTokenFromMessage(e.data);
+          if (saved) setTimeout(() => location.reload(), 150);
         });
+
+        // 2) Boot CMS, then replay AFTER init to guarantee CMS listener is attached
+        (function boot() {
+          if (typeof window.CMS !== 'object') {
+            return setTimeout(boot, 100);
+          }
+          console.log('[admin] CMS present, calling CMS.init()');
+          CMS.init({ config: '/admin/config.yml' });
+
+          // Give CMS a moment to attach its internal listeners, then replay token
+          setTimeout(() => {
+            const replayed = replayTokenToCMS();
+            if (!replayed) console.log('[admin] no token to replay (yet)');
+          }, 300);
+        })();
       })();
     </script>
   </body>
