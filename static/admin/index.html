@@ -64,11 +64,16 @@
         }
 
         function extractTokenFromStorage() {
-          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth', 'github-token'];
           log('[storage] Starting token extraction...');
           
           for (const key of keys) {
-            const raw = localStorage.getItem(key);
+            // Check localStorage first, then sessionStorage as fallback
+            let raw = localStorage.getItem(key);
+            if (!raw) {
+              raw = sessionStorage.getItem(key);
+            }
+            
             log('[storage] Checking ' + key + ': ' + (raw ? 'found' : 'not found'));
             
             if (raw) {
@@ -112,18 +117,45 @@
             token
           ];
           
-          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth', 'github-token'];
           
           keys.forEach(key => {
             formats.forEach(format => {
               try {
+                // Save to both localStorage and sessionStorage for persistence
                 localStorage.setItem(key, format);
+                sessionStorage.setItem(key, format);
                 log('[storage] Set ' + key + ' = ' + format.substring(0, 50) + '...', 'token');
               } catch (e) {
                 log('[storage] Error setting ' + key + ': ' + e.message, 'error');
               }
             });
           });
+        }
+
+        function clearInvalidTokens() {
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth', 'github-token'];
+          keys.forEach(key => {
+            try {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+              log('[storage] Cleared invalid token from ' + key);
+            } catch (e) {
+              log('[storage] Error clearing ' + key + ': ' + e.message, 'error');
+            }
+          });
+        }
+
+        function debugStorage() {
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth', 'github-token'];
+          log('[debug] === STORAGE DEBUG ===');
+          keys.forEach(key => {
+            const local = localStorage.getItem(key);
+            const session = sessionStorage.getItem(key);
+            log('[debug] ' + key + ' - localStorage: ' + (local ? local.substring(0, 30) + '...' : 'null'));
+            log('[debug] ' + key + ' - sessionStorage: ' + (session ? session.substring(0, 30) + '...' : 'null'));
+          });
+          log('[debug] === END STORAGE DEBUG ===');
         }
 
         async function testGitHubAPI(token) {
@@ -285,6 +317,9 @@
         // Listen for OAuth popup messages
         window.addEventListener('message', (e) => {
           const m = e.data;
+          
+          // Log all messages for debugging
+          log('[message] Received message: ' + JSON.stringify(m));
           
           // Filter out non-OAuth messages to reduce noise
           if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
@@ -1217,49 +1252,48 @@ ${content}
 
         // Add portfolio button handler
         document.getElementById('add-portfolio').addEventListener('click', () => {
-          if (currentToken) {
-            showAddPortfolioForm();
-          }
+          showAddPortfolioForm();
         });
 
         // Edit buttons handlers
         document.getElementById('edit-about').addEventListener('click', () => {
-          if (currentToken) {
-            editPage('about');
-          }
+          editPage('about');
         });
 
         document.getElementById('edit-contact').addEventListener('click', () => {
-          if (currentToken) {
-            editPage('contact');
-          }
+          editPage('contact');
         });
 
         // Site settings button handler
         document.getElementById('edit-site-settings').addEventListener('click', () => {
-          if (currentToken) {
-            editSiteSettings();
-          }
+          editSiteSettings();
         });
 
         // Section page button handler
         document.getElementById('edit-portfolio-section').addEventListener('click', () => {
-          if (currentToken) {
-            editSectionPage('portfolio');
-          }
+          editSectionPage('portfolio');
         });
 
         // Add page button handler
         document.getElementById('add-page').addEventListener('click', () => {
-          if (currentToken) {
-            showAddPageForm();
-          }
+          showAddPageForm();
         });
 
         // Global function for editing files
         window.editFile = function(filename, sha) {
           if (currentToken) {
             editPortfolioItem(filename, sha);
+          } else {
+            alert('Please log in first');
+          }
+        };
+
+        // Global function for editing pages
+        window.editPage = function(pageName) {
+          if (currentToken) {
+            editPage(pageName);
+          } else {
+            alert('Please log in first');
           }
         };
 
@@ -1269,15 +1303,15 @@ ${content}
             if (confirm('Are you sure you want to delete ' + filename + '?')) {
               deletePortfolioItem(filename, sha);
             }
+          } else {
+            alert('Please log in first');
           }
         };
 
         // Global function for deleting pages
         window.deletePage = function(pageName, sha) {
-          if (currentToken) {
-            if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
-              deletePageAndMenu(pageName, sha);
-            }
+          if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
+            deletePageAndMenu(pageName, sha);
           }
         };
 
@@ -1396,15 +1430,46 @@ ${content}
           }
         }
 
-        // Try to authenticate on page load
-        setTimeout(() => {
-          if (!isAuthenticated) {
-            log('[boot] Attempting initial authentication...');
-            authenticate();
+        // Try to authenticate on page load - check immediately and with retry
+        function initializeAuth() {
+          log('[boot] Initializing authentication...');
+          debugStorage();
+          
+          // Check for existing token immediately
+          const existingToken = extractTokenFromStorage();
+          if (existingToken) {
+            log('[boot] Found existing token, testing authentication...');
+            testGitHubAPI(existingToken).then(user => {
+              if (user) {
+                currentToken = existingToken;
+                isAuthenticated = true;
+                log('[boot] Authentication successful! Welcome ' + user.login, 'token');
+                
+                // Hide login section and show CMS interface
+                loginSection.style.display = 'none';
+                cmsInterface.style.display = 'block';
+                
+                // Load content
+                loadPortfolioItems();
+                loadPages();
+              } else {
+                log('[boot] Existing token invalid, clearing storage...');
+                clearInvalidTokens();
+              }
+            }).catch(err => {
+              log('[boot] Error testing token: ' + err.message, 'error');
+              clearInvalidTokens();
+            });
           } else {
-            log('[boot] Already authenticated, skipping initial auth');
+            log('[boot] No existing token found');
           }
-        }, 500);
+        }
+        
+        // Initialize with multiple attempts to handle race conditions
+        initializeAuth();
+        setTimeout(initializeAuth, 500);
+        setTimeout(initializeAuth, 1500);
+        setTimeout(initializeAuth, 3000);
       })();
     </script>
   </body>
