@@ -3,13 +3,1533 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Content Manager</title>
-    <script src="https://unpkg.com/netlify-cms@^2.10.192/dist/netlify-cms.js"></script>
+    <title>Content Manager - Omar O'Sullivan</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+      }
+      
+      h3, h4, h5, h6 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+      }
+      
+      #login-section {
+        text-align: center;
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: 400px;
+        margin: 50px auto;
+      }
+      
+      #login-btn {
+        background: #24292e;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
+      
+      #login-btn:hover {
+        background: #1a1e22;
+      }
+      
+      #cms-interface {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      
+      .section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+      }
+      
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      
+      button:hover {
+        background: #2980b9;
+      }
+      
+      .item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 4px solid #3498db;
+      }
+      
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+      }
+      
+      .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+    </style>
   </head>
   <body>
-    <!-- Netlify CMS will inject its interface here -->
+    <h3 style="font-family: system-ui; color:#333;">Content Management System</h3>
+
+    <div id="login-section" style="text-align:center;margin:20px;">
+      <h4>Login with GitHub</h4>
+      <button id="login-btn" style="background:#333;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDBDNS4zNzQgMCAwIDUuMzc0IDAgMTJjMCA1LjMwMiAzLjQzOCA5LjggOC4yMDcgMTEuMzg3LjYuMTExLjgyOS0uMjYxLjgyOS0uNTc3di0yLjIzNGMtMy4zMzguNzI2LTQuMDMzLTEuNDE2LTQuMDMzLTEuNDE2LS41NDYtMS4zODctMS4zMzMtMS43NTYtMS4zMzMtMS43NTYtMS4wODktLjc0NS4wODMtLjcyOS4wODMtLjcyOSAxLjIwNS4wODQgMS44MzggMS4yMzcgMS44MzggMS4yMzcgMS4wNyAxLjgzNCAyLjc3NyAxLjMwNCAzLjQ1Mi45OTcuMTA3LS43NzYuNDE1LTEuMzA1Ljc1NS0xLjYwNS0Mi42NjUtLjMwNS01LjQ2Ni0xLjMzNC01LjQ2Ni01LjkzMSAwLTEuMzExLjQ2OS0yLjM4MSAxLjIzNi0zLjIyMS0uMTI0LS4zMDUtLjUzNS0xLjUyNC4xMTctMy4xNzYgMCAwIDEuMDA4LS4zMjIgMy4zMDEgMS4yMy45NTctLjI2NiAxLjk4My0uMzk5IDMuMDAzLS40MDQgMS4wMi4wMDUgMi4wNDcuMTM4IDMuMDA2LjQwNCAyLjI5LTEuNTUyIDMuMjk3LTEuMjMgMy4yOTctMS4yMy42NTMgMS42NTIuMjQyIDIuODcuMTE4IDMuMTc2LjkyLjg0IDEuMjM1IDEuOTExIDEuMjM1IDMuMjIxIDAgNC42MDktMi44MDcgNS42MjQtNS40NzkgNS45MjEuNDI5LjM2OS44MTEuMS4xMS0uODA4LjEwOC0uODM0LjEwOC0xLjczNSAwLTEuNjA1LS4wMTUtMi45MzUtLjAxNS01LjMzNHYtMi4yNDZjMC0uMzE1LjE5OS0uNjg4LjgyOS0uNTc3QzIwLjU2MiAyMS43OTcgMjQgMTcuMzAyIDI0IDEyYzAtNi42MjYtNS4zNzQtMTItMTItMTJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" style="width:20px;height:20px;margin-right:8px;vertical-align:middle;">
+        Login with GitHub
+      </button>
+    </div>
+
+    <div id="cms-interface" style="display:none;">
+      <h4>Content Management System</h4>
+      <div id="collections">
+        <h5>Site Settings</h5>
+        <div id="site-settings-section">
+          <button id="edit-site-settings" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Edit Site Settings</button>
+        </div>
+        <h5>Collections</h5>
+        <div id="portfolio-section">
+          <h6>Portfolio</h6>
+          <button id="add-portfolio" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Portfolio Item</button>
+          <div id="portfolio-list"></div>
+        </div>
+        <div id="pages-section">
+          <h6>Pages</h6>
+          <button id="add-page" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Page</button>
+          <div id="pages-list"></div>
+        </div>
+        <div id="sections-section">
+          <h6>Section Pages</h6>
+          <button id="edit-portfolio-section" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Edit Portfolio Page</button>
+        </div>
+      </div>
+    </div>
+
     <script>
-      console.log('Loading Netlify CMS...');
+      (function () {
+        const loginSection = document.getElementById('login-section');
+        const cmsInterface = document.getElementById('cms-interface');
+        const loginBtn = document.getElementById('login-btn');
+        const portfolioList = document.getElementById('portfolio-list');
+
+        let currentToken = null;
+        let isLoading = false;
+        let isAuthenticated = false;
+
+        function log(msg, kind) {
+          // Debug logging disabled for production - only console logging
+          if (kind === 'token') {
+            console.log('%c' + msg, 'background:#222;color:#0f0;font-weight:bold;padding:2px 6px;');
+          } else if (kind === 'error') {
+            console.log('%c' + msg, 'background:#222;color:#f00;font-weight:bold;padding:2px 6px;');
+          } else {
+            console.log(msg);
+          }
+        }
+
+        function extractTokenFromStorage() {
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          log('[storage] Starting token extraction...');
+          
+          for (const key of keys) {
+            const raw = localStorage.getItem(key);
+            log('[storage] Checking ' + key + ': ' + (raw ? 'found' : 'not found'));
+            
+            if (raw) {
+              log('[storage] Found token in ' + key + ': ' + raw.substring(0, 50) + '...');
+              try {
+                // Try JSON format first
+                if (raw[0] === '{') {
+                  const obj = JSON.parse(raw);
+                  if (obj && obj.token) {
+                    log('[storage] Extracted token from JSON: ' + obj.token.substring(0, 20) + '...');
+                    return obj.token;
+                  }
+                } 
+                // Try string format
+                else {
+                  const m = /authorization:github:success:([^:]+)$/.exec(raw);
+                  if (m && m[1]) {
+                    log('[storage] Extracted token from string: ' + m[1].substring(0, 20) + '...');
+                    return m[1];
+                  }
+                  // Try direct token format
+                  else if (raw.startsWith('gho_')) {
+                    log('[storage] Extracted direct token: ' + raw.substring(0, 20) + '...');
+                    return raw;
+                  }
+                }
+              } catch (e) {
+                log('[storage] Error parsing ' + key + ': ' + e.message, 'error');
+              }
+            }
+          }
+          
+          log('[storage] No valid token found in any storage key', 'error');
+          return null;
+        }
+
+        function saveTokenInAllFormats(token) {
+          const formats = [
+            'authorization:github:success:' + token,
+            JSON.stringify({ provider: 'github', type: 'success', token: token }),
+            token
+          ];
+          
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          
+          keys.forEach(key => {
+            formats.forEach(format => {
+              try {
+                localStorage.setItem(key, format);
+                log('[storage] Set ' + key + ' = ' + format.substring(0, 50) + '...', 'token');
+              } catch (e) {
+                log('[storage] Error setting ' + key + ': ' + e.message, 'error');
+              }
+            });
+          });
+        }
+
+        async function testGitHubAPI(token) {
+          try {
+            log('[api] Testing GitHub API with token...', 'token');
+            const response = await fetch('https://api.github.com/user', {
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (response.ok) {
+              const user = await response.json();
+              log('[api] GitHub API successful! User: ' + user.login, 'token');
+              return user;
+            } else {
+              log('[api] GitHub API failed: ' + response.status, 'error');
+              return null;
+            }
+          } catch (e) {
+            log('[api] GitHub API error: ' + e.message, 'error');
+            return null;
+          }
+        }
+
+        async function loadPortfolioItems(token) {
+          if (isLoading) {
+            log('[api] Already loading portfolio items, skipping...', 'token');
+            return;
+          }
+          
+          isLoading = true;
+          try {
+            log('[api] Loading portfolio items...', 'token');
+            const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio', {
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (response.ok) {
+              const items = await response.json();
+              log('[api] Loaded ' + items.length + ' portfolio items', 'token');
+              
+              portfolioList.innerHTML = '';
+              items.forEach(item => {
+                if (item.name.endsWith('.md')) {
+                  const div = document.createElement('div');
+                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                  div.innerHTML = `
+                    <strong>${item.name}</strong>
+                    <button onclick="editFile('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                    <button onclick="deleteFile('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                  `;
+                  portfolioList.appendChild(div);
+                }
+              });
+              
+              return items;
+            } else {
+              log('[api] Failed to load portfolio items: ' + response.status, 'error');
+              return [];
+            }
+                      } catch (e) {
+            log('[api] Error loading portfolio items: ' + e.message, 'error');
+            return [];
+          } finally {
+            isLoading = false;
+          }
+        }
+
+        async function loadPages(token) {
+          try {
+            log('[api] Loading pages...', 'token');
+            const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content', {
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (response.ok) {
+              const items = await response.json();
+              const pagesList = document.getElementById('pages-list');
+              
+              pagesList.innerHTML = '';
+              
+              // Filter for .md files that are not in subdirectories and not _index.md
+              const pages = items.filter(item => 
+                item.name.endsWith('.md') && 
+                !item.name.startsWith('_') && 
+                item.type === 'file'
+              );
+              
+              log('[api] Loaded ' + pages.length + ' pages', 'token');
+              
+              pages.forEach(page => {
+                const pageName = page.name.replace('.md', '');
+                const div = document.createElement('div');
+                div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                div.innerHTML = `
+                  <strong>${pageName}</strong>
+                  <button onclick="editPage('${pageName}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                  <button onclick="deletePage('${pageName}', '${page.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                `;
+                pagesList.appendChild(div);
+              });
+              
+              return pages;
+            } else {
+              log('[api] Failed to load pages: ' + response.status, 'error');
+              return [];
+            }
+          } catch (e) {
+            log('[api] Error loading pages: ' + e.message, 'error');
+            return [];
+          }
+        }
+
+        async function authenticate() {
+          if (isAuthenticated) {
+            log('[auth] Already authenticated, skipping...', 'token');
+            return true;
+          }
+          
+          const token = extractTokenFromStorage();
+          if (!token) {
+            log('[auth] No token found in storage', 'error');
+            return false;
+          }
+
+          log('[auth] Found token, testing authentication...', 'token');
+          const user = await testGitHubAPI(token);
+          
+          if (user) {
+            currentToken = token;
+            isAuthenticated = true;
+            log('[auth] Authentication successful! Welcome ' + user.login, 'token');
+            
+            // Hide login section and show CMS interface
+            loginSection.style.display = 'none';
+            cmsInterface.style.display = 'block';
+            
+            // Load portfolio items and pages only if not already loaded
+            if (!isLoading) {
+              await loadPortfolioItems(token);
+              await loadPages(token);
+            }
+            
+            return true;
+          } else {
+            log('[auth] Authentication failed', 'error');
+            return false;
+          }
+        }
+
+        // Listen for OAuth popup messages
+        window.addEventListener('message', (e) => {
+          const m = e.data;
+          
+          // Filter out non-OAuth messages to reduce noise
+          if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
+            log('[message] OAuth success message received', 'token');
+          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success') {
+            log('[message] OAuth success object received', 'token');
+          } else {
+            // Skip logging non-OAuth messages to reduce noise
+            return;
+          }
+          
+          let saved = false;
+          try {
+            if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
+              const token = m.replace('authorization:github:success:', '');
+              saveTokenInAllFormats(token);
+              saved = true;
+            } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success' && m.token) {
+              saveTokenInAllFormats(m.token);
+              saved = true;
+            }
+          } catch (err) {
+            log('[message] Error processing message: ' + err.message, 'error');
+          }
+
+          if (saved && !isAuthenticated) {
+            log('[message] Token saved, attempting authentication...', 'token');
+            
+            // Single authentication attempt
+            setTimeout(() => {
+              if (!isAuthenticated) {
+                authenticate();
+              }
+            }, 100);
+          }
+        });
+
+        // Handle URL token fallback
+        try {
+          const hash = location.hash || '';
+          const qIndex = hash.indexOf('?');
+          let urlToken = null;
+          if (qIndex !== -1) {
+            const qs = hash.slice(qIndex + 1);
+            const hp = new URLSearchParams(qs);
+            urlToken = hp.get('token');
+          }
+          const qpToken = new URLSearchParams(location.search).get('token');
+          if (qpToken && !urlToken) urlToken = qpToken;
+
+          if (urlToken) {
+            saveTokenInAllFormats(urlToken);
+            log('[url] TOKEN STORED: ' + urlToken, 'token');
+            history.replaceState(null, '', location.pathname + '#/');
+            setTimeout(() => {
+              if (!isAuthenticated) {
+                authenticate();
+              }
+            }, 100);
+            return;
+          }
+        } catch (e) {
+          log('[url] Error parsing URL token: ' + e.message, 'error');
+        }
+
+        // Image upload function
+        async function uploadImage(file, filename) {
+          try {
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+              reader.onload = async function(e) {
+                try {
+                  const base64Content = e.target.result.split(',')[1];
+                  const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/static/uploads/${filename}`, {
+                    method: 'PUT',
+                    headers: {
+                      'Authorization': 'token ' + currentToken,
+                      'Accept': 'application/vnd.github.v3+json',
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      message: `Upload image: ${filename}`,
+                      content: base64Content
+                    })
+                  });
+
+                  if (response.ok) {
+                    resolve(true);
+                  } else {
+                    const error = await response.json();
+                    alert('Error uploading image: ' + (error.message || 'Unknown error'));
+                    resolve(false);
+                  }
+                } catch (e) {
+                  alert('Error uploading image: ' + e.message);
+                  resolve(false);
+                }
+              };
+              reader.readAsDataURL(file);
+            });
+          } catch (e) {
+            alert('Error uploading image: ' + e.message);
+            return false;
+          }
+        }
+
+        // CRUD Functions
+        function showAddPortfolioForm() {
+          const form = document.createElement('div');
+          form.id = 'add-portfolio-modal';
+          form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+          form.innerHTML = `
+            <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+              <button onclick="document.getElementById('add-portfolio-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+              <h3>Add New Portfolio Item</h3>
+              <form id="add-portfolio-form">
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
+                  <input type="text" id="portfolio-title" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                  <textarea id="portfolio-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:100px;"></textarea>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Tags/Labels:</label>
+                  <input type="text" id="portfolio-tags" placeholder="Oil, Landscape, Painting" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;">Separate multiple tags with commas (e.g., Oil, Landscape, Painting)</small>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image:</label>
+                  <input type="file" id="portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <div id="image-preview" style="margin-top:10px;display:none;">
+                    <img id="preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;">
+                    <div id="image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
+                  </div>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                  <textarea id="portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;"></textarea>
+                </div>
+                <div style="text-align:right;">
+                  <button type="button" onclick="document.getElementById('add-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                  <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Create</button>
+                </div>
+              </form>
+            </div>
+          `;
+          document.body.appendChild(form);
+          
+          // Image preview handler for add form
+          document.getElementById('portfolio-image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('image-info').textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+              };
+              reader.readAsDataURL(file);
+            } else {
+              document.getElementById('image-preview').style.display = 'none';
+            }
+          });
+
+          document.getElementById('add-portfolio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('portfolio-title').value;
+            const description = document.getElementById('portfolio-description').value;
+            const tags = document.getElementById('portfolio-tags').value;
+            const content = document.getElementById('portfolio-content').value;
+            const imageFile = document.getElementById('portfolio-image').files[0];
+            
+            await createPortfolioItem(title, description, tags, content, imageFile);
+            form.remove();
+          });
+        }
+
+        async function createPortfolioItem(title, description, tags, content, imageFile) {
+          try {
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const filename = slug + '.md';
+            const date = new Date().toISOString().split('T')[0];
+            
+            let coverImage = '';
+            if (imageFile) {
+              // Upload image first
+              const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
+              const imageResponse = await uploadImage(imageFile, imageFilename);
+              if (imageResponse) {
+                coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
+              }
+            }
+            
+            // Process tags
+            let tagsYaml = '';
+            if (tags && tags.trim()) {
+              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagArray.length > 0) {
+                tagsYaml = `tags:\n${tagArray.map(tag => `  - "${tag}"`).join('\n')}`;
+              }
+            }
+            
+            const markdownContent = `---
+title: "${title}"
+date: ${date}
+description: "${description}"
+${coverImage}
+${tagsYaml}
+---
+
+${content}
+`;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Add portfolio item: ${title}`,
+                content: btoa(unescape(encodeURIComponent(markdownContent)))
+              })
+            });
+
+            if (response.ok) {
+              alert('Portfolio item created successfully!');
+              await loadPortfolioItems(currentToken);
+            } else {
+              const error = await response.json();
+              alert('Error creating portfolio item: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error creating portfolio item: ' + e.message);
+          }
+        }
+
+        async function editPortfolioItem(filename, sha) {
+          try {
+            // First, get the current content
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading portfolio item');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            let title = filename.replace('.md', '');
+            let description = '';
+            let tags = '';
+            let body = content;
+            
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const bodyContent = frontmatterMatch[2];
+              
+              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              
+              // Parse tags from YAML array format
+              const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s*-\s*["']?[^"'\n]+["']?\s*\n?)*)/);
+              if (tagsMatch) {
+                const tagsLines = tagsMatch[1].split('\n').filter(line => line.trim());
+                const tagArray = tagsLines.map(line => {
+                  const match = line.match(/-\s*["']?([^"'\n]+)["']?/);
+                  return match ? match[1] : '';
+                }).filter(tag => tag);
+                tags = tagArray.join(', ');
+              }
+              
+              if (titleMatch) title = titleMatch[1];
+              if (descMatch) description = descMatch[1];
+              body = bodyContent;
+            }
+
+            // Show edit form
+            const form = document.createElement('div');
+            form.id = 'edit-portfolio-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-portfolio-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit Portfolio Item</h3>
+                <form id="edit-portfolio-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
+                    <input type="text" id="edit-portfolio-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                    <textarea id="edit-portfolio-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:100px;">${description}</textarea>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Tags/Labels:</label>
+                    <input type="text" id="edit-portfolio-tags" value="${tags}" placeholder="Oil, Landscape, Painting" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">Separate multiple tags with commas (e.g., Oil, Landscape, Painting)</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image:</label>
+                    <div id="current-image-display" style="margin-bottom:10px;padding:10px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;">
+                      <small style="color:#666;display:block;margin-bottom:5px;">Current image:</small>
+                      <div id="current-image-container"></div>
+                    </div>
+                    <input type="file" id="edit-portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;display:block;margin-top:5px;">Leave empty to keep current image, or select a new image to replace it.</small>
+                    <div id="edit-image-preview" style="margin-top:10px;display:none;">
+                      <img id="edit-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;">
+                      <div id="edit-image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
+                    </div>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <textarea id="edit-portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+            
+            // Display current image
+            const currentImageContainer = document.getElementById('current-image-container');
+            const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
+            if (currentCoverMatch) {
+              const currentImagePath = currentCoverMatch[1];
+              currentImageContainer.innerHTML = `
+                <img src="${currentImagePath}" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none;color:#666;font-style:italic;">Image not found: ${currentImagePath}</div>
+              `;
+            } else {
+              currentImageContainer.innerHTML = '<div style="color:#666;font-style:italic;">No current image</div>';
+            }
+            
+            // Image preview handler for edit form
+            document.getElementById('edit-portfolio-image').addEventListener('change', function(e) {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                  document.getElementById('edit-preview-img').src = e.target.result;
+                  document.getElementById('edit-image-preview').style.display = 'block';
+                  document.getElementById('edit-image-info').textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                };
+                reader.readAsDataURL(file);
+              } else {
+                document.getElementById('edit-image-preview').style.display = 'none';
+              }
+            });
+
+            document.getElementById('edit-portfolio-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const newTitle = document.getElementById('edit-portfolio-title').value;
+              const newDescription = document.getElementById('edit-portfolio-description').value;
+              const newTags = document.getElementById('edit-portfolio-tags').value;
+              const newContent = document.getElementById('edit-portfolio-content').value;
+              const imageFile = document.getElementById('edit-portfolio-image').files[0];
+              
+              await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile);
+              form.remove();
+            });
+          } catch (e) {
+            alert('Error loading portfolio item: ' + e.message);
+          }
+        }
+
+        async function updatePortfolioItem(filename, sha, title, description, tags, content, imageFile) {
+          try {
+            const date = new Date().toISOString().split('T')[0];
+            
+            // First, get the current content to preserve existing image
+            const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            
+            let existingCoverImage = '';
+            if (currentResponse.ok) {
+              const currentFile = await currentResponse.json();
+              const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
+              const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
+              if (coverMatch) {
+                existingCoverImage = `cover:\n  image: "${coverMatch[1]}"`;
+              }
+            }
+            
+            let coverImage = existingCoverImage; // Preserve existing image by default
+            if (imageFile) {
+              // Upload new image only if one is provided
+              const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+              const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
+              const imageResponse = await uploadImage(imageFile, imageFilename);
+              if (imageResponse) {
+                coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
+              }
+            }
+            
+            // Process tags
+            let tagsYaml = '';
+            if (tags && tags.trim()) {
+              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagArray.length > 0) {
+                tagsYaml = `tags:\n${tagArray.map(tag => `  - "${tag}"`).join('\n')}`;
+              }
+            }
+            
+            const markdownContent = `---
+title: "${title}"
+date: ${date}
+description: "${description}"
+${coverImage}
+${tagsYaml}
+---
+
+${content}
+`;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update portfolio item: ${title}`,
+                content: btoa(unescape(encodeURIComponent(markdownContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Portfolio item updated successfully!');
+              await loadPortfolioItems(currentToken);
+            } else {
+              const error = await response.json();
+              alert('Error updating portfolio item: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating portfolio item: ' + e.message);
+          }
+        }
+
+        async function deletePortfolioItem(filename, sha) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Delete portfolio item: ${filename}`,
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Portfolio item deleted successfully!');
+              await loadPortfolioItems(currentToken);
+            } else {
+              const error = await response.json();
+              alert('Error deleting portfolio item: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error deleting portfolio item: ' + e.message);
+          }
+        }
+
+        async function editPage(pageName) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading page');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            let title = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+            let body = content;
+            
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const bodyContent = frontmatterMatch[2];
+              
+              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              
+              if (titleMatch) title = titleMatch[1];
+              body = bodyContent;
+            }
+
+            // Show edit form
+            const form = document.createElement('div');
+            form.id = 'edit-page-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-page-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit ${title} Page</h3>
+                <form id="edit-page-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
+                    <input type="text" id="edit-page-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <textarea id="edit-page-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;">${body}</textarea>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-page-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+            
+            document.getElementById('edit-page-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const newTitle = document.getElementById('edit-page-title').value;
+              const newContent = document.getElementById('edit-page-content').value;
+              
+              await updatePage(pageName, file.sha, newTitle, newContent);
+              form.remove();
+            });
+          } catch (e) {
+            alert('Error loading page: ' + e.message);
+          }
+        }
+
+        async function updatePage(pageName, sha, title, content) {
+          try {
+            const markdownContent = `---
+title: "${title}"
+---
+
+${content}
+`;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update ${pageName} page`,
+                content: btoa(unescape(encodeURIComponent(markdownContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Page updated successfully!');
+            } else {
+              const error = await response.json();
+              alert('Error updating page: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating page: ' + e.message);
+          }
+        }
+
+        // Section Page Functions
+        async function editSectionPage(sectionName) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${sectionName}/_index.md`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading section page');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            let title = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            let description = '';
+            let body = content;
+            
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const bodyContent = frontmatterMatch[2];
+              
+              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              
+              if (titleMatch) title = titleMatch[1];
+              if (descMatch) description = descMatch[1];
+              body = bodyContent;
+            }
+
+            // Show edit form
+            const form = document.createElement('div');
+            form.id = 'edit-section-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-section-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit ${title} Section Page</h3>
+                <form id="edit-section-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Title:</label>
+                    <input type="text" id="edit-section-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">This appears as the main heading on the section page</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                    <input type="text" id="edit-section-description" value="${description}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">Optional description that appears below the title</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <textarea id="edit-section-content" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
+                    <small style="color:#666;">Optional content that appears above the portfolio items</small>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-section-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+            
+            document.getElementById('edit-section-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const newTitle = document.getElementById('edit-section-title').value;
+              const newDescription = document.getElementById('edit-section-description').value;
+              const newContent = document.getElementById('edit-section-content').value;
+              
+              await updateSectionPage(sectionName, file.sha, newTitle, newDescription, newContent);
+              form.remove();
+            });
+          } catch (e) {
+            alert('Error loading section page: ' + e.message);
+          }
+        }
+
+        async function updateSectionPage(sectionName, sha, title, description, content) {
+          try {
+            let markdownContent = `---
+title: "${title}"`;
+            
+            if (description && description.trim()) {
+              markdownContent += `\ndescription: "${description}"`;
+            }
+            
+            markdownContent += `\n---\n\n${content}`;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${sectionName}/_index.md`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update ${sectionName} section page`,
+                content: btoa(unescape(encodeURIComponent(markdownContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Section page updated successfully!');
+            } else {
+              const error = await response.json();
+              alert('Error updating section page: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating section page: ' + e.message);
+          }
+        }
+
+        // Page Management Functions
+        function showAddPageForm() {
+          const form = document.createElement('div');
+          form.id = 'add-page-modal';
+          form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+          form.innerHTML = `
+            <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+              <button onclick="document.getElementById('add-page-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+              <h3>Add New Page</h3>
+              <form id="add-page-form">
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Title:</label>
+                  <input type="text" id="page-title" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;">This will appear in the navigation menu and as the page heading</small>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">URL Slug:</label>
+                  <input type="text" id="page-slug" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;">URL-friendly version (e.g., "poetry" for /poetry/)</small>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Menu Weight:</label>
+                  <input type="number" id="page-weight" value="40" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;">Lower numbers appear first in the menu (Portfolio=10, About=20, Contact=30)</small>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                  <textarea id="page-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;"></textarea>
+                </div>
+                <div style="text-align:right;">
+                  <button type="button" onclick="document.getElementById('add-page-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                  <button type="submit" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Create Page</button>
+                </div>
+              </form>
+            </div>
+          `;
+          document.body.appendChild(form);
+          
+          // Auto-generate slug from title
+          document.getElementById('page-title').addEventListener('input', function(e) {
+            const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            document.getElementById('page-slug').value = slug;
+          });
+
+          document.getElementById('add-page-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('page-title').value;
+            const slug = document.getElementById('page-slug').value;
+            const weight = parseInt(document.getElementById('page-weight').value);
+            const content = document.getElementById('page-content').value;
+            
+            await createPageAndMenu(title, slug, weight, content);
+            form.remove();
+          });
+        }
+
+        async function createPageAndMenu(title, slug, weight, content) {
+          try {
+            // Create the page file
+            const markdownContent = `---
+title: "${title}"
+---
+
+${content}
+`;
+
+            const pageResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${slug}.md`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Add new page: ${title}`,
+                content: btoa(unescape(encodeURIComponent(markdownContent)))
+              })
+            });
+
+            if (!pageResponse.ok) {
+              const error = await pageResponse.json();
+              alert('Error creating page: ' + (error.message || 'Unknown error'));
+              return;
+            }
+
+            // Update the menu in config.toml
+            const configResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!configResponse.ok) {
+              alert('Error loading config file');
+              return;
+            }
+
+            const configFile = await configResponse.json();
+            let configContent = decodeURIComponent(escape(atob(configFile.content)));
+            
+            // Add the new menu item
+            const newMenuItem = `  [[menu.main]]
+    name = "${title}"
+    url = "/${slug}/"
+    weight = ${weight}
+`;
+            
+            // Find the last menu item and add after it
+            const lastMenuIndex = configContent.lastIndexOf('[[menu.main]]');
+            if (lastMenuIndex !== -1) {
+              const insertIndex = configContent.indexOf('\n', configContent.lastIndexOf('weight =', lastMenuIndex)) + 1;
+              configContent = configContent.slice(0, insertIndex) + newMenuItem + configContent.slice(insertIndex);
+            }
+
+            const updateConfigResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Add ${title} to navigation menu`,
+                content: btoa(unescape(encodeURIComponent(configContent))),
+                sha: configFile.sha
+              })
+            });
+
+            if (updateConfigResponse.ok) {
+              alert('Page created successfully and added to navigation menu!');
+              await loadPages(currentToken);
+            } else {
+              const error = await updateConfigResponse.json();
+              alert('Page created but error updating menu: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error creating page: ' + e.message);
+          }
+        }
+
+        async function deletePageAndMenu(pageName, sha) {
+          try {
+            // Delete the page file
+            const pageResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Delete page: ${pageName}`,
+                sha: sha
+              })
+            });
+
+            if (!pageResponse.ok) {
+              const error = await pageResponse.json();
+              alert('Error deleting page: ' + (error.message || 'Unknown error'));
+              return;
+            }
+
+            // Remove from menu in config.toml
+            const configResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!configResponse.ok) {
+              alert('Error loading config file');
+              return;
+            }
+
+            const configFile = await configResponse.json();
+            let configContent = decodeURIComponent(escape(atob(configFile.content)));
+            
+            // Remove the menu item
+            const menuItemRegex = new RegExp(`\\s*\\[\\[menu\\.main\\]\\]\\s*\\n\\s*name = "${pageName}"\\s*\\n\\s*url = "/${pageName}/"\\s*\\n\\s*weight = \\d+\\s*\\n`, 'g');
+            configContent = configContent.replace(menuItemRegex, '');
+
+            const updateConfigResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Remove ${pageName} from navigation menu`,
+                content: btoa(unescape(encodeURIComponent(configContent))),
+                sha: configFile.sha
+              })
+            });
+
+            if (updateConfigResponse.ok) {
+              alert('Page deleted successfully and removed from navigation menu!');
+              await loadPages(currentToken);
+            } else {
+              const error = await updateConfigResponse.json();
+              alert('Page deleted but error updating menu: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error deleting page: ' + e.message);
+          }
+        }
+
+        // Login button click handler
+        loginBtn.addEventListener('click', () => {
+          log('[login] Opening OAuth popup...');
+          const popup = window.open(
+            'https://decap-oauth.netlify.app/oauth/authorize?site_id=omarosullivan.netlify.app',
+            'github-oauth',
+            'width=600,height=600,scrollbars=yes,resizable=yes'
+          );
+        });
+
+        // Add portfolio button handler
+        document.getElementById('add-portfolio').addEventListener('click', () => {
+          if (currentToken) {
+            showAddPortfolioForm();
+          }
+        });
+
+        // Edit buttons handlers
+        document.getElementById('edit-about').addEventListener('click', () => {
+          if (currentToken) {
+            editPage('about');
+          }
+        });
+
+        document.getElementById('edit-contact').addEventListener('click', () => {
+          if (currentToken) {
+            editPage('contact');
+          }
+        });
+
+        // Site settings button handler
+        document.getElementById('edit-site-settings').addEventListener('click', () => {
+          if (currentToken) {
+            editSiteSettings();
+          }
+        });
+
+        // Section page button handler
+        document.getElementById('edit-portfolio-section').addEventListener('click', () => {
+          if (currentToken) {
+            editSectionPage('portfolio');
+          }
+        });
+
+        // Add page button handler
+        document.getElementById('add-page').addEventListener('click', () => {
+          if (currentToken) {
+            showAddPageForm();
+          }
+        });
+
+        // Global function for editing files
+        window.editFile = function(filename, sha) {
+          if (currentToken) {
+            editPortfolioItem(filename, sha);
+          }
+        };
+
+        // Global function for deleting files
+        window.deleteFile = function(filename, sha) {
+          if (currentToken) {
+            if (confirm('Are you sure you want to delete ' + filename + '?')) {
+              deletePortfolioItem(filename, sha);
+            }
+          }
+        };
+
+        // Global function for deleting pages
+        window.deletePage = function(pageName, sha) {
+          if (currentToken) {
+            if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
+              deletePageAndMenu(pageName, sha);
+            }
+          }
+        };
+
+        // Site Settings Functions
+        async function editSiteSettings() {
+          try {
+            // First, get the current config.toml content
+            const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading site settings');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse current title from config.toml
+            const titleMatch = content.match(/title\s*=\s*["']([^"']+)["']/);
+            const descMatch = content.match(/description\s*=\s*["']([^"']+)["']/);
+            
+            const currentTitle = titleMatch ? titleMatch[1] : 'Omar O\'Sullivan — Portfolio';
+            const currentDescription = descMatch ? descMatch[1] : 'Work, notes, and experiments.';
+
+            // Show edit form
+            const form = document.createElement('div');
+            form.id = 'edit-site-settings-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-site-settings-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit Site Settings</h3>
+                <form id="edit-site-settings-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Site Title:</label>
+                    <input type="text" id="site-title" value="${currentTitle}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">This appears in the browser tab and as the main site title</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Site Description:</label>
+                    <textarea id="site-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:80px;">${currentDescription}</textarea>
+                    <small style="color:#666;">This appears in search results and social media previews</small>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-site-settings-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save Settings</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+            
+            document.getElementById('edit-site-settings-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const newTitle = document.getElementById('site-title').value;
+              const newDescription = document.getElementById('site-description').value;
+              
+              await updateSiteSettings(file.sha, newTitle, newDescription);
+              form.remove();
+            });
+          } catch (e) {
+            alert('Error loading site settings: ' + e.message);
+          }
+        }
+
+        async function updateSiteSettings(sha, title, description) {
+          try {
+            // Read the current config.toml content
+            const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading current config');
+              return;
+            }
+
+            const file = await response.json();
+            let content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Update title and description in the content
+            content = content.replace(/title\s*=\s*["'][^"']*["']/, `title = "${title}"`);
+            content = content.replace(/description\s*=\s*["'][^"']*["']/, `description = "${description}"`);
+
+            // Update the file
+            const updateResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update site settings: ${title}`,
+                content: btoa(unescape(encodeURIComponent(content))),
+                sha: sha
+              })
+            });
+
+            if (updateResponse.ok) {
+              alert('Site settings updated successfully! The changes will be visible after the next site build.');
+            } else {
+              const error = await updateResponse.json();
+              alert('Error updating site settings: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating site settings: ' + e.message);
+          }
+        }
+
+        // Try to authenticate on page load
+        setTimeout(() => {
+          if (!isAuthenticated) {
+            log('[boot] Attempting initial authentication...');
+            authenticate();
+          } else {
+            log('[boot] Already authenticated, skipping initial auth');
+          }
+        }, 500);
+      })();
     </script>
   </body>
 </html>
