@@ -71,11 +71,15 @@
         }
 
         // 1) Save token from OAuth popup, then reload once to cleanly bootstrap
+        const RELOAD_KEY = 'cms.oauth.reloaded';
         window.addEventListener('message', (e) => {
           const m = e.data;
           log('[message] ' + (typeof m === 'string' ? m : JSON.stringify(m)));
           const saved = saveTokenFromMessage(m);
-          if (saved) setTimeout(() => location.reload(), 150);
+          if (saved && !sessionStorage.getItem(RELOAD_KEY)) {
+            sessionStorage.setItem(RELOAD_KEY, '1');
+            setTimeout(() => location.reload(), 150);
+          }
         });
 
         // ✅ Robust fallback: read token from the URL when you're at #/oauth?token=...
@@ -97,11 +101,19 @@
             log('[url] TOKEN STORED: ' + urlToken, 'token');
             // clean URL so it doesn't re-trigger
             history.replaceState(null, '', location.pathname + '#/');
-            setTimeout(() => location.reload(), 150);
+            if (!sessionStorage.getItem(RELOAD_KEY)) {
+              sessionStorage.setItem(RELOAD_KEY, '1');
+              setTimeout(() => location.reload(), 150);
+            }
             return;
           }
         } catch (e) {
           log('[url parse error] ' + e.message);
+        }
+
+        // Clear reload flag on fresh page load (not from reload)
+        if (performance.navigation.type === 0) { // TYPE_NAVIGATE (fresh load)
+          sessionStorage.removeItem(RELOAD_KEY);
         }
 
         // 2) Boot CMS, then replay AFTER init to guarantee CMS listener is attached
