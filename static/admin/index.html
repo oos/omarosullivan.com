@@ -5,40 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
     <script>
-      /* We'll init CMS manually after the bundle loads */
+      // Prevent auto-init; we’ll init after token handling
       window.CMS_MANUAL_INIT = true;
     </script>
   </head>
   <body>
-    <!-- Classic Netlify CMS bundle -->
+    <!-- Use the classic Netlify CMS bundle -->
     <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
     <script>
       (function () {
-        var KEY = 'netlify-cms.oauth';
+        const KEY = 'netlify-cms.oauth';
 
-        /* Fallback: if token arrives via URL (from redirect), store & clean URL */
-        try {
-          var p = new URLSearchParams(location.hash.replace(/^#\/?/, ''));
-          var urlToken = p.get('token');
-          if (urlToken) {
-            localStorage.setItem(KEY, 'authorization:github:success:' + urlToken);
-            history.replaceState(null, '', location.pathname + location.search + '#/');
+        function saveAndReload(tokenStr) {
+          try {
+            localStorage.setItem(KEY, tokenStr);
+            console.log('[oauth] token stored:', tokenStr.slice(0, 40) + '…');
             location.reload();
-            return; // stop here; reload continues after storage
+          } catch (e) {
+            console.warn('[oauth] failed to save token', e);
           }
-        } catch (e) {}
+        }
 
-        /* Normal path: receive token from popup via postMessage */
-        window.addEventListener('message', function (e) {
-          var msg = e && e.data;
-          if (typeof msg === 'string' && msg.indexOf('authorization:github:success:') === 0) {
-            try { localStorage.setItem(KEY, msg); } catch (_) {}
-            setTimeout(function () { location.reload(); }, 300);
+        // Listen for BOTH formats the popup may send
+        window.addEventListener('message', (e) => {
+          const m = e.data;
+          if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
+            saveAndReload(m);
+          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success' && m.token) {
+            saveAndReload(`authorization:github:success:${m.token}`);
           }
         });
 
-        /* Manual init: wait for CMS global, then init with our config */
+        // Fallback: if token arrives via URL hash or query (?token=…)
+        try {
+          const hashParams = new URLSearchParams(location.hash.replace(/^#\/?/, ''));
+          const queryParams = new URLSearchParams(location.search);
+          const urlToken = hashParams.get('token') || queryParams.get('token');
+          if (urlToken) {
+            saveAndReload(`authorization:github:success:${urlToken}`);
+            history.replaceState(null, '', location.pathname + '#/');
+            return; // reload happens in saveAndReload
+          }
+        } catch (e) {}
+
+        // Boot CMS once it’s available
         function boot() {
           if (typeof window.CMS !== 'object') {
             console.warn('[admin] CMS not present yet, retrying…');
