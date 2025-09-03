@@ -64,9 +64,42 @@
         function replayTokenToCMS() {
           const token = extractTokenFromStorage();
           if (!token) return false;
+          
+          // Try multiple approaches to authenticate the CMS
+          log('[admin] attempting to authenticate CMS with token', 'token');
+          
+          // Method 1: PostMessage (original approach)
           window.postMessage('authorization:github:success:' + token, '*');
           window.postMessage({ provider: 'github', type: 'success', token }, '*');
-          log('[admin] replayed token to CMS', 'token');
+          
+          // Method 2: Try to directly set the token in CMS if available
+          if (window.CMS && window.CMS.auth) {
+            try {
+              // Try to manually set the token
+              if (window.CMS.auth.token) {
+                window.CMS.auth.token = token;
+                log('[admin] manually set CMS.auth.token', 'token');
+              }
+              // Try to trigger authentication
+              if (typeof window.CMS.auth.authenticate === 'function') {
+                window.CMS.auth.authenticate();
+                log('[admin] called CMS.auth.authenticate()', 'token');
+              }
+            } catch (e) {
+              log('[admin] error in manual auth: ' + e.message);
+            }
+          }
+          
+          // Method 3: Try to trigger a custom event
+          try {
+            const event = new CustomEvent('netlify-cms-auth', { 
+              detail: { provider: 'github', token: token } 
+            });
+            window.dispatchEvent(event);
+            log('[admin] dispatched netlify-cms-auth event', 'token');
+          } catch (e) {
+            log('[admin] error dispatching event: ' + e.message);
+          }
           
           // Check if CMS is now authenticated
           setTimeout(() => {
@@ -74,8 +107,16 @@
               log('[admin] CMS is now authenticated!', 'token');
             } else {
               log('[admin] CMS still not authenticated after token replay');
+              // Try one more time with a longer delay
+              setTimeout(() => {
+                if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated) {
+                  log('[admin] CMS authenticated on second check!', 'token');
+                } else {
+                  log('[admin] CMS still not authenticated on second check');
+                }
+              }, 1000);
             }
-          }, 100);
+          }, 200);
           
           return true;
         }
