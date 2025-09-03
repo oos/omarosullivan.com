@@ -1,9 +1,8 @@
 ---
 title: "Contact"
-date: 2025-09-02
-draft: false
 ---
 
-Email: you@example.com
+Email: hello@omarosullivan.com
 
-For commissions or gallery enquiries, please get in touch.
+If you just want to say Hi :)
+
