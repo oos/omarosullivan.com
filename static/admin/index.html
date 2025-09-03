@@ -9,22 +9,26 @@
     <!-- Decap CMS -->
     <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
 
-    <!-- Save token when popup returns; Decap should pick it up on the fly -->
+    <!-- Save token when popup posts the message -->
     <script>
-      window.addEventListener('message', (e) => {
-        const d = e.data;
-        try {
-          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-            localStorage.setItem('netlify-cms.oauth', d);
-            console.log('[oauth] saved (string)');
-          } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + String(d.token).trim());
-            console.log('[oauth] saved (object)');
+      (function () {
+        const KEY = 'netlify-cms.oauth';
+
+        window.addEventListener('message', (e) => {
+          const d = e.data;
+          try {
+            if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+              localStorage.setItem(KEY, d);
+              console.log('[oauth] saved (string)');
+            } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+              localStorage.setItem(KEY, 'authorization:github:success:' + String(d.token).trim());
+              console.log('[oauth] saved (object)');
+            }
+          } catch (err) {
+            console.warn('[oauth] storage error:', err);
           }
-        } catch (err) {
-          console.warn('[oauth] storage error:', err);
-        }
-      });
+        });
+      })();
     </script>
   </body>
 </html>
