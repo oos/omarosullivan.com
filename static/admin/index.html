@@ -4,9 +4,49 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
-  </head>
-  <body>
-    <!-- Plain Decap CMS, no shim -->
+
+    <!-- Shim FIRST: capture OAuth messages, store, one-time reload -->
+    <script>
+      (function () {
+        const FLAG = 'cms.oauth.applied';
+
+        function applyTokenAndReload(token) {
+          try {
+            // Legacy string that Netlify/Decap CMS understands
+            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
+            // Mark we reloaded already to avoid loops
+            sessionStorage.setItem(FLAG, '1');
+          } catch (e) {
+            console.warn('oauth storage error', e);
+          }
+          // Normalize route, then reload
+          const base = location.href.split('#')[0];
+          location.replace(base + '#/');  // Decap uses hash routing
+          location.reload();
+        }
+
+        // If we already reloaded once, clear the flag so we don’t loop
+        if (sessionStorage.getItem(FLAG) === '1') {
+          sessionStorage.removeItem(FLAG);
+        }
+
+        window.addEventListener('message', (e) => {
+          const d = e.data;
+          // String format
+          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+            const token = d.split('authorization:github:success:')[1];
+            if (token) applyTokenAndReload(token.trim());
+          }
+          // Object format
+          if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+            applyTokenAndReload(String(d.token).trim());
+          }
+        });
+      })();
+    </script>
+
+    <!-- Load Decap CMS AFTER shim -->
     <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
-  </body>
+  </head>
+  <body></body>
 </html>
