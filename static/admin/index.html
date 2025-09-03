@@ -3,154 +3,282 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Content Manager (Debug)</title>
+    <title>Content Manager (Comprehensive Fix)</title>
     <script>window.CMS_MANUAL_INIT = true;</script>
   </head>
   <body>
-    <h3 style="font-family: system-ui; color:#333;">Decap CMS Debug Mode</h3>
-    <pre id="debug" style="padding:10px;background:#f6f6f6;border:1px solid #ccc;"></pre>
+    <h3 style="font-family: system-ui; color:#333;">CMS Authentication - Comprehensive Fix</h3>
+    <pre id="debug" style="padding:10px;background:#f6f6f6;border:1px solid #ccc;max-height:400px;overflow-y:scroll;"></pre>
 
-    <!-- Classic Netlify CMS bundle (v2) -->
-    <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js?v=2"></script>
+    <!-- Try Decap CMS 3.x first (more modern) -->
+    <script src="https://unpkg.com/decap-cms@3.6.2/dist/decap-cms.js"></script>
 
     <script>
       (function () {
-        const KEY = 'netlify-cms.oauth';
         const out = document.getElementById('debug');
+        const RELOAD_KEY = 'cms.oauth.reloaded';
 
         function log(msg, kind) {
           if (kind === 'token') {
             console.log('%c' + msg, 'background:#222;color:#0f0;font-weight:bold;padding:2px 6px;');
+          } else if (kind === 'error') {
+            console.log('%c' + msg, 'background:#222;color:#f00;font-weight:bold;padding:2px 6px;');
           } else {
             console.log(msg);
           }
           out.textContent += msg + '\n';
-        }
-
-        function saveTokenFromMessage(msg) {
-          try {
-            if (typeof msg === 'string' && msg.startsWith('authorization:github:success:')) {
-              localStorage.setItem(KEY, msg);
-              log('[admin] saved string token', 'token');
-              return true;
-            }
-            if (msg && typeof msg === 'object' && msg.provider === 'github' && msg.type === 'success' && msg.token) {
-              localStorage.setItem(KEY, JSON.stringify(msg));
-              log('[admin] saved object token', 'token');
-              return true;
-            }
-          } catch (e) {
-            log('[admin] failed to save token: ' + e.message);
-          }
-          return false;
+          out.scrollTop = out.scrollHeight;
         }
 
         function extractTokenFromStorage() {
-          const raw = localStorage.getItem(KEY);
-          if (!raw) return null;
-          try {
-            if (raw[0] === '{') {
-              const obj = JSON.parse(raw);
-              return obj && obj.token ? obj.token : null;
-            } else {
-              const m = /authorization:github:success:([^:]+)$/.exec(raw);
-              return m && m[1] ? m[1] : null;
+          // Try multiple storage keys and formats
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          for (const key of keys) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              try {
+                if (raw[0] === '{') {
+                  const obj = JSON.parse(raw);
+                  if (obj && obj.token) return obj.token;
+                } else {
+                  const m = /authorization:github:success:([^:]+)$/.exec(raw);
+                  if (m && m[1]) return m[1];
+                }
+              } catch (e) {
+                log('[storage] Error parsing ' + key + ': ' + e.message);
+              }
             }
-          } catch (e) {
-            return null;
           }
+          return null;
         }
 
-        function replayTokenToCMS() {
-          const token = extractTokenFromStorage();
-          if (!token) return false;
+        function saveTokenInAllFormats(token) {
+          const formats = [
+            'authorization:github:success:' + token,
+            JSON.stringify({ provider: 'github', type: 'success', token: token }),
+            token
+          ];
           
-          // Try multiple approaches to authenticate the CMS
-          log('[admin] attempting to authenticate CMS with token', 'token');
+          const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
           
-          // Method 1: PostMessage (original approach)
-          window.postMessage('authorization:github:success:' + token, '*');
-          window.postMessage({ provider: 'github', type: 'success', token }, '*');
-          
-          // Method 2: Try to directly set the token in CMS if available
-          if (window.CMS && window.CMS.auth) {
-            try {
-              // Try to manually set the token
-              if (window.CMS.auth.token) {
-                window.CMS.auth.token = token;
-                log('[admin] manually set CMS.auth.token', 'token');
+          keys.forEach(key => {
+            formats.forEach(format => {
+              try {
+                localStorage.setItem(key, format);
+                log('[storage] Set ' + key + ' = ' + format.substring(0, 50) + '...', 'token');
+              } catch (e) {
+                log('[storage] Error setting ' + key + ': ' + e.message);
               }
-              // Try to trigger authentication
-              if (typeof window.CMS.auth.authenticate === 'function') {
-                window.CMS.auth.authenticate();
-                log('[admin] called CMS.auth.authenticate()', 'token');
-              }
-            } catch (e) {
-              log('[admin] error in manual auth: ' + e.message);
-            }
-          }
-          
-          // Method 3: Try to trigger a custom event
-          try {
-            const event = new CustomEvent('netlify-cms-auth', { 
-              detail: { provider: 'github', token: token } 
             });
-            window.dispatchEvent(event);
-            log('[admin] dispatched netlify-cms-auth event', 'token');
-          } catch (e) {
-            log('[admin] error dispatching event: ' + e.message);
+          });
+        }
+
+        function attemptAuthentication() {
+          const token = extractTokenFromStorage();
+          if (!token) {
+            log('[auth] No token found in storage');
+            return false;
           }
+
+          log('[auth] Found token, attempting comprehensive authentication', 'token');
           
-          // Check if CMS is now authenticated
-          setTimeout(() => {
-            if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated) {
-              log('[admin] CMS is now authenticated!', 'token');
-            } else {
-              log('[admin] CMS still not authenticated after token replay');
-              // Try one more time with a longer delay
-              setTimeout(() => {
-                if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated) {
-                  log('[admin] CMS authenticated on second check!', 'token');
-                } else {
-                  log('[admin] CMS still not authenticated on second check');
-                }
-              }, 1000);
+          // Save token in all possible formats
+          saveTokenInAllFormats(token);
+
+          // Method 1: PostMessage with all possible formats
+          const messages = [
+            'authorization:github:success:' + token,
+            { provider: 'github', type: 'success', token: token },
+            { provider: 'github', token: token },
+            { type: 'success', token: token },
+            token
+          ];
+
+          messages.forEach(msg => {
+            try {
+              window.postMessage(msg, '*');
+              log('[postMessage] Sent: ' + (typeof msg === 'string' ? msg.substring(0, 50) + '...' : JSON.stringify(msg)), 'token');
+            } catch (e) {
+              log('[postMessage] Error: ' + e.message, 'error');
             }
-          }, 200);
-          
+          });
+
+          // Method 2: Try to access CMS internals directly
+          if (window.CMS) {
+            try {
+              // Try different CMS object structures
+              const cmsPaths = [
+                'CMS.auth',
+                'CMS.backend',
+                'CMS.api',
+                'CMS.store',
+                'CMS.registry'
+              ];
+
+              cmsPaths.forEach(path => {
+                const obj = path.split('.').reduce((o, p) => o && o[p], window);
+                if (obj) {
+                  log('[cms] Found ' + path);
+                  
+                  // Try to set token in various ways
+                  if (obj.token !== undefined) {
+                    obj.token = token;
+                    log('[cms] Set ' + path + '.token = ' + token.substring(0, 20) + '...', 'token');
+                  }
+                  
+                  if (obj.authenticate && typeof obj.authenticate === 'function') {
+                    try {
+                      obj.authenticate();
+                      log('[cms] Called ' + path + '.authenticate()', 'token');
+                    } catch (e) {
+                      log('[cms] Error calling ' + path + '.authenticate(): ' + e.message, 'error');
+                    }
+                  }
+                  
+                  if (obj.isAuthenticated !== undefined) {
+                    obj.isAuthenticated = true;
+                    log('[cms] Set ' + path + '.isAuthenticated = true', 'token');
+                  }
+                }
+              });
+            } catch (e) {
+              log('[cms] Error accessing CMS internals: ' + e.message, 'error');
+            }
+          }
+
+          // Method 3: Dispatch custom events
+          const events = [
+            'netlify-cms-auth',
+            'decap-cms-auth',
+            'cms-auth',
+            'github-auth',
+            'oauth-success'
+          ];
+
+          events.forEach(eventName => {
+            try {
+              const event = new CustomEvent(eventName, {
+                detail: { provider: 'github', token: token, type: 'success' }
+              });
+              window.dispatchEvent(event);
+              log('[event] Dispatched ' + eventName, 'token');
+            } catch (e) {
+              log('[event] Error dispatching ' + eventName + ': ' + e.message, 'error');
+            }
+          });
+
+          // Method 4: Try to trigger storage events
+          try {
+            const storageEvent = new StorageEvent('storage', {
+              key: 'netlify-cms.oauth',
+              newValue: 'authorization:github:success:' + token,
+              url: window.location.href
+            });
+            window.dispatchEvent(storageEvent);
+            log('[storage] Dispatched storage event', 'token');
+          } catch (e) {
+            log('[storage] Error dispatching storage event: ' + e.message, 'error');
+          }
+
+          // Method 5: Try to manually trigger GitHub API calls
+          try {
+            fetch('https://api.github.com/user', {
+              headers: {
+                'Authorization': 'token ' + token,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            }).then(response => {
+              if (response.ok) {
+                log('[api] GitHub API call successful!', 'token');
+                return response.json();
+              } else {
+                log('[api] GitHub API call failed: ' + response.status, 'error');
+              }
+            }).then(data => {
+              if (data) {
+                log('[api] GitHub user: ' + data.login, 'token');
+              }
+            }).catch(e => {
+              log('[api] GitHub API error: ' + e.message, 'error');
+            });
+          } catch (e) {
+            log('[api] Error making GitHub API call: ' + e.message, 'error');
+          }
+
           return true;
         }
 
-        // 1) Save token from OAuth popup, then reload once to cleanly bootstrap
-        const RELOAD_KEY = 'cms.oauth.reloaded';
+        function checkAuthenticationStatus() {
+          if (window.CMS) {
+            const checks = [
+              'CMS.auth && CMS.auth.isAuthenticated',
+              'CMS.backend && CMS.backend.isAuthenticated',
+              'CMS.api && CMS.api.isAuthenticated',
+              'CMS.store && CMS.store.isAuthenticated'
+            ];
+
+            checks.forEach(check => {
+              try {
+                const result = eval(check);
+                if (result === true) {
+                  log('[status] SUCCESS: ' + check + ' = true', 'token');
+                } else {
+                  log('[status] ' + check + ' = ' + result);
+                }
+              } catch (e) {
+                log('[status] Error checking ' + check + ': ' + e.message, 'error');
+              }
+            });
+          }
+        }
+
+        // Clear reload flag on fresh page load
+        if (performance.navigation.type === 0) {
+          sessionStorage.removeItem(RELOAD_KEY);
+        }
+
+        // Listen for OAuth popup messages
         window.addEventListener('message', (e) => {
           const m = e.data;
-          log('[message] ' + (typeof m === 'string' ? m : JSON.stringify(m)));
-          const saved = saveTokenFromMessage(m);
+          log('[message] Received: ' + (typeof m === 'string' ? m.substring(0, 100) + '...' : JSON.stringify(m)));
+          
+          let saved = false;
+          try {
+            if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
+              const token = m.replace('authorization:github:success:', '');
+              saveTokenInAllFormats(token);
+              saved = true;
+            } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success' && m.token) {
+              saveTokenInAllFormats(m.token);
+              saved = true;
+            }
+          } catch (err) {
+            log('[message] Error processing message: ' + err.message, 'error');
+          }
+
           if (saved && !sessionStorage.getItem(RELOAD_KEY)) {
             sessionStorage.setItem(RELOAD_KEY, '1');
+            log('[message] Token saved, reloading page...', 'token');
             setTimeout(() => location.reload(), 150);
           }
         });
 
-        // ✅ Robust fallback: read token from the URL when you're at #/oauth?token=...
+        // Handle URL token fallback
         try {
-          const hash = location.hash || '';              // e.g. "#/oauth?token=gho_xxx"
+          const hash = location.hash || '';
           const qIndex = hash.indexOf('?');
           let urlToken = null;
           if (qIndex !== -1) {
-            const qs = hash.slice(qIndex + 1);           // "token=gho_xxx"
+            const qs = hash.slice(qIndex + 1);
             const hp = new URLSearchParams(qs);
             urlToken = hp.get('token');
           }
-          // Also support ?token=... in the real query (rare)
           const qpToken = new URLSearchParams(location.search).get('token');
           if (qpToken && !urlToken) urlToken = qpToken;
 
           if (urlToken) {
-            localStorage.setItem(KEY, 'authorization:github:success:' + urlToken);
+            saveTokenInAllFormats(urlToken);
             log('[url] TOKEN STORED: ' + urlToken, 'token');
-            // clean URL so it doesn't re-trigger
             history.replaceState(null, '', location.pathname + '#/');
             if (!sessionStorage.getItem(RELOAD_KEY)) {
               sessionStorage.setItem(RELOAD_KEY, '1');
@@ -159,143 +287,52 @@
             return;
           }
         } catch (e) {
-          log('[url parse error] ' + e.message);
+          log('[url] Error parsing URL token: ' + e.message, 'error');
         }
 
-        // Clear reload flag on fresh page load (not from reload)
-        if (performance.navigation.type === 0) { // TYPE_NAVIGATE (fresh load)
-          sessionStorage.removeItem(RELOAD_KEY);
-        }
-
-        // 2) Boot CMS with pre-authentication
-        (function boot() {
+        // Boot CMS with comprehensive authentication
+        function boot() {
           if (typeof window.CMS !== 'object') {
-            log('[admin] CMS not present yet, retrying…');
+            log('[boot] CMS not present yet, retrying...');
             return setTimeout(boot, 100);
           }
           
-          // Check if we have a token before initializing CMS
-          const token = extractTokenFromStorage();
-          if (token) {
-            log('[admin] Found token before CMS init, setting up pre-auth', 'token');
-            
-            // Try to set up authentication before CMS.init()
-            try {
-              // Set the token in localStorage with the exact format CMS expects
-              localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
-              log('[admin] Set token in localStorage before CMS init', 'token');
-              
-              // Also try setting it in sessionStorage
-              sessionStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
-              log('[admin] Set token in sessionStorage before CMS init', 'token');
-            } catch (e) {
-              log('[admin] Error setting token before CMS init: ' + e.message);
-            }
-          }
-          
-          log('[admin] CMS present, calling CMS.init()');
+          log('[boot] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
 
-          // Try to authenticate immediately after CMS init, without waiting
-          function attemptAuthentication() {
-            const token = extractTokenFromStorage();
-            if (!token) {
-              log('[admin] No stored token found');
-              return;
-            }
-            
-            log('[admin] Found stored token, attempting immediate authentication', 'token');
-            
-            // Method 1: Try to access CMS internals directly
-            try {
-              if (window.CMS && window.CMS.auth) {
-                log('[admin] CMS.auth object exists, attempting direct manipulation');
-                
-                // Try to set the token directly
-                if (window.CMS.auth.token !== undefined) {
-                  window.CMS.auth.token = token;
-                  log('[admin] Set CMS.auth.token directly', 'token');
-                }
-                
-                // Try to call authenticate if it exists
-                if (typeof window.CMS.auth.authenticate === 'function') {
-                  window.CMS.auth.authenticate();
-                  log('[admin] Called CMS.auth.authenticate()', 'token');
-                }
-                
-                // Try to set isAuthenticated directly
-                if (window.CMS.auth.isAuthenticated !== undefined) {
-                  window.CMS.auth.isAuthenticated = true;
-                  log('[admin] Set CMS.auth.isAuthenticated = true', 'token');
-                }
-              }
-            } catch (e) {
-              log('[admin] Error in direct CMS manipulation: ' + e.message);
-            }
-            
-            // Method 2: PostMessage approach
-            window.postMessage('authorization:github:success:' + token, '*');
-            window.postMessage({ provider: 'github', type: 'success', token }, '*');
-            log('[admin] Sent postMessage with token', 'token');
-            
-            // Method 3: Try to trigger CMS events
-            try {
-              // Dispatch a custom event that CMS might listen for
-              const authEvent = new CustomEvent('netlify-cms-auth', {
-                detail: { provider: 'github', token: token, type: 'success' }
-              });
-              window.dispatchEvent(authEvent);
-              log('[admin] Dispatched netlify-cms-auth event', 'token');
-              
-              // Try to trigger a storage event (CMS might listen for localStorage changes)
-              window.dispatchEvent(new StorageEvent('storage', {
-                key: 'netlify-cms.oauth',
-                newValue: 'authorization:github:success:' + token
-              }));
-              log('[admin] Dispatched storage event', 'token');
-            } catch (e) {
-              log('[admin] Error dispatching events: ' + e.message);
-            }
-            
-            // Check if any method worked
+          // Try authentication immediately and multiple times
+          const attempts = [500, 1000, 2000, 3000, 5000];
+          attempts.forEach((delay, index) => {
             setTimeout(() => {
-              if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated === true) {
-                log('[admin] SUCCESS: CMS is now authenticated!', 'token');
+              log('[boot] Authentication attempt ' + (index + 1) + ' (delay: ' + delay + 'ms)');
+              attemptAuthentication();
+              checkAuthenticationStatus();
+            }, delay);
+          });
+
+          // Final check after all attempts
+          setTimeout(() => {
+            log('[boot] Final authentication status check');
+            checkAuthenticationStatus();
+            
+            // Check for GitHub API calls
+            if (window.performance && window.performance.getEntriesByType) {
+              const networkEntries = window.performance.getEntriesByType('resource');
+              const githubCalls = networkEntries.filter(entry => 
+                entry.name.includes('api.github.com')
+              );
+              if (githubCalls.length > 0) {
+                log('[boot] SUCCESS: Found ' + githubCalls.length + ' GitHub API calls!', 'token');
+                githubCalls.forEach(call => log('[boot] GitHub API: ' + call.name, 'token'));
               } else {
-                log('[admin] CMS still not authenticated after all attempts');
-                
-                // Check if there are any GitHub API calls in the network
-                log('[admin] Checking for GitHub API calls...');
-                if (window.performance && window.performance.getEntriesByType) {
-                  const networkEntries = window.performance.getEntriesByType('resource');
-                  const githubCalls = networkEntries.filter(entry => 
-                    entry.name.includes('api.github.com')
-                  );
-                  if (githubCalls.length > 0) {
-                    log('[admin] Found ' + githubCalls.length + ' GitHub API calls!', 'token');
-                    githubCalls.forEach(call => log('[admin] GitHub API: ' + call.name));
-                  } else {
-                    log('[admin] No GitHub API calls found - CMS not making authenticated requests');
-                  }
-                }
-                
-                // Try one more time with a longer delay
-                setTimeout(() => {
-                  if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated === true) {
-                    log('[admin] SUCCESS: CMS authenticated on second check!', 'token');
-                  } else {
-                    log('[admin] CMS authentication failed after all attempts');
-                  }
-                }, 2000);
+                log('[boot] No GitHub API calls found - CMS not making authenticated requests', 'error');
               }
-            }, 500);
-          }
-          
-          // Try authentication immediately, then retry a few times
-          setTimeout(attemptAuthentication, 500);
-          setTimeout(attemptAuthentication, 1500);
-          setTimeout(attemptAuthentication, 3000);
-        })();
+            }
+          }, 6000);
+        }
+
+        // Start booting
+        setTimeout(boot, 100);
       })();
     </script>
   </body>
