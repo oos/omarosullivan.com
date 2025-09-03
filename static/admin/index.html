@@ -58,22 +58,34 @@
 
         function extractTokenFromStorage() {
           const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth'];
+          log('[storage] Starting token extraction...');
+          
           for (const key of keys) {
             const raw = localStorage.getItem(key);
+            log('[storage] Checking ' + key + ': ' + (raw ? 'found' : 'not found'));
+            
             if (raw) {
               log('[storage] Found token in ' + key + ': ' + raw.substring(0, 50) + '...');
               try {
+                // Try JSON format first
                 if (raw[0] === '{') {
                   const obj = JSON.parse(raw);
                   if (obj && obj.token) {
                     log('[storage] Extracted token from JSON: ' + obj.token.substring(0, 20) + '...');
                     return obj.token;
                   }
-                } else {
+                } 
+                // Try string format
+                else {
                   const m = /authorization:github:success:([^:]+)$/.exec(raw);
                   if (m && m[1]) {
                     log('[storage] Extracted token from string: ' + m[1].substring(0, 20) + '...');
                     return m[1];
+                  }
+                  // Try direct token format
+                  else if (raw.startsWith('gho_')) {
+                    log('[storage] Extracted direct token: ' + raw.substring(0, 20) + '...');
+                    return raw;
                   }
                 }
               } catch (e) {
@@ -81,6 +93,8 @@
               }
             }
           }
+          
+          log('[storage] No valid token found in any storage key', 'error');
           return null;
         }
 
@@ -216,6 +230,27 @@
 
           if (saved) {
             log('[message] Token saved, attempting authentication...', 'token');
+            
+            // Try immediate authentication
+            setTimeout(() => {
+              log('[message] Attempting immediate authentication...', 'token');
+              const token = extractTokenFromStorage();
+              if (token) {
+                log('[message] Token found immediately, testing API...', 'token');
+                testGitHubAPI(token).then(user => {
+                  if (user) {
+                    log('[message] Immediate authentication successful!', 'token');
+                    currentToken = token;
+                    loginSection.style.display = 'none';
+                    cmsInterface.style.display = 'block';
+                    loadPortfolioItems(token);
+                  }
+                });
+              } else {
+                log('[message] Token not found immediately, will retry...', 'error');
+              }
+            }, 50);
+            
             setTimeout(() => authenticate(), 100);
           }
         });
