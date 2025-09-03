@@ -3,31 +3,44 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Content Manager</title>
+    <title>Content Manager (Debug)</title>
     <script>window.CMS_MANUAL_INIT = true;</script>
   </head>
   <body>
+    <h3 style="font-family: system-ui; color:#333;">Decap CMS Debug Mode</h3>
+    <pre id="debug" style="padding:10px;background:#f6f6f6;border:1px solid #ccc;"></pre>
+
     <!-- Classic Netlify CMS bundle (v2) -->
     <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js?v=2"></script>
 
     <script>
       (function () {
         const KEY = 'netlify-cms.oauth';
+        const out = document.getElementById('debug');
+
+        function log(msg, kind) {
+          if (kind === 'token') {
+            console.log('%c' + msg, 'background:#222;color:#0f0;font-weight:bold;padding:2px 6px;');
+          } else {
+            console.log(msg);
+          }
+          out.textContent += msg + '\n';
+        }
 
         function saveTokenFromMessage(msg) {
           try {
             if (typeof msg === 'string' && msg.startsWith('authorization:github:success:')) {
               localStorage.setItem(KEY, msg);
-              console.log('[admin] saved string token');
+              log('[admin] saved string token', 'token');
               return true;
             }
             if (msg && typeof msg === 'object' && msg.provider === 'github' && msg.type === 'success' && msg.token) {
               localStorage.setItem(KEY, JSON.stringify(msg));
-              console.log('[admin] saved object token');
+              log('[admin] saved object token', 'token');
               return true;
             }
           } catch (e) {
-            console.warn('[admin] failed to save token', e);
+            log('[admin] failed to save token: ' + e.message);
           }
           return false;
         }
@@ -53,28 +66,57 @@
           if (!token) return false;
           window.postMessage('authorization:github:success:' + token, '*');
           window.postMessage({ provider: 'github', type: 'success', token }, '*');
-          console.log('[admin] replayed token to CMS');
+          log('[admin] replayed token to CMS', 'token');
           return true;
         }
 
         // 1) Save token from OAuth popup, then reload once to cleanly bootstrap
         window.addEventListener('message', (e) => {
-          const saved = saveTokenFromMessage(e.data);
+          const m = e.data;
+          log('[message] ' + (typeof m === 'string' ? m : JSON.stringify(m)));
+          const saved = saveTokenFromMessage(m);
           if (saved) setTimeout(() => location.reload(), 150);
         });
+
+        // ✅ Robust fallback: read token from the URL when you're at #/oauth?token=...
+        try {
+          const hash = location.hash || '';              // e.g. "#/oauth?token=gho_xxx"
+          const qIndex = hash.indexOf('?');
+          let urlToken = null;
+          if (qIndex !== -1) {
+            const qs = hash.slice(qIndex + 1);           // "token=gho_xxx"
+            const hp = new URLSearchParams(qs);
+            urlToken = hp.get('token');
+          }
+          // Also support ?token=... in the real query (rare)
+          const qpToken = new URLSearchParams(location.search).get('token');
+          if (qpToken && !urlToken) urlToken = qpToken;
+
+          if (urlToken) {
+            localStorage.setItem(KEY, 'authorization:github:success:' + urlToken);
+            log('[url] TOKEN STORED: ' + urlToken, 'token');
+            // clean URL so it doesn't re-trigger
+            history.replaceState(null, '', location.pathname + '#/');
+            setTimeout(() => location.reload(), 150);
+            return;
+          }
+        } catch (e) {
+          log('[url parse error] ' + e.message);
+        }
 
         // 2) Boot CMS, then replay AFTER init to guarantee CMS listener is attached
         (function boot() {
           if (typeof window.CMS !== 'object') {
+            log('[admin] CMS not present yet, retrying…');
             return setTimeout(boot, 100);
           }
-          console.log('[admin] CMS present, calling CMS.init()');
+          log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
 
           // Give CMS a moment to attach its internal listeners, then replay token
           setTimeout(() => {
             const replayed = replayTokenToCMS();
-            if (!replayed) console.log('[admin] no token to replay (yet)');
+            if (!replayed) log('[admin] no token to replay (yet)');
           }, 300);
         })();
       })();
