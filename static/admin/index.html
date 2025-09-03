@@ -6,25 +6,22 @@
     <title>Content Manager</title>
   </head>
   <body>
-    <!-- Log any OAuth messages the popup posts back -->
+    <!-- Decap CMS -->
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
     <script>
+      // Shim to capture OAuth message from popup
       window.addEventListener('message', (e) => {
         console.log('Admin got message:', e.data, 'from:', e.origin);
 
-        // SHIM: normalize both formats into the legacy string that CMS expects
-        try {
-          if (typeof e.data === 'string' && e.data.startsWith('authorization:github:success:')) {
-            localStorage.setItem('netlify-cms.oauth', e.data);
-          } else if (e.data && e.data.provider === 'github' && e.data.type === 'success' && e.data.token) {
-            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + e.data.token);
-          }
-        } catch (err) {
-          console.warn('OAuth message handling error:', err);
+        if (typeof e.data === 'string' && e.data.startsWith('authorization:github:success:')) {
+          localStorage.setItem('netlify-cms.oauth', e.data);
+          window.location.reload();
+        } else if (e.data && e.data.provider === 'github' && e.data.type === 'success' && e.data.token) {
+          localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + e.data.token);
+          window.location.reload();
         }
       });
     </script>
-
-    <!-- Load Decap CMS -->
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   </body>
 </html>
