@@ -357,6 +357,11 @@
                   <textarea id="portfolio-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:100px;"></textarea>
                 </div>
                 <div style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Tags/Labels:</label>
+                  <input type="text" id="portfolio-tags" placeholder="Oil, Landscape, Painting" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;">Separate multiple tags with commas (e.g., Oil, Landscape, Painting)</small>
+                </div>
+                <div style="margin-bottom:15px;">
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image:</label>
                   <input type="file" id="portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
                   <div id="image-preview" style="margin-top:10px;display:none;">
@@ -397,15 +402,16 @@
             e.preventDefault();
             const title = document.getElementById('portfolio-title').value;
             const description = document.getElementById('portfolio-description').value;
+            const tags = document.getElementById('portfolio-tags').value;
             const content = document.getElementById('portfolio-content').value;
             const imageFile = document.getElementById('portfolio-image').files[0];
             
-            await createPortfolioItem(title, description, content, imageFile);
+            await createPortfolioItem(title, description, tags, content, imageFile);
             form.remove();
           });
         }
 
-        async function createPortfolioItem(title, description, content, imageFile) {
+        async function createPortfolioItem(title, description, tags, content, imageFile) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -421,11 +427,21 @@
               }
             }
             
+            // Process tags
+            let tagsYaml = '';
+            if (tags && tags.trim()) {
+              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagArray.length > 0) {
+                tagsYaml = `tags:\n${tagArray.map(tag => `  - "${tag}"`).join('\n')}`;
+              }
+            }
+            
             const markdownContent = `---
 title: "${title}"
 date: ${date}
 description: "${description}"
 ${coverImage}
+${tagsYaml}
 ---
 
 ${content}
@@ -478,6 +494,7 @@ ${content}
             const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
             let title = filename.replace('.md', '');
             let description = '';
+            let tags = '';
             let body = content;
             
             if (frontmatterMatch) {
@@ -486,6 +503,17 @@ ${content}
               
               const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
               const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              
+              // Parse tags from YAML array format
+              const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s*-\s*["']?[^"'\n]+["']?\s*\n?)*)/);
+              if (tagsMatch) {
+                const tagsLines = tagsMatch[1].split('\n').filter(line => line.trim());
+                const tagArray = tagsLines.map(line => {
+                  const match = line.match(/-\s*["']?([^"'\n]+)["']?/);
+                  return match ? match[1] : '';
+                }).filter(tag => tag);
+                tags = tagArray.join(', ');
+              }
               
               if (titleMatch) title = titleMatch[1];
               if (descMatch) description = descMatch[1];
@@ -508,6 +536,11 @@ ${content}
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
                     <textarea id="edit-portfolio-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:100px;">${description}</textarea>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Tags/Labels:</label>
+                    <input type="text" id="edit-portfolio-tags" value="${tags}" placeholder="Oil, Landscape, Painting" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">Separate multiple tags with commas (e.g., Oil, Landscape, Painting)</small>
                   </div>
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image:</label>
@@ -550,10 +583,11 @@ ${content}
               e.preventDefault();
               const newTitle = document.getElementById('edit-portfolio-title').value;
               const newDescription = document.getElementById('edit-portfolio-description').value;
+              const newTags = document.getElementById('edit-portfolio-tags').value;
               const newContent = document.getElementById('edit-portfolio-content').value;
               const imageFile = document.getElementById('edit-portfolio-image').files[0];
               
-              await updatePortfolioItem(filename, sha, newTitle, newDescription, newContent, imageFile);
+              await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile);
               form.remove();
             });
           } catch (e) {
@@ -561,7 +595,7 @@ ${content}
           }
         }
 
-        async function updatePortfolioItem(filename, sha, title, description, content, imageFile) {
+        async function updatePortfolioItem(filename, sha, title, description, tags, content, imageFile) {
           try {
             const date = new Date().toISOString().split('T')[0];
             
@@ -576,11 +610,21 @@ ${content}
               }
             }
             
+            // Process tags
+            let tagsYaml = '';
+            if (tags && tags.trim()) {
+              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagArray.length > 0) {
+                tagsYaml = `tags:\n${tagArray.map(tag => `  - "${tag}"`).join('\n')}`;
+              }
+            }
+            
             const markdownContent = `---
 title: "${title}"
 date: ${date}
 description: "${description}"
 ${coverImage}
+${tagsYaml}
 ---
 
 ${content}
