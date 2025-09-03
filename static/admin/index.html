@@ -4,14 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager (Debug)</title>
-    <script>
-      window.CMS_MANUAL_INIT = true; // manual init
-    </script>
+    <script>window.CMS_MANUAL_INIT = true;</script>
   </head>
   <body>
-    <h3 style="font-family: system-ui; color: #333;">Decap CMS Debug Mode</h3>
-    <pre id="debug" style="padding:10px; background:#f6f6f6; border:1px solid #ccc;"></pre>
+    <h3 style="font-family: system-ui; color:#333;">Decap CMS Debug Mode</h3>
+    <pre id="debug" style="padding:10px;background:#f6f6f6;border:1px solid #ccc;"></pre>
 
+    <!-- Classic Netlify CMS bundle -->
     <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
     <script>
@@ -19,47 +18,62 @@
         const KEY = 'netlify-cms.oauth';
         const out = document.getElementById('debug');
 
-        function log(msg) {
-          console.log(msg);
-          out.textContent += msg + "\n";
+        function log(msg, kind) {
+          if (kind === 'token') {
+            console.log('%c' + msg, 'background:#222;color:#0f0;font-weight:bold;padding:2px 6px;');
+          } else {
+            console.log(msg);
+          }
+          out.textContent += msg + '\n';
         }
 
         function saveAndReload(tokenStr) {
           try {
             localStorage.setItem(KEY, tokenStr);
-            log('[oauth] token stored: ' + tokenStr);
-            setTimeout(() => location.reload(), 1500); // give you 1.5s to see it
+            log('[oauth] TOKEN STORED: ' + tokenStr, 'token');
+            setTimeout(() => location.reload(), 1200);
           } catch (e) {
             log('[oauth] failed to save token: ' + e.message);
           }
         }
 
-        // Listen for popup messages
+        // Listen for popup postMessage
         window.addEventListener('message', (e) => {
-          log('[message] ' + JSON.stringify(e.data));
           const m = e.data;
+          log('[message] ' + (typeof m === 'string' ? m : JSON.stringify(m)));
           if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
-            saveAndReload(m);
-          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success') {
-            saveAndReload('authorization:github:success:' + m.token);
+            return saveAndReload(m);
+          }
+          if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success') {
+            return saveAndReload('authorization:github:success:' + m.token);
           }
         });
 
-        // Fallback: check URL for ?token= or #token=
+        // ✅ Robust fallback: read token from the URL when you’re at #/oauth?token=...
         try {
-          const hashParams = new URLSearchParams(location.hash.replace(/^#\/?/, ''));
-          const queryParams = new URLSearchParams(location.search);
-          const urlToken = hashParams.get('token') || queryParams.get('token');
+          const hash = location.hash || '';              // e.g. "#/oauth?token=gho_xxx"
+          const qIndex = hash.indexOf('?');
+          let urlToken = null;
+          if (qIndex !== -1) {
+            const qs = hash.slice(qIndex + 1);           // "token=gho_xxx"
+            const hp = new URLSearchParams(qs);
+            urlToken = hp.get('token');
+          }
+          // Also support ?token=... in the real query (rare)
+          const qpToken = new URLSearchParams(location.search).get('token');
+          if (qpToken && !urlToken) urlToken = qpToken;
+
           if (urlToken) {
             saveAndReload('authorization:github:success:' + urlToken);
+            // clean URL so it doesn't re-trigger
             history.replaceState(null, '', location.pathname + '#/');
             return;
           }
         } catch (e) {
-          log('[error parsing url] ' + e.message);
+          log('[url parse error] ' + e.message);
         }
 
-        // Boot CMS once available
+        // Boot CMS
         function boot() {
           if (typeof window.CMS !== 'object') {
             log('[admin] CMS not present yet, retrying…');
