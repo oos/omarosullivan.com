@@ -11,6 +11,12 @@ theme = "PaperMod"
   ShowReadingTime = true
   displayFullLangName = true
   description = "Omar's Portfolio"
+  
+  # TinaCMS Configuration
+  [params.tinacms]
+    enable = false  # Set to true when you have TinaCMS credentials
+    clientId = ""   # Will be provided by TinaCMS
+    token = ""      # Will be provided by TinaCMS
 
 [menu]
   [[menu.main]]
