@@ -4,54 +4,51 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+
+    <!-- Tell Decap not to auto-start; we'll start it after token is set -->
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
   </head>
   <body>
-    <!-- Load Decap CMS -->
-    <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
+    <!-- Decap CMS -->
+    <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
 
-    <!-- 1) Capture OAuth messages from popup and save -->
-    <script>
-      window.addEventListener('message', (e) => {
-        const d = e.data;
-        try {
-          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-            localStorage.setItem('netlify-cms.oauth', d);
-            sessionStorage.setItem('cms.oauth.saved', '1');
-            console.log('OAuth token saved from popup.');
-          } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-            const s = 'authorization:github:success:' + String(d.token).trim();
-            localStorage.setItem('netlify-cms.oauth', s);
-            sessionStorage.setItem('cms.oauth.saved', '1');
-            console.log('OAuth token (object) saved from popup.');
-          }
-        } catch (err) {
-          console.warn('OAuth storage error:', err);
-        }
-      });
-    </script>
-
-    <!-- 2) If a token is already saved, replay it as a message so Decap consumes it -->
     <script>
       (function () {
-        const usedFlag = 'cms.oauth.replayed';
-        try {
-          const saved = localStorage.getItem('netlify-cms.oauth');
-          const alreadyReplayed = sessionStorage.getItem(usedFlag) === '1';
+        const SAVE_KEY = 'netlify-cms.oauth';
 
-          if (saved && !alreadyReplayed) {
-            console.log('Replaying saved OAuth token to Decap…');
-            // Replay both formats to cover all listener variants
-            window.postMessage(saved, '*');
-            const token = saved.split('authorization:github:success:')[1];
-            if (token) {
-              window.postMessage({ provider: 'github', type: 'success', token }, '*');
-            }
-            sessionStorage.setItem(usedFlag, '1');
-          }
-        } catch (e) {
-          console.warn('OAuth replay error:', e);
+        function tokenInStorage() {
+          const v = localStorage.getItem(SAVE_KEY);
+          return typeof v === 'string' && v.startsWith('authorization:github:success:');
         }
-      })();
-    </script>
-  </body>
-</html>
+
+        function storeFromMessage(d) {
+          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+            localStorage.setItem(SAVE_KEY, d);
+            return true;
+          }
+          if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+            localStorage.setItem(SAVE_KEY, 'authorization:github:success:' + String(d.token).trim());
+            return true;
+          }
+          return false;
+        }
+
+        function startCMS() {
+          // Give the app a tick with token present, then init
+          if (!window.CMS || typeof window.CMS.init !== 'function') {
+            console.warn('CMS not ready yet; retrying…');
+            return void setTimeout(startCMS, 50);
+          }
+          console.log('Starting CMS (manual init)…');
+          window.CMS.init(); // will load /admin/config.yml automatically
+        }
+
+        // 1) If a token is already saved (from a previous popup), start CMS now
+        if (tokenInStorage()) {
+          startCMS();
+        }
+
+        // 2) Also listen for the popup message, store the token, then start CMS
+        window.addEven
