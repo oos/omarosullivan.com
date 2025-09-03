@@ -2,7 +2,7 @@ backend:
   name: github
   repo: oos/omarosullivan.com
   branch: main
-  base_url: https://omar-cms-oauth.netlify.app
+  base_url: https://decap-oauth.netlify.app
   auth_endpoint: /oauth/authorize
 
 site_url: https://omarosullivan.com
