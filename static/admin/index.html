@@ -417,7 +417,7 @@
               const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
               const imageResponse = await uploadImage(imageFile, imageFilename);
               if (imageResponse) {
-                coverImage = `cover: "/uploads/${imageFilename}"`;
+                coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
               }
             }
             
@@ -572,7 +572,7 @@ ${content}
               const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
               const imageResponse = await uploadImage(imageFile, imageFilename);
               if (imageResponse) {
-                coverImage = `cover: "/uploads/${imageFilename}"`;
+                coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
               }
             }
             
