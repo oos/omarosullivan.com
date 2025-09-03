@@ -6,41 +6,61 @@
     <title>Content Manager</title>
   </head>
   <body>
-    <!-- Load Decap CMS (auto init so the login button always shows) -->
-    <script src="https://unpkg.com/decap-cms@3.6.2/dist/decap-cms.js"></script>
+    <!-- Load Decap CMS -->
+    <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
 
-    <!-- Save OAuth token and do a one-time reload so Decap sees it -->
     <script>
       (function () {
-        const ONCE = 'cms.oauth.reloaded';
+        const KEY = 'netlify-cms.oauth';
 
-        // If we already reloaded once for this login, clear the flag so we don't loop
-        if (sessionStorage.getItem(ONCE) === '1') {
-          sessionStorage.removeItem(ONCE);
+        function saveTokenFromMessage(d) {
+          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+            localStorage.setItem(KEY, d);
+            console.log('[oauth] saved (string)');
+            return true;
+          }
+          if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+            const s = 'authorization:github:success:' + String(d.token).trim();
+            localStorage.setItem(KEY, s);
+            console.log('[oauth] saved (object)');
+            return true;
+          }
+          return false;
         }
 
-        window.addEventListener('message', (e) => {
-          const d = e.data;
-          let saved = false;
+        function replayTokenBurst(label) {
+          const v = localStorage.getItem(KEY);
+          if (!v || !v.startsWith('authorization:github:success:')) return;
 
-          try {
-            if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-              localStorage.setItem('netlify-cms.oauth', d);
-              saved = true;
-            } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-              localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + String(d.token).trim());
-              saved = true;
+          const token = v.split('authorization:github:success:')[1];
+          let count = 0;
+          const max = 20;          // ~6s total at 300ms
+          const every = 300;
+
+          console.log(`[oauth] replay burst start (${label})`);
+          const id = setInterval(() => {
+            count++;
+            // Replay both formats so whichever listener Decap attached will catch it
+            window.postMessage(v, '*');
+            if (token) window.postMessage({ provider: 'github', type: 'success', token }, '*');
+            if (count >= max) {
+              clearInterval(id);
+              console.log('[oauth] replay burst stop');
             }
-          } catch (err) {
-            console.warn('OAuth storage error:', err);
-          }
+          }, every);
+        }
 
-          // After saving the token, reload ONCE so Decap re-checks auth
-          if (saved && !sessionStorage.getItem(ONCE)) {
-            sessionStorage.setItem(ONCE, '1');
-            location.reload();
+        // 1) Save token when popup posts back, then start a burst of replays
+        window.addEventListener('message', (e) => {
+          if (saveTokenFromMessage(e.data)) {
+            replayTokenBurst('from-popup');
           }
         });
+
+        // 2) Also, if a token is already in storage (return visit / reload), replay it for a few seconds
+        if (localStorage.getItem(KEY)) {
+          replayTokenBurst('on-load');
+        }
       })();
     </script>
   </body>
