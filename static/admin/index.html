@@ -176,62 +176,89 @@
           log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
 
-          // Wait for CMS to be fully initialized and ready
-          function waitForCMSReady() {
-            if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated !== undefined) {
-              log('[admin] CMS auth system is ready');
-              
-              // Check if we have a token to use
-              const token = extractTokenFromStorage();
-              if (token) {
-                log('[admin] Found stored token, attempting authentication', 'token');
+          // Try to authenticate immediately after CMS init, without waiting
+          function attemptAuthentication() {
+            const token = extractTokenFromStorage();
+            if (!token) {
+              log('[admin] No stored token found');
+              return;
+            }
+            
+            log('[admin] Found stored token, attempting immediate authentication', 'token');
+            
+            // Method 1: Try to access CMS internals directly
+            try {
+              if (window.CMS && window.CMS.auth) {
+                log('[admin] CMS.auth object exists, attempting direct manipulation');
                 
-                // Try to authenticate using CMS's internal method
-                if (window.CMS.auth.authenticate) {
-                  try {
-                    // Set the token first
-                    window.CMS.auth.token = token;
-                    // Then authenticate
-                    window.CMS.auth.authenticate();
-                    log('[admin] Called CMS.auth.authenticate() with token', 'token');
-                  } catch (e) {
-                    log('[admin] Error calling CMS.auth.authenticate(): ' + e.message);
-                  }
+                // Try to set the token directly
+                if (window.CMS.auth.token !== undefined) {
+                  window.CMS.auth.token = token;
+                  log('[admin] Set CMS.auth.token directly', 'token');
                 }
                 
-                // Also try the postMessage approach
-                window.postMessage('authorization:github:success:' + token, '*');
-                window.postMessage({ provider: 'github', type: 'success', token }, '*');
-                log('[admin] Sent postMessage with token', 'token');
+                // Try to call authenticate if it exists
+                if (typeof window.CMS.auth.authenticate === 'function') {
+                  window.CMS.auth.authenticate();
+                  log('[admin] Called CMS.auth.authenticate()', 'token');
+                }
                 
-                // Check authentication status after a delay
-                setTimeout(() => {
-                  if (window.CMS.auth.isAuthenticated) {
-                    log('[admin] SUCCESS: CMS is now authenticated!', 'token');
-                  } else {
-                    log('[admin] CMS still not authenticated, trying alternative approach');
-                    // Try to manually trigger the auth flow
-                    try {
-                      if (window.CMS.auth.login) {
-                        window.CMS.auth.login();
-                        log('[admin] Called CMS.auth.login()');
-                      }
-                    } catch (e) {
-                      log('[admin] Error calling CMS.auth.login(): ' + e.message);
-                    }
-                  }
-                }, 1000);
-              } else {
-                log('[admin] No stored token found');
+                // Try to set isAuthenticated directly
+                if (window.CMS.auth.isAuthenticated !== undefined) {
+                  window.CMS.auth.isAuthenticated = true;
+                  log('[admin] Set CMS.auth.isAuthenticated = true', 'token');
+                }
               }
-            } else {
-              log('[admin] CMS auth system not ready yet, retrying...');
-              setTimeout(waitForCMSReady, 200);
+            } catch (e) {
+              log('[admin] Error in direct CMS manipulation: ' + e.message);
             }
+            
+            // Method 2: PostMessage approach
+            window.postMessage('authorization:github:success:' + token, '*');
+            window.postMessage({ provider: 'github', type: 'success', token }, '*');
+            log('[admin] Sent postMessage with token', 'token');
+            
+            // Method 3: Try to trigger CMS events
+            try {
+              // Dispatch a custom event that CMS might listen for
+              const authEvent = new CustomEvent('netlify-cms-auth', {
+                detail: { provider: 'github', token: token, type: 'success' }
+              });
+              window.dispatchEvent(authEvent);
+              log('[admin] Dispatched netlify-cms-auth event', 'token');
+              
+              // Try to trigger a storage event (CMS might listen for localStorage changes)
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: 'netlify-cms.oauth',
+                newValue: 'authorization:github:success:' + token
+              }));
+              log('[admin] Dispatched storage event', 'token');
+            } catch (e) {
+              log('[admin] Error dispatching events: ' + e.message);
+            }
+            
+            // Check if any method worked
+            setTimeout(() => {
+              if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated === true) {
+                log('[admin] SUCCESS: CMS is now authenticated!', 'token');
+              } else {
+                log('[admin] CMS still not authenticated after all attempts');
+                // Try one more time with a longer delay
+                setTimeout(() => {
+                  if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated === true) {
+                    log('[admin] SUCCESS: CMS authenticated on second check!', 'token');
+                  } else {
+                    log('[admin] CMS authentication failed after all attempts');
+                  }
+                }, 2000);
+              }
+            }, 500);
           }
           
-          // Start waiting for CMS to be ready
-          setTimeout(waitForCMSReady, 1000);
+          // Try authentication immediately, then retry a few times
+          setTimeout(attemptAuthentication, 500);
+          setTimeout(attemptAuthentication, 1500);
+          setTimeout(attemptAuthentication, 3000);
         })();
       })();
     </script>
