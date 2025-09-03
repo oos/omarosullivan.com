@@ -1,16 +1,20 @@
 ---
 title: "Lion"
 date: 2025-09-03
-description: "Art I drew for my son's 8th birthday because he asked for one!"
+description: "Art I drew for my son"
 cover:
-  image: "/uploads/lion-1756937474094.jpg"
+  image: "/uploads/lion-1756938190308.jpg"
 tags:
   - "Drawing"
   - "Birthday"
   - "Family"
 ---
 
-aaa
+- Medium: Pencil on Paper
+- Size: 250mm x 200mm
+- Year: 2020
+
+
 
 
 
