@@ -167,12 +167,32 @@
           sessionStorage.removeItem(RELOAD_KEY);
         }
 
-        // 2) Boot CMS and wait for it to be fully ready before attempting auth
+        // 2) Boot CMS with pre-authentication
         (function boot() {
           if (typeof window.CMS !== 'object') {
             log('[admin] CMS not present yet, retrying…');
             return setTimeout(boot, 100);
           }
+          
+          // Check if we have a token before initializing CMS
+          const token = extractTokenFromStorage();
+          if (token) {
+            log('[admin] Found token before CMS init, setting up pre-auth', 'token');
+            
+            // Try to set up authentication before CMS.init()
+            try {
+              // Set the token in localStorage with the exact format CMS expects
+              localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
+              log('[admin] Set token in localStorage before CMS init', 'token');
+              
+              // Also try setting it in sessionStorage
+              sessionStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
+              log('[admin] Set token in sessionStorage before CMS init', 'token');
+            } catch (e) {
+              log('[admin] Error setting token before CMS init: ' + e.message);
+            }
+          }
+          
           log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
 
@@ -243,6 +263,22 @@
                 log('[admin] SUCCESS: CMS is now authenticated!', 'token');
               } else {
                 log('[admin] CMS still not authenticated after all attempts');
+                
+                // Check if there are any GitHub API calls in the network
+                log('[admin] Checking for GitHub API calls...');
+                if (window.performance && window.performance.getEntriesByType) {
+                  const networkEntries = window.performance.getEntriesByType('resource');
+                  const githubCalls = networkEntries.filter(entry => 
+                    entry.name.includes('api.github.com')
+                  );
+                  if (githubCalls.length > 0) {
+                    log('[admin] Found ' + githubCalls.length + ' GitHub API calls!', 'token');
+                    githubCalls.forEach(call => log('[admin] GitHub API: ' + call.name));
+                  } else {
+                    log('[admin] No GitHub API calls found - CMS not making authenticated requests');
+                  }
+                }
+                
                 // Try one more time with a longer delay
                 setTimeout(() => {
                   if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated === true) {
