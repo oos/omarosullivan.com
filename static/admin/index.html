@@ -34,6 +34,10 @@
           <button id="edit-about" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Edit About</button>
           <button id="edit-contact" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Edit Contact</button>
         </div>
+        <div id="sections-section">
+          <h6>Section Pages</h6>
+          <button id="edit-portfolio-section" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Edit Portfolio Page</button>
+        </div>
       </div>
     </div>
 
@@ -824,6 +828,125 @@ ${content}
           }
         }
 
+        // Section Page Functions
+        async function editSectionPage(sectionName) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${sectionName}/_index.md`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading section page');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            let title = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            let description = '';
+            let body = content;
+            
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const bodyContent = frontmatterMatch[2];
+              
+              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              
+              if (titleMatch) title = titleMatch[1];
+              if (descMatch) description = descMatch[1];
+              body = bodyContent;
+            }
+
+            // Show edit form
+            const form = document.createElement('div');
+            form.id = 'edit-section-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-section-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit ${title} Section Page</h3>
+                <form id="edit-section-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Title:</label>
+                    <input type="text" id="edit-section-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">This appears as the main heading on the section page</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                    <input type="text" id="edit-section-description" value="${description}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <small style="color:#666;">Optional description that appears below the title</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <textarea id="edit-section-content" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
+                    <small style="color:#666;">Optional content that appears above the portfolio items</small>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-section-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+            
+            document.getElementById('edit-section-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const newTitle = document.getElementById('edit-section-title').value;
+              const newDescription = document.getElementById('edit-section-description').value;
+              const newContent = document.getElementById('edit-section-content').value;
+              
+              await updateSectionPage(sectionName, file.sha, newTitle, newDescription, newContent);
+              form.remove();
+            });
+          } catch (e) {
+            alert('Error loading section page: ' + e.message);
+          }
+        }
+
+        async function updateSectionPage(sectionName, sha, title, description, content) {
+          try {
+            let markdownContent = `---
+title: "${title}"`;
+            
+            if (description && description.trim()) {
+              markdownContent += `\ndescription: "${description}"`;
+            }
+            
+            markdownContent += `\n---\n\n${content}`;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${sectionName}/_index.md`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update ${sectionName} section page`,
+                content: btoa(unescape(encodeURIComponent(markdownContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Section page updated successfully!');
+            } else {
+              const error = await response.json();
+              alert('Error updating section page: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating section page: ' + e.message);
+          }
+        }
+
         // Login button click handler
         loginBtn.addEventListener('click', () => {
           log('[login] Opening OAuth popup...');
@@ -858,6 +981,13 @@ ${content}
         document.getElementById('edit-site-settings').addEventListener('click', () => {
           if (currentToken) {
             editSiteSettings();
+          }
+        });
+
+        // Section page button handler
+        document.getElementById('edit-portfolio-section').addEventListener('click', () => {
+          if (currentToken) {
+            editSectionPage('portfolio');
           }
         });
 
