@@ -433,6 +433,71 @@
                 }
               } else {
                 log('[boot] No GitHub API calls found - CMS not making authenticated requests', 'error');
+                
+                // Since CMS isn't making API calls, let's try a different approach
+                const token = extractTokenFromStorage();
+                if (token) {
+                  log('[boot] Attempting alternative authentication approach...', 'token');
+                  
+                  // Try to manually create a GitHub API client and test it
+                  try {
+                    fetch('https://api.github.com/user', {
+                      headers: {
+                        'Authorization': 'token ' + token,
+                        'Accept': 'application/vnd.github.v3+json'
+                      }
+                    }).then(response => {
+                      if (response.ok) {
+                        log('[boot] Manual GitHub API call successful!', 'token');
+                        return response.json();
+                      } else {
+                        log('[boot] Manual GitHub API call failed: ' + response.status, 'error');
+                      }
+                    }).then(data => {
+                      if (data) {
+                        log('[boot] GitHub user: ' + data.login, 'token');
+                        
+                        // Try to force the CMS to recognize authentication
+                        setTimeout(() => {
+                          log('[boot] Forcing CMS to recognize authentication...', 'token');
+                          
+                          // Try to hide the login button and show content
+                          const loginButton = document.querySelector('button[data-testid="login-button"], button:contains("Login with GitHub")');
+                          if (loginButton) {
+                            loginButton.style.display = 'none';
+                            log('[boot] Hidden login button', 'token');
+                          }
+                          
+                          // Try to trigger CMS content loading
+                          if (window.CMS && window.CMS.backend) {
+                            try {
+                              // Force backend to load content
+                              if (window.CMS.backend.currentUser) {
+                                window.CMS.backend.currentUser = { login: data.login, token: token };
+                                log('[boot] Set CMS.backend.currentUser', 'token');
+                              }
+                              
+                              // Try to load collections
+                              if (window.CMS.backend.listEntries) {
+                                window.CMS.backend.listEntries('portfolio').then(entries => {
+                                  log('[boot] Successfully loaded portfolio entries: ' + entries.length, 'token');
+                                }).catch(e => {
+                                  log('[boot] Error loading portfolio entries: ' + e.message, 'error');
+                                });
+                              }
+                            } catch (e) {
+                              log('[boot] Error manipulating CMS backend: ' + e.message, 'error');
+                            }
+                          }
+                        }, 1000);
+                      }
+                    }).catch(e => {
+                      log('[boot] Manual GitHub API error: ' + e.message, 'error');
+                    });
+                  } catch (e) {
+                    log('[boot] Error making manual GitHub API call: ' + e.message, 'error');
+                  }
+                }
               }
             }
           }, 6000);
