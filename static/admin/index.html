@@ -67,6 +67,16 @@
           window.postMessage('authorization:github:success:' + token, '*');
           window.postMessage({ provider: 'github', type: 'success', token }, '*');
           log('[admin] replayed token to CMS', 'token');
+          
+          // Check if CMS is now authenticated
+          setTimeout(() => {
+            if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated) {
+              log('[admin] CMS is now authenticated!', 'token');
+            } else {
+              log('[admin] CMS still not authenticated after token replay');
+            }
+          }, 100);
+          
           return true;
         }
 
@@ -126,10 +136,24 @@
           CMS.init({ config: '/admin/config.yml' });
 
           // Give CMS a moment to attach its internal listeners, then replay token
-          setTimeout(() => {
+          // Try multiple times with increasing delays to ensure CMS is ready
+          let attempts = 0;
+          const maxAttempts = 5;
+          
+          function tryReplayToken() {
+            attempts++;
             const replayed = replayTokenToCMS();
-            if (!replayed) log('[admin] no token to replay (yet)');
-          }, 300);
+            if (replayed) {
+              log('[admin] token replayed successfully on attempt ' + attempts);
+            } else if (attempts < maxAttempts) {
+              log('[admin] no token to replay, retrying in ' + (attempts * 200) + 'ms (attempt ' + attempts + '/' + maxAttempts + ')');
+              setTimeout(tryReplayToken, attempts * 200);
+            } else {
+              log('[admin] no token to replay after ' + maxAttempts + ' attempts');
+            }
+          }
+          
+          setTimeout(tryReplayToken, 500);
         })();
       })();
     </script>
