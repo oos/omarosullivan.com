@@ -43,6 +43,8 @@
         const portfolioList = document.getElementById('portfolio-list');
 
         let currentToken = null;
+        let isLoading = false;
+        let isAuthenticated = false;
 
         function log(msg, kind) {
           if (kind === 'token') {
@@ -144,6 +146,12 @@
         }
 
         async function loadPortfolioItems(token) {
+          if (isLoading) {
+            log('[api] Already loading portfolio items, skipping...', 'token');
+            return;
+          }
+          
+          isLoading = true;
           try {
             log('[api] Loading portfolio items...', 'token');
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio', {
@@ -175,13 +183,20 @@
               log('[api] Failed to load portfolio items: ' + response.status, 'error');
               return [];
             }
-          } catch (e) {
+                      } catch (e) {
             log('[api] Error loading portfolio items: ' + e.message, 'error');
             return [];
+          } finally {
+            isLoading = false;
           }
         }
 
         async function authenticate() {
+          if (isAuthenticated) {
+            log('[auth] Already authenticated, skipping...', 'token');
+            return true;
+          }
+          
           const token = extractTokenFromStorage();
           if (!token) {
             log('[auth] No token found in storage', 'error');
@@ -193,6 +208,7 @@
           
           if (user) {
             currentToken = token;
+            isAuthenticated = true;
             log('[auth] Authentication successful! Welcome ' + user.login, 'token');
             
             // Hide login section and show CMS interface
@@ -233,25 +249,32 @@
             
             // Try immediate authentication
             setTimeout(() => {
-              log('[message] Attempting immediate authentication...', 'token');
-              const token = extractTokenFromStorage();
-              if (token) {
-                log('[message] Token found immediately, testing API...', 'token');
-                testGitHubAPI(token).then(user => {
-                  if (user) {
-                    log('[message] Immediate authentication successful!', 'token');
-                    currentToken = token;
-                    loginSection.style.display = 'none';
-                    cmsInterface.style.display = 'block';
-                    loadPortfolioItems(token);
-                  }
-                });
-              } else {
-                log('[message] Token not found immediately, will retry...', 'error');
+              if (!isAuthenticated) {
+                log('[message] Attempting immediate authentication...', 'token');
+                const token = extractTokenFromStorage();
+                if (token) {
+                  log('[message] Token found immediately, testing API...', 'token');
+                  testGitHubAPI(token).then(user => {
+                    if (user && !isAuthenticated) {
+                      log('[message] Immediate authentication successful!', 'token');
+                      currentToken = token;
+                      isAuthenticated = true;
+                      loginSection.style.display = 'none';
+                      cmsInterface.style.display = 'block';
+                      loadPortfolioItems(token);
+                    }
+                  });
+                } else {
+                  log('[message] Token not found immediately, will retry...', 'error');
+                }
               }
             }, 50);
             
-            setTimeout(() => authenticate(), 100);
+            setTimeout(() => {
+              if (!isAuthenticated) {
+                authenticate();
+              }
+            }, 100);
           }
         });
 
@@ -272,7 +295,11 @@
             saveTokenInAllFormats(urlToken);
             log('[url] TOKEN STORED: ' + urlToken, 'token');
             history.replaceState(null, '', location.pathname + '#/');
-            setTimeout(() => authenticate(), 100);
+            setTimeout(() => {
+              if (!isAuthenticated) {
+                authenticate();
+              }
+            }, 100);
             return;
           }
         } catch (e) {
@@ -326,8 +353,10 @@
 
         // Try to authenticate on page load
         setTimeout(() => {
-          log('[boot] Attempting initial authentication...');
-          authenticate();
+          if (!isAuthenticated) {
+            log('[boot] Attempting initial authentication...');
+            authenticate();
+          }
         }, 500);
       })();
     </script>
