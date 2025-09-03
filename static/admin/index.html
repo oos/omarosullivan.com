@@ -1,52 +1,27 @@
-<script>
-(function () {
-  const K1 = 'netlify-cms.oauth'; // legacy key (Netlify CMS)
-  const K2 = 'decap-cms.oauth';   // some Decap builds look for this
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Content Manager</title>
+  </head>
+  <body>
+    <!-- Stable Netlify CMS build -->
+    <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
-  let didSave = false;
-
-  function saveAll(token) {
-    if (!token) return;
-
-    // Legacy string format
-    const s = 'authorization:github:success:' + token;
-
-    // JSON format
-    const j = JSON.stringify({ provider: 'github', type: 'success', token });
-
-    try {
-      // Save under both keys, both formats
-      localStorage.setItem(K1, s);
-      localStorage.setItem(K2, s);
-      localStorage.setItem(K1 + '.json', j);
-      localStorage.setItem(K2 + '.json', j);
-      console.log('[oauth] token saved under both keys (string + json)');
-    } catch (err) {
-      console.warn('[oauth] storage error:', err);
-    }
-
-    // Reload once so Decap bootstrap consumes it
-    if (!didSave) {
-      didSave = true;
-      setTimeout(() => location.reload(), 150);
-    }
-  }
-
-  window.addEventListener('message', (e) => {
-    const d = e.data;
-    try {
-      if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-        const token = d.split(':').pop().trim();
-        saveAll(token);
-      } else if (d && typeof d === 'object'
-             && d.provider === 'github'
-             && d.type === 'success'
-             && d.token) {
-        saveAll(String(d.token).trim());
-      }
-    } catch (err) {
-      console.warn('[oauth] parse error:', err);
-    }
-  });
-})();
-</script>
+    <!-- Save the popup message in the legacy string format Netlify CMS reads -->
+    <script>
+      (function () {
+        const KEY = 'netlify-cms.oauth';
+        window.addEventListener('message', (e) => {
+          const d = e.data;
+          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+            try { localStorage.setItem(KEY, d); } catch (_) {}
+            // one gentle reload so CMS sees it on bootstrap
+            setTimeout(() => location.reload(), 120);
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
