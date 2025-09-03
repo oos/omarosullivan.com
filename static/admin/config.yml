@@ -20,23 +20,26 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Publish Date", name: "date", widget: "datetime" }
-      - { label: "Cover Image", name: "cover", widget: "image", required: false }
+      - { label: "Cover Image", name: "cover", widget: "object", fields: [{ label: "Image", name: "image", widget: "image" }], required: false }
       - { label: "Description", name: "description", widget: "string", required: false }
       - { label: "Tags", name: "tags", widget: "list", required: false }
       - { label: "Body", name: "body", widget: "markdown" }
 
   - name: "pages"
     label: "Pages"
+    folder: "content"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "site_settings"
+    label: "Site Settings"
     files:
-      - file: "content/about.md"
-        label: "About"
-        name: "about"
+      - file: "config.toml"
+        label: "Site Configuration"
+        name: "config"
         fields:
-          - { label: "Title", name: "title", widget: "string" }
-          - { label: "Body", name: "body", widget: "markdown" }
-      - file: "content/contact.md"
-        label: "Contact"
-        name: "contact"
-        fields:
-          - { label: "Title", name: "title", widget: "string" }
-          - { label: "Body", name: "body", widget: "markdown" }
+          - { label: "Site Title", name: "title", widget: "string" }
+          - { label: "Site Description", name: "description", widget: "string" }
