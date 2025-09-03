@@ -229,6 +229,55 @@
                 log('[status] Error checking ' + check + ': ' + e.message, 'error');
               }
             });
+
+            // Try to force authentication state if we have a token
+            const token = extractTokenFromStorage();
+            if (token) {
+              log('[status] Attempting to force authentication state...', 'token');
+              
+              // Try to set authentication state directly
+              try {
+                if (window.CMS.auth) {
+                  window.CMS.auth.isAuthenticated = true;
+                  log('[status] Set CMS.auth.isAuthenticated = true', 'token');
+                }
+                if (window.CMS.backend) {
+                  window.CMS.backend.isAuthenticated = true;
+                  log('[status] Set CMS.backend.isAuthenticated = true', 'token');
+                }
+                if (window.CMS.api) {
+                  window.CMS.api.isAuthenticated = true;
+                  log('[status] Set CMS.api.isAuthenticated = true', 'token');
+                }
+                if (window.CMS.store) {
+                  window.CMS.store.isAuthenticated = true;
+                  log('[status] Set CMS.store.isAuthenticated = true', 'token');
+                }
+                
+                // Try to trigger a state change event
+                if (window.CMS.store && window.CMS.store.dispatch) {
+                  try {
+                    window.CMS.store.dispatch({ type: 'AUTH_SUCCESS', token: token });
+                    log('[status] Dispatched AUTH_SUCCESS action', 'token');
+                  } catch (e) {
+                    log('[status] Error dispatching AUTH_SUCCESS: ' + e.message, 'error');
+                  }
+                }
+                
+                // Try to call any authentication success callbacks
+                if (window.CMS.auth && window.CMS.auth.onAuthSuccess) {
+                  try {
+                    window.CMS.auth.onAuthSuccess(token);
+                    log('[status] Called CMS.auth.onAuthSuccess', 'token');
+                  } catch (e) {
+                    log('[status] Error calling onAuthSuccess: ' + e.message, 'error');
+                  }
+                }
+                
+              } catch (e) {
+                log('[status] Error forcing auth state: ' + e.message, 'error');
+              }
+            }
           }
         }
 
@@ -324,6 +373,40 @@
               if (githubCalls.length > 0) {
                 log('[boot] SUCCESS: Found ' + githubCalls.length + ' GitHub API calls!', 'token');
                 githubCalls.forEach(call => log('[boot] GitHub API: ' + call.name, 'token'));
+                
+                // If we have API calls but CMS isn't authenticated, try to force UI update
+                const token = extractTokenFromStorage();
+                if (token) {
+                  log('[boot] API calls working but CMS not authenticated - forcing UI update', 'token');
+                  
+                  // Try to trigger a page refresh to force CMS to re-evaluate auth state
+                  setTimeout(() => {
+                    log('[boot] Attempting to force CMS UI refresh...', 'token');
+                    
+                    // Try to dispatch a custom event that might trigger UI update
+                    const refreshEvent = new CustomEvent('cms-auth-refresh', {
+                      detail: { token: token, authenticated: true }
+                    });
+                    window.dispatchEvent(refreshEvent);
+                    
+                    // Try to trigger a React re-render if CMS uses React
+                    if (window.CMS && window.CMS.store && window.CMS.store.getState) {
+                      try {
+                        const state = window.CMS.store.getState();
+                        log('[boot] CMS store state: ' + JSON.stringify(state).substring(0, 200) + '...');
+                      } catch (e) {
+                        log('[boot] Error getting CMS store state: ' + e.message);
+                      }
+                    }
+                    
+                    // Last resort: try to reload the page to force fresh auth check
+                    setTimeout(() => {
+                      log('[boot] Last resort: reloading page to force fresh auth check', 'token');
+                      location.reload();
+                    }, 2000);
+                    
+                  }, 1000);
+                }
               } else {
                 log('[boot] No GitHub API calls found - CMS not making authenticated requests', 'error');
               }
