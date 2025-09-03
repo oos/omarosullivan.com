@@ -1,7 +1,10 @@
 ---
 title: "About"
-date: 2025-09-02
-draft: false
 ---
 
-Short bio here. Add your artist statement, exhibitions, and awards.
+Hi, I'm Omar. 
+
+I love to build beautiful software products. 
+
+I also like to draw. I want to create more time to draw more. I have added the few drawings I have done in the Portfolio section.
+
