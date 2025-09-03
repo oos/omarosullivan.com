@@ -4,24 +4,41 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
-  </head>
-  <body>
-    <!-- Decap CMS -->
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
+    <!-- Shim FIRST: capture OAuth messages, store under multiple keys, then reload -->
     <script>
-      // Shim to capture OAuth message from popup
-      window.addEventListener('message', (e) => {
-        console.log('Admin got message:', e.data, 'from:', e.origin);
-
-        if (typeof e.data === 'string' && e.data.startsWith('authorization:github:success:')) {
-          localStorage.setItem('netlify-cms.oauth', e.data);
-          window.location.reload();
-        } else if (e.data && e.data.provider === 'github' && e.data.type === 'success' && e.data.token) {
-          localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + e.data.token);
-          window.location.reload();
+      (function () {
+        function saveAndReload(token) {
+          try {
+            // Legacy key used by Netlify CMS
+            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + token);
+            // Possible key some Decap builds look at (belt & braces)
+            localStorage.setItem('decap-cms.oauth', JSON.stringify({ provider: 'github', token }));
+          } catch (e) {
+            console.warn('oauth storage error', e);
+          }
+          // Reload BEFORE the CMS script loads, so it sees the stored value on boot
+          location.replace(location.href.split('#')[0] + '#/'); // normalize hash route
+          location.reload();
         }
-      });
+
+        window.addEventListener('message', (e) => {
+          const d = e.data;
+          // String format
+          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+            const token = d.split('authorization:github:success:')[1];
+            if (token) saveAndReload(token.trim());
+          }
+          // Object format
+          if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
+            saveAndReload(String(d.token).trim());
+          }
+        });
+      })();
     </script>
-  </body>
+
+    <!-- Load Decap CMS AFTER the shim -->
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  </head>
+  <body></body>
 </html>
