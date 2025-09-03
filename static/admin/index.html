@@ -5,33 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
     <script>
-      // We’ll init manually after the bundle is loaded
+      /* We'll init CMS manually after the bundle loads */
       window.CMS_MANUAL_INIT = true;
     </script>
   </head>
   <body>
-    <!-- ✅ Use the classic Netlify CMS bundle -->
+    <!-- Classic Netlify CMS bundle -->
     <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
     <script>
       (function () {
-        const KEY = 'netlify-cms.oauth';
+        var KEY = 'netlify-cms.oauth';
 
-        // Save token from OAuth popup and reload once
-        window.addEventListener('message', (e) => {
-          const msg = e.data;
-          if (typeof msg === 'string' && msg.startsWith('authorization:github:success:')) {
-            try {
-              localStorage.setItem(KEY, msg);
-              console.log('[admin] token saved');
-            } catch (err) {
-              console.warn('[admin] failed to save token', err);
-            }
-            setTimeout(() => location.reload(), 300);
+        /* Fallback: if token arrives via URL (from redirect), store & clean URL */
+        try {
+          var p = new URLSearchParams(location.hash.replace(/^#\/?/, ''));
+          var urlToken = p.get('token');
+          if (urlToken) {
+            localStorage.setItem(KEY, 'authorization:github:success:' + urlToken);
+            history.replaceState(null, '', location.pathname + location.search + '#/');
+            location.reload();
+            return; // stop here; reload continues after storage
+          }
+        } catch (e) {}
+
+        /* Normal path: receive token from popup via postMessage */
+        window.addEventListener('message', function (e) {
+          var msg = e && e.data;
+          if (typeof msg === 'string' && msg.indexOf('authorization:github:success:') === 0) {
+            try { localStorage.setItem(KEY, msg); } catch (_) {}
+            setTimeout(function () { location.reload(); }, 300);
           }
         });
 
-        // Robust manual init: wait for CMS global, then init
+        /* Manual init: wait for CMS global, then init with our config */
         function boot() {
           if (typeof window.CMS !== 'object') {
             console.warn('[admin] CMS not present yet, retrying…');
