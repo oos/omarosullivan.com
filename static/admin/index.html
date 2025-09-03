@@ -5,44 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
     <script>
-      // We will call CMS.init ourselves (prevents timing issues)
+      // We’ll init manually after the bundle is loaded
       window.CMS_MANUAL_INIT = true;
     </script>
   </head>
   <body>
-    <!-- Netlify CMS (stable line that works with GitHub OAuth) -->
-    <script src="https://unpkg.com/netlify-cms-app@2.15.72/dist/netlify-cms.js"></script>
+    <!-- ✅ Use the classic Netlify CMS bundle -->
+    <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
 
     <script>
       (function () {
         const KEY = 'netlify-cms.oauth';
 
-        // 1) Save token from the OAuth popup (only when it looks right)
+        // Save token from OAuth popup and reload once
         window.addEventListener('message', (e) => {
-          const d = e.data;
-          if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
+          const msg = e.data;
+          if (typeof msg === 'string' && msg.startsWith('authorization:github:success:')) {
             try {
-              localStorage.setItem(KEY, d);
-              console.log('[admin] saved OAuth token to localStorage');
+              localStorage.setItem(KEY, msg);
+              console.log('[admin] token saved');
             } catch (err) {
-              console.warn('[admin] could not save token', err);
+              console.warn('[admin] failed to save token', err);
             }
-            // Reload so CMS can boot with token present
-            setTimeout(() => location.reload(), 400);
+            setTimeout(() => location.reload(), 300);
           }
         });
 
-        // 2) Always initialize CMS explicitly (after page load)
-        //    This avoids relying on auto-init timing.
-        function initCMS() {
-          if (!window.CMS) {
+        // Robust manual init: wait for CMS global, then init
+        function boot() {
+          if (typeof window.CMS !== 'object') {
             console.warn('[admin] CMS not present yet, retrying…');
-            return setTimeout(initCMS, 100);
+            return setTimeout(boot, 120);
           }
-          console.log('[admin] calling CMS.init()');
+          console.log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
         }
-        initCMS();
+        boot();
       })();
     </script>
   </body>
