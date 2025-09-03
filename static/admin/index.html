@@ -570,7 +570,7 @@ ${content}
             
             // Display current image
             const currentImageContainer = document.getElementById('current-image-container');
-            const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']([^"']+)["']/);
+            const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
             if (currentCoverMatch) {
               const currentImagePath = currentCoverMatch[1];
               currentImageContainer.innerHTML = `
@@ -629,7 +629,7 @@ ${content}
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
-              const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']([^"']+)["']/);
+              const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
               if (coverMatch) {
                 existingCoverImage = `cover:\n  image: "${coverMatch[1]}"`;
               }
