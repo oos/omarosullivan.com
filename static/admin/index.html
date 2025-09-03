@@ -4,23 +4,45 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+    <script>
+      // We will call CMS.init ourselves (prevents timing issues)
+      window.CMS_MANUAL_INIT = true;
+    </script>
   </head>
   <body>
-    <!-- Stable Netlify CMS build -->
-    <script src="https://unpkg.com/netlify-cms@2.10.192/dist/netlify-cms.js"></script>
+    <!-- Netlify CMS (stable line that works with GitHub OAuth) -->
+    <script src="https://unpkg.com/netlify-cms-app@2.15.72/dist/netlify-cms.js"></script>
 
-    <!-- Save the popup message in the legacy string format Netlify CMS reads -->
     <script>
       (function () {
         const KEY = 'netlify-cms.oauth';
+
+        // 1) Save token from the OAuth popup (only when it looks right)
         window.addEventListener('message', (e) => {
           const d = e.data;
           if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
-            try { localStorage.setItem(KEY, d); } catch (_) {}
-            // one gentle reload so CMS sees it on bootstrap
-            setTimeout(() => location.reload(), 120);
+            try {
+              localStorage.setItem(KEY, d);
+              console.log('[admin] saved OAuth token to localStorage');
+            } catch (err) {
+              console.warn('[admin] could not save token', err);
+            }
+            // Reload so CMS can boot with token present
+            setTimeout(() => location.reload(), 400);
           }
         });
+
+        // 2) Always initialize CMS explicitly (after page load)
+        //    This avoids relying on auto-init timing.
+        function initCMS() {
+          if (!window.CMS) {
+            console.warn('[admin] CMS not present yet, retrying…');
+            return setTimeout(initCMS, 100);
+          }
+          console.log('[admin] calling CMS.init()');
+          CMS.init({ config: '/admin/config.yml' });
+        }
+        initCMS();
       })();
     </script>
   </body>
