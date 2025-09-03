@@ -6,25 +6,52 @@
     <title>Content Manager</title>
   </head>
   <body>
-    <!-- Decap CMS (same as Pass A which worked) -->
+    <!-- Load Decap CMS -->
     <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
 
-    <!-- Safe shim: store token only; no reload, no loops -->
+    <!-- 1) Capture OAuth messages from popup and save -->
     <script>
       window.addEventListener('message', (e) => {
         const d = e.data;
         try {
           if (typeof d === 'string' && d.startsWith('authorization:github:success:')) {
             localStorage.setItem('netlify-cms.oauth', d);
-            console.log('OAuth token saved — refresh page once to finish login.');
+            sessionStorage.setItem('cms.oauth.saved', '1');
+            console.log('OAuth token saved from popup.');
           } else if (d && typeof d === 'object' && d.provider === 'github' && d.type === 'success' && d.token) {
-            localStorage.setItem('netlify-cms.oauth', 'authorization:github:success:' + String(d.token).trim());
-            console.log('OAuth token saved — refresh page once to finish login.');
+            const s = 'authorization:github:success:' + String(d.token).trim();
+            localStorage.setItem('netlify-cms.oauth', s);
+            sessionStorage.setItem('cms.oauth.saved', '1');
+            console.log('OAuth token (object) saved from popup.');
           }
         } catch (err) {
           console.warn('OAuth storage error:', err);
         }
       });
+    </script>
+
+    <!-- 2) If a token is already saved, replay it as a message so Decap consumes it -->
+    <script>
+      (function () {
+        const usedFlag = 'cms.oauth.replayed';
+        try {
+          const saved = localStorage.getItem('netlify-cms.oauth');
+          const alreadyReplayed = sessionStorage.getItem(usedFlag) === '1';
+
+          if (saved && !alreadyReplayed) {
+            console.log('Replaying saved OAuth token to Decap…');
+            // Replay both formats to cover all listener variants
+            window.postMessage(saved, '*');
+            const token = saved.split('authorization:github:success:')[1];
+            if (token) {
+              window.postMessage({ provider: 'github', type: 'success', token }, '*');
+            }
+            sessionStorage.setItem(usedFlag, '1');
+          }
+        } catch (e) {
+          console.warn('OAuth replay error:', e);
+        }
+      })();
     </script>
   </body>
 </html>
