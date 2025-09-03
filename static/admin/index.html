@@ -167,7 +167,7 @@
           sessionStorage.removeItem(RELOAD_KEY);
         }
 
-        // 2) Boot CMS, then replay AFTER init to guarantee CMS listener is attached
+        // 2) Boot CMS and wait for it to be fully ready before attempting auth
         (function boot() {
           if (typeof window.CMS !== 'object') {
             log('[admin] CMS not present yet, retrying…');
@@ -176,25 +176,62 @@
           log('[admin] CMS present, calling CMS.init()');
           CMS.init({ config: '/admin/config.yml' });
 
-          // Give CMS a moment to attach its internal listeners, then replay token
-          // Try multiple times with increasing delays to ensure CMS is ready
-          let attempts = 0;
-          const maxAttempts = 5;
-          
-          function tryReplayToken() {
-            attempts++;
-            const replayed = replayTokenToCMS();
-            if (replayed) {
-              log('[admin] token replayed successfully on attempt ' + attempts);
-            } else if (attempts < maxAttempts) {
-              log('[admin] no token to replay, retrying in ' + (attempts * 200) + 'ms (attempt ' + attempts + '/' + maxAttempts + ')');
-              setTimeout(tryReplayToken, attempts * 200);
+          // Wait for CMS to be fully initialized and ready
+          function waitForCMSReady() {
+            if (window.CMS && window.CMS.auth && window.CMS.auth.isAuthenticated !== undefined) {
+              log('[admin] CMS auth system is ready');
+              
+              // Check if we have a token to use
+              const token = extractTokenFromStorage();
+              if (token) {
+                log('[admin] Found stored token, attempting authentication', 'token');
+                
+                // Try to authenticate using CMS's internal method
+                if (window.CMS.auth.authenticate) {
+                  try {
+                    // Set the token first
+                    window.CMS.auth.token = token;
+                    // Then authenticate
+                    window.CMS.auth.authenticate();
+                    log('[admin] Called CMS.auth.authenticate() with token', 'token');
+                  } catch (e) {
+                    log('[admin] Error calling CMS.auth.authenticate(): ' + e.message);
+                  }
+                }
+                
+                // Also try the postMessage approach
+                window.postMessage('authorization:github:success:' + token, '*');
+                window.postMessage({ provider: 'github', type: 'success', token }, '*');
+                log('[admin] Sent postMessage with token', 'token');
+                
+                // Check authentication status after a delay
+                setTimeout(() => {
+                  if (window.CMS.auth.isAuthenticated) {
+                    log('[admin] SUCCESS: CMS is now authenticated!', 'token');
+                  } else {
+                    log('[admin] CMS still not authenticated, trying alternative approach');
+                    // Try to manually trigger the auth flow
+                    try {
+                      if (window.CMS.auth.login) {
+                        window.CMS.auth.login();
+                        log('[admin] Called CMS.auth.login()');
+                      }
+                    } catch (e) {
+                      log('[admin] Error calling CMS.auth.login(): ' + e.message);
+                    }
+                  }
+                }, 1000);
+              } else {
+                log('[admin] No stored token found');
+              }
             } else {
-              log('[admin] no token to replay after ' + maxAttempts + ' attempts');
+              log('[admin] CMS auth system not ready yet, retrying...');
+              setTimeout(waitForCMSReady, 200);
             }
           }
           
-          setTimeout(tryReplayToken, 500);
+          // Start waiting for CMS to be ready
+          setTimeout(waitForCMSReady, 1000);
         })();
       })();
     </script>
