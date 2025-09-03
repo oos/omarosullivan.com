@@ -215,8 +215,10 @@
             loginSection.style.display = 'none';
             cmsInterface.style.display = 'block';
             
-            // Load portfolio items
-            await loadPortfolioItems(token);
+            // Load portfolio items only if not already loaded
+            if (!isLoading) {
+              await loadPortfolioItems(token);
+            }
             
             return true;
           } else {
@@ -228,7 +230,16 @@
         // Listen for OAuth popup messages
         window.addEventListener('message', (e) => {
           const m = e.data;
-          log('[message] Received: ' + (typeof m === 'string' ? m.substring(0, 100) + '...' : JSON.stringify(m)));
+          
+          // Filter out non-OAuth messages to reduce noise
+          if (typeof m === 'string' && m.startsWith('authorization:github:success:')) {
+            log('[message] OAuth success message received', 'token');
+          } else if (m && typeof m === 'object' && m.provider === 'github' && m.type === 'success') {
+            log('[message] OAuth success object received', 'token');
+          } else {
+            // Skip logging non-OAuth messages to reduce noise
+            return;
+          }
           
           let saved = false;
           try {
@@ -244,32 +255,10 @@
             log('[message] Error processing message: ' + err.message, 'error');
           }
 
-          if (saved) {
+          if (saved && !isAuthenticated) {
             log('[message] Token saved, attempting authentication...', 'token');
             
-            // Try immediate authentication
-            setTimeout(() => {
-              if (!isAuthenticated) {
-                log('[message] Attempting immediate authentication...', 'token');
-                const token = extractTokenFromStorage();
-                if (token) {
-                  log('[message] Token found immediately, testing API...', 'token');
-                  testGitHubAPI(token).then(user => {
-                    if (user && !isAuthenticated) {
-                      log('[message] Immediate authentication successful!', 'token');
-                      currentToken = token;
-                      isAuthenticated = true;
-                      loginSection.style.display = 'none';
-                      cmsInterface.style.display = 'block';
-                      loadPortfolioItems(token);
-                    }
-                  });
-                } else {
-                  log('[message] Token not found immediately, will retry...', 'error');
-                }
-              }
-            }, 50);
-            
+            // Single authentication attempt
             setTimeout(() => {
               if (!isAuthenticated) {
                 authenticate();
@@ -356,6 +345,8 @@
           if (!isAuthenticated) {
             log('[boot] Attempting initial authentication...');
             authenticate();
+          } else {
+            log('[boot] Already authenticated, skipping initial auth');
           }
         }, 500);
       })();
