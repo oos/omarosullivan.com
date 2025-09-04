@@ -1382,19 +1382,37 @@ ${content}
         });
 
         // Site settings button handler
-        document.getElementById('edit-site-settings').addEventListener('click', () => {
-          editSiteSettings();
-        });
+        const editSiteSettingsBtn = document.getElementById('edit-site-settings');
+        if (editSiteSettingsBtn) {
+          editSiteSettingsBtn.addEventListener('click', () => {
+            console.log('Edit Site Settings button clicked');
+            editSiteSettings();
+          });
+        } else {
+          console.error('Edit Site Settings button not found');
+        }
 
         // Section page button handler
-        document.getElementById('edit-portfolio-section').addEventListener('click', () => {
-          editSectionPage('portfolio');
-        });
+        const editPortfolioSectionBtn = document.getElementById('edit-portfolio-section');
+        if (editPortfolioSectionBtn) {
+          editPortfolioSectionBtn.addEventListener('click', () => {
+            console.log('Edit Portfolio Section button clicked');
+            editSectionPage('portfolio');
+          });
+        } else {
+          console.error('Edit Portfolio Section button not found');
+        }
 
         // Add page button handler
-        document.getElementById('add-page').addEventListener('click', () => {
-          showAddPageForm();
-        });
+        const addPageBtn = document.getElementById('add-page');
+        if (addPageBtn) {
+          addPageBtn.addEventListener('click', () => {
+            console.log('Add Page button clicked');
+            showAddPageForm();
+          });
+        } else {
+          console.error('Add Page button not found');
+        }
 
 
 
