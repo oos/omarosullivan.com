@@ -2,7 +2,9 @@
 <main class="main">
   <article class="post-single">
     <header class="post-header">
+      {{- if not (or (eq .Title "About") (eq .Title "Contact")) }}
       {{ partial "back_button.html" . }}
+      {{- end }}
       <h1 class="post-title">{{ .Title }}</h1>
       {{- if .Description }}
       <div class="post-description">

@@ -830,6 +830,12 @@
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
                   <textarea id="portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;"></textarea>
                 </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+                    <input type="checkbox" id="portfolio-featured" style="margin:0;">
+                    Featured on Homepage
+                  </label>
+                </div>
                 <div style="text-align:right;">
                   <button type="button" onclick="document.getElementById('add-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                   <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Create</button>
@@ -861,14 +867,15 @@
             const description = document.getElementById('portfolio-description').value;
             const tags = document.getElementById('portfolio-tags').value;
             const content = document.getElementById('portfolio-content').value;
+            const featured = document.getElementById('portfolio-featured').checked;
             const imageFile = document.getElementById('portfolio-image').files[0];
             
-            await createPortfolioItem(title, description, tags, content, imageFile);
+            await createPortfolioItem(title, description, tags, content, imageFile, featured);
             form.remove();
           });
         }
 
-        async function createPortfolioItem(title, description, tags, content, imageFile) {
+        async function createPortfolioItem(title, description, tags, content, imageFile, featured = false) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -899,6 +906,7 @@ date: ${date}
 description: "${description}"
 ${coverImage}
 ${tagsYaml}
+${featured ? 'featured: true' : ''}
 ---
 
 ${content}
@@ -1022,6 +1030,12 @@ ${content}
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
                     <textarea id="edit-portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
                   </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+                      <input type="checkbox" id="edit-portfolio-featured" ${featured ? 'checked' : ''} style="margin:0;">
+                      Featured on Homepage
+                    </label>
+                  </div>
                   <div style="text-align:right;">
                     <button type="button" onclick="document.getElementById('edit-portfolio-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                     <button type="submit" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Save</button>
@@ -1066,9 +1080,10 @@ ${content}
               const newDescription = document.getElementById('edit-portfolio-description').value;
               const newTags = document.getElementById('edit-portfolio-tags').value;
               const newContent = document.getElementById('edit-portfolio-content').value;
+              const newFeatured = document.getElementById('edit-portfolio-featured').checked;
               const imageFile = document.getElementById('edit-portfolio-image').files[0];
               
-              await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile);
+              await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile, newFeatured);
               form.remove();
             });
           } catch (e) {
@@ -1653,12 +1668,12 @@ title: "${title}"`;
         }
 
         async function loadPoetryItems(token) {
-          if (window.isLoadingPoetry) {
+          if (isLoading) {
             log('[api] Already loading poetry items, skipping...', 'token');
             return;
           }
           
-          window.isLoadingPoetry = true;
+          isLoading = true;
           console.log('[debug] Starting to load poetry items...');
           try {
             log('[api] Loading poetry items...', 'token');
@@ -1751,7 +1766,7 @@ title: "${title}"`;
             log('[api] Error loading poetry items: ' + e.message, 'error');
             return [];
           } finally {
-            window.isLoadingPoetry = false;
+            isLoading = false;
           }
         }
 
@@ -2704,6 +2719,12 @@ ${content}
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
                   <textarea id="photography-content" rows="6" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="Describe the photo, context, or any additional information..."></textarea>
                 </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+                    <input type="checkbox" id="photography-featured" style="margin:0;">
+                    Featured on Homepage
+                  </label>
+                </div>
                 <div style="text-align:right;">
                   <button type="button" onclick="document.getElementById('add-photography-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin-right:10px;">Cancel</button>
                   <button type="submit" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;">Add Photo</button>
@@ -2721,6 +2742,7 @@ ${content}
               const description = document.getElementById('photography-description').value;
               const tags = document.getElementById('photography-tags').value;
               const content = document.getElementById('photography-content').value;
+              const featured = document.getElementById('photography-featured').checked;
               const imageFile = document.getElementById('photography-image').files[0];
 
               if (!imageFile) {
@@ -2737,7 +2759,7 @@ ${content}
               }
               
               // Create photography item
-              await createPhotographyItem(title, description, tags, content, imagePath);
+              await createPhotographyItem(title, description, tags, content, imagePath, featured);
 
               form.remove();
               loadPhotographyItems(currentToken);
@@ -2747,7 +2769,7 @@ ${content}
           });
         }
 
-        async function createPhotographyItem(title, description, tags, content, imagePath) {
+        async function createPhotographyItem(title, description, tags, content, imagePath, featured = false) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -2768,6 +2790,10 @@ description: "${description}"`;
 
             if (imagePath) {
               frontmatter += `\ncover:\n  image: "${imagePath}"`;
+            }
+
+            if (featured) {
+              frontmatter += `\nfeatured: true`;
             }
 
             frontmatter += `\n---\n\n`;
@@ -2799,14 +2825,14 @@ description: "${description}"`;
         }
 
         async function loadPhotographyItems(token) {
+          if (window.isLoadingPhotography) {
+            console.log('[api] Already loading photography items, skipping...');
+            return;
+          }
+          
+          window.isLoadingPhotography = true;
+          console.log('[debug] Starting to load photography items...');
           try {
-            if (window.isLoadingPhotography) {
-              console.log('[api] Already loading photography items, skipping...');
-              return;
-            }
-            
-            window.isLoadingPhotography = true;
-            console.log('[debug] Starting to load photography items...');
             
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography', {
               headers: {
@@ -2820,9 +2846,11 @@ description: "${description}"`;
               console.log('[api] Loaded photography items');
               console.log('[debug] Photography items loaded:', items);
               
-              const photographyList = document.getElementById('photography-list');
-              if (photographyList) {
-                photographyList.innerHTML = '';
+                          const photographyList = document.getElementById('photography-list');
+            if (photographyList) {
+              // Clear existing content to prevent duplicates
+              photographyList.innerHTML = '';
+              console.log('[debug] Cleared photography list');
                 
                 const photographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered photography items:', photographyItems);
@@ -3263,12 +3291,15 @@ description: "${description}"`;
                 setupButtonListeners();
                 console.log('setupButtonListeners called from init');
                 
-                // Load content
-                loadPortfolioItems(currentToken);
-                loadPhotographyItems(currentToken);
-                loadVideographyItems(currentToken);
-                loadPoetryItems(currentToken);
-                loadPages(currentToken);
+                // Load content only if not already loaded
+                if (!window.contentLoaded) {
+                  window.contentLoaded = true;
+                  loadPortfolioItems(currentToken);
+                  loadPhotographyItems(currentToken);
+                  loadVideographyItems(currentToken);
+                  loadPoetryItems(currentToken);
+                  loadPages(currentToken);
+                }
               } else {
                 log('[boot] Existing token invalid, clearing storage...');
                 clearInvalidTokens();
@@ -3282,11 +3313,11 @@ description: "${description}"`;
           }
         }
         
-        // Initialize with multiple attempts to handle race conditions
-        initializeAuth();
-        setTimeout(initializeAuth, 500);
-        setTimeout(initializeAuth, 1500);
-        setTimeout(initializeAuth, 3000);
+        // Initialize only once to prevent loops
+        if (!window.authInitialized) {
+          window.authInitialized = true;
+          initializeAuth();
+        }
         
         // Run regression tests after initialization
         setTimeout(() => {
@@ -3434,13 +3465,13 @@ tags:
         }
 
         async function loadVideographyItems(token) {
+          if (isLoading) {
+            log('[api] Already loading videography items, skipping...', 'token');
+            return;
+          }
+          
+          isLoading = true;
           try {
-            if (window.isLoadingVideography) {
-              console.log('[api] Already loading videography items, skipping...');
-              return;
-            }
-            
-            window.isLoadingVideography = true;
             console.log('[debug] Starting to load videography items...');
             
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography', {
@@ -3527,7 +3558,7 @@ tags:
           } catch (e) {
             log(`[api] Error loading videography items: ${e.message}`, 'error');
           } finally {
-            window.isLoadingVideography = false;
+            isLoading = false;
           }
         }
 
@@ -3775,9 +3806,6 @@ tags:
         window.saveMainNavigation = saveMainNavigation;
         window.editSiteSettings = editSiteSettings;
         window.setupButtonListeners = setupButtonListeners;
-        
-        // Initialize authentication on page load
-        authenticate();
       })();
 
 

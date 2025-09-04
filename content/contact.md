@@ -1,5 +1,6 @@
 ---
 title: "Contact"
+layout: "page/contact"
 ---
 
 Drop me a message if you want to say Hi :)
