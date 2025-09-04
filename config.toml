@@ -16,6 +16,8 @@ theme = "PaperMod"
   ShowReadingTime = false
   displayFullLangName = true
   description = "Work, notes, and experiments."
+  ShowPostNav = true
+  ShowCodeCopy = true
   
   [params.assets]
     favicon = "favicon.ico"
