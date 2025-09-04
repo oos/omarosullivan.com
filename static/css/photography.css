@@ -1,26 +1,54 @@
 /* Photography page compact layout - 3 columns */
-.posts-entry {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin: 20px 0;
+/* Target the main content area for photography section */
+.photography .post-entry {
+  display: inline-block;
+  width: 30%;
+  margin: 1.5%;
+  vertical-align: top;
+  box-sizing: border-box;
 }
 
-/* Target the main posts container */
+/* Alternative approach - target the posts container */
+.posts-entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
 .posts-entry .post-entry {
-  width: 100%;
+  flex: 0 0 calc(33.333% - 10px);
   margin-bottom: 15px;
+}
+
+/* Force grid layout on the posts container */
+.posts-entry {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 15px !important;
+}
+
+.posts-entry .post-entry {
+  width: 100% !important;
+  margin: 0 !important;
 }
 
 @media (max-width: 768px) {
   .posts-entry {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .photography .post-entry {
+    width: 48%;
   }
 }
 
 @media (max-width: 480px) {
   .posts-entry {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+  
+  .photography .post-entry {
+    width: 100%;
   }
 }
 
