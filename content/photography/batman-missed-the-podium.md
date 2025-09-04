@@ -1,5 +1,5 @@
 ---
-title: "Batman narrowly misses the podium"
+title: "Batman narrowly missed the podium"
 date: 2025-09-04
 description: ""
 cover:
