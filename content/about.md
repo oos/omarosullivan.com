@@ -1,6 +1,5 @@
 ---
 title: "About"
-layout: "page/about"
 ---
 
 <div style="overflow: hidden; margin: 20px 0; max-width: 100%;">
