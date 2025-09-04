@@ -122,6 +122,21 @@
         return 'Global functions test complete';
       };
 
+      window.showLoginForm = function() {
+        // Reset authentication state
+        window.currentToken = null;
+        window.isAuthenticated = false;
+        
+        // Show login form and hide CMS interface
+        const loginSection = document.getElementById('login-section');
+        const cmsInterface = document.getElementById('cms-interface');
+        
+        if (loginSection) loginSection.style.display = 'block';
+        if (cmsInterface) cmsInterface.style.display = 'none';
+        
+        console.log('[auth] Showing login form due to token expiration');
+      };
+
       (function () {
         const loginSection = document.getElementById('login-section');
         const cmsInterface = document.getElementById('cms-interface');
@@ -263,20 +278,7 @@
           });
         }
 
-        function showLoginForm() {
-          // Reset authentication state
-          currentToken = null;
-          isAuthenticated = false;
-          
-          // Show login form and hide CMS interface
-          const loginSection = document.getElementById('login-section');
-          const cmsInterface = document.getElementById('cms-interface');
-          
-          if (loginSection) loginSection.style.display = 'block';
-          if (cmsInterface) cmsInterface.style.display = 'none';
-          
-          log('[auth] Showing login form due to token expiration', 'error');
-        }
+
 
         function debugStorage() {
           const keys = ['netlify-cms.oauth', 'decap-cms.oauth', 'cms.oauth', 'github-token'];
@@ -329,7 +331,7 @@
               log('[api] Token validation failed: 401 Unauthorized', 'error');
               // Clear invalid token and show login form
               clearInvalidTokens();
-              showLoginForm();
+              window.showLoginForm();
               return false;
             } else {
               log('[api] Token validation failed: ' + response.status, 'error');
@@ -388,7 +390,7 @@
               console.log('[api] Portfolio: Clearing invalid tokens...');
               clearInvalidTokens();
               console.log('[api] Portfolio: Showing login form...');
-              showLoginForm();
+              window.showLoginForm();
               console.log('[api] Portfolio: Login form should be visible now');
               return [];
             } else {
@@ -453,7 +455,7 @@
               console.log('[api] Pages: Clearing invalid tokens...');
               clearInvalidTokens();
               console.log('[api] Pages: Showing login form...');
-              showLoginForm();
+              window.showLoginForm();
               console.log('[api] Pages: Login form should be visible now');
               return [];
             } else {
