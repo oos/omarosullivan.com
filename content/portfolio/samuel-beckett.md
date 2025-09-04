@@ -1,5 +1,6 @@
 ---
 title: "Samuel Beckett"
+featured: true
 date: 2025-09-04
 description: "A sketch inspired by my uncle donal."
 cover:
