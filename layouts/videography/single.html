@@ -1,0 +1,56 @@
+{{ define "main" }}
+<main class="main">
+  <article class="post-single">
+    <header class="post-header">
+      {{ partial "back_button.html" . }}
+      <h1 class="post-title">{{ .Title }}</h1>
+      {{- if .Description }}
+      <div class="post-description">
+        {{ .Description }}
+      </div>
+      {{- end }}
+      {{- if not .Params.hideMeta }}
+      <div class="post-meta">
+        {{- if .Params.tags }}
+        <div class="post-tags">
+          {{- range .Params.tags }}
+          <a href="{{ "tags/" | absURL }}{{ . | urlize }}">{{ . }}</a>
+          {{- end }}
+        </div>
+        {{- end }}
+        {{- if .Params.date }}
+        <div class="post-date">
+          {{ .Date.Format "January 2, 2006" }}
+        </div>
+        {{- end }}
+      </div>
+      {{- end }}
+    </header>
+    {{- if .Params.video_url }}
+    <div class="post-video" style="position: relative; text-align: center; margin: 20px 0;">
+      {{- if eq .Params.video_type "youtube" }}
+        {{- $videoId := index (split .Params.video_url "v=") 1 }}
+        {{- $videoId = index (split $videoId "&") 0 }}
+        <iframe width="100%" height="500" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 800px; margin: 0 auto; display: block;"></iframe>
+      {{- else if eq .Params.video_type "vimeo" }}
+        {{- $videoId := index (split .Params.video_url "vimeo.com/") 1 }}
+        {{- $videoId = index (split $videoId "?") 0 }}
+        <iframe width="100%" height="500" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 800px; margin: 0 auto; display: block;"></iframe>
+      {{- end }}
+    </div>
+    {{- end }}
+    <div class="post-content">
+      {{ .Content }}
+    </div>
+    {{- if .Params.tags }}
+    <footer class="post-footer">
+      <div class="post-tags">
+        {{- range .Params.tags }}
+        <a href="{{ "tags/" | absURL }}{{ . | urlize }}">{{ . }}</a>
+        {{- end }}
+      </div>
+    </footer>
+    {{- end }}
+  </article>
+</main>
+{{ end }}
