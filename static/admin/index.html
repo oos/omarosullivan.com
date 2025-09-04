@@ -1166,6 +1166,16 @@ ${content}
                   </div>
             ` : '';
 
+            // Parse existing description from frontmatter
+            let existingDescription = '';
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              if (descMatch) {
+                existingDescription = descMatch[1];
+              }
+            }
+
             form.innerHTML = `
               <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
                 <button onclick="document.getElementById('edit-page-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
@@ -1174,6 +1184,10 @@ ${content}
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
                     <input type="text" id="edit-page-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                    <input type="text" id="edit-page-description" value="${existingDescription}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="Brief description of this page">
                   </div>
                   ${imageUploadField}
                   <div style="margin-bottom:15px;">
@@ -1192,6 +1206,7 @@ ${content}
             document.getElementById('edit-page-form').addEventListener('submit', async (e) => {
               e.preventDefault();
               const newTitle = document.getElementById('edit-page-title').value;
+              const newDescription = document.getElementById('edit-page-description').value;
               const newContent = document.getElementById('edit-page-content').value;
               
               // Handle image upload for About page
@@ -1203,7 +1218,7 @@ ${content}
                 }
               }
               
-              await updatePage(pageName, file.sha, newTitle, newContent, imagePath);
+              await updatePage(pageName, file.sha, newTitle, newDescription, newContent, imagePath);
               form.remove();
             });
           } catch (e) {
@@ -1211,7 +1226,7 @@ ${content}
           }
         }
 
-        async function updatePage(pageName, sha, title, content, imagePath = null) {
+        async function updatePage(pageName, sha, title, description, content, imagePath = null) {
           try {
             // First get the current file to preserve existing frontmatter
             const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
@@ -1231,13 +1246,15 @@ title: "${title}"`;
               
               if (frontmatterMatch) {
                 const existingFrontmatter = frontmatterMatch[1];
-                // Preserve date and description if they exist
+                // Preserve date if it exists
                 const dateMatch = existingFrontmatter.match(/date:\s*([^\n]+)/);
-                const descMatch = existingFrontmatter.match(/description:\s*([^\n]+)/);
-                
                 if (dateMatch) frontmatter += `\ndate: ${dateMatch[1]}`;
-                if (descMatch) frontmatter += `\ndescription: ${descMatch[1]}`;
               }
+            }
+
+            // Add description
+            if (description) {
+              frontmatter += `\ndescription: "${description}"`;
             }
 
             // Add image if provided (for About page)

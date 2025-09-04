@@ -7,8 +7,8 @@ theme = "PaperMod"
 
 [params]
   defaultTheme = "auto"
-  ShowBreadCrumbs = true
-  ShowReadingTime = true
+  ShowBreadCrumbs = false
+  ShowReadingTime = false
   displayFullLangName = true
   description = "Work, notes, and experiments."
   
