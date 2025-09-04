@@ -2,6 +2,8 @@
 title: "About"
 date: 2025-01-04
 description: "Learn more about Omar and his work in technology and creativity."
+cover:
+  image: "/uploads/photo-1756978014824.jpg"
 ---
 
 <div style="display: flex; align-items: flex-start; gap: 20px; margin: 20px 0;">
