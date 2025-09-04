@@ -1281,30 +1281,18 @@ ${content}
 
         // Global function for editing files
         window.editFile = function(filename, sha) {
-          if (currentToken) {
-            editPortfolioItem(filename, sha);
-          } else {
-            alert('Please log in first');
-          }
+          editPortfolioItem(filename, sha);
         };
 
         // Global function for editing pages
         window.editPage = function(pageName) {
-          if (currentToken) {
-            editPage(pageName);
-          } else {
-            alert('Please log in first');
-          }
+          editPage(pageName);
         };
 
         // Global function for deleting files
         window.deleteFile = function(filename, sha) {
-          if (currentToken) {
-            if (confirm('Are you sure you want to delete ' + filename + '?')) {
-              deletePortfolioItem(filename, sha);
-            }
-          } else {
-            alert('Please log in first');
+          if (confirm('Are you sure you want to delete ' + filename + '?')) {
+            deletePortfolioItem(filename, sha);
           }
         };
 
