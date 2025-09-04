@@ -1,5 +1,5 @@
 ---
-title: "DIY"
+title: "Super Mechanic"
 date: 2025-09-04
 description: ""
 cover:
