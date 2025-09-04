@@ -1439,53 +1439,77 @@ title: "${title}"`;
         }
 
         async function createPoetryItem(title, description, tags, content, imagePath) {
-          const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          const date = new Date().toISOString().split('T')[0];
-          
-          let frontmatter = `---
+          try {
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const date = new Date().toISOString().split('T')[0];
+            
+            let frontmatter = `---
 title: "${title}"
 date: ${date}
 `;
 
-          if (description) {
-            frontmatter += `description: "${description}"
-`;
-          }
-
-          if (tags) {
-            const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-            if (tagArray.length > 0) {
-              frontmatter += `tags: [${tagArray.map(tag => `"${tag}"`).join(', ')}]
+            if (description) {
+              frontmatter += `description: "${description}"
 `;
             }
-          }
 
-          if (imagePath) {
-            frontmatter += `cover:
+            if (tags) {
+              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagArray.length > 0) {
+                frontmatter += `tags: [${tagArray.map(tag => `"${tag}"`).join(', ')}]
+`;
+              }
+            }
+
+            if (imagePath) {
+              frontmatter += `cover:
   image: "${imagePath}"
 `;
-          }
+            }
 
-          frontmatter += `---
+            frontmatter += `---
 
 ${content}`;
 
-          const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${slug}.md`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': 'token ' + currentToken,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+            // First check if file exists to get SHA
+            const checkResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${slug}.md`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            let requestBody = {
               message: `Add poetry post: ${title}`,
               content: btoa(unescape(encodeURIComponent(frontmatter)))
-            })
-          });
+            };
 
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to create poetry post');
+            // If file exists, add SHA to update it
+            if (checkResponse.ok) {
+              const existingFile = await checkResponse.json();
+              requestBody.sha = existingFile.sha;
+              requestBody.message = `Update poetry post: ${title}`;
+            }
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${slug}.md`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok) {
+              alert('Poetry post created successfully!');
+              await loadPoetryItems(currentToken);
+            } else {
+              const error = await response.json();
+              alert('Error creating poetry post: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error creating poetry post: ' + e.message);
           }
         }
 
