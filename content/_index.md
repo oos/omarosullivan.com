@@ -1,9 +1,8 @@
 ---
-title: "Omar O'Sullivan"
-description: "Work, notes, and experiments."
+title: "Omar O"
 ---
 
-# Writing & Thoughts
+I'm currently exploring the intersection of technology and creativity, building software products while also pursuing visual art and writing. You can check it out here if you so wish:
 
 Welcome to my digital space. Here I share my work, thoughts, and experiments across different mediums.
 
@@ -16,9 +15,8 @@ I'm currently exploring the intersection of technology and creativity, building 
 Explore the different sections of this site:
 
 - **[Sketches](/portfolio/)** - My visual work and creative projects
+- **[Poetry](/poetry/)** - My poetic writings
 - **[About](/about/)** - More about me and my background  
-- **[Contact](/contact/)** - Get in touch
+- **[Contact](/contact/)** - Say Hi :)
 
----
-
-*This site is built with Hugo and hosted on Netlify. The content is managed through a custom CMS that I developed.*
+#Most Recent Work
