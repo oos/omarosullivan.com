@@ -24,13 +24,13 @@ theme = "PaperMod"
     url = "/portfolio/"
     weight = 10
   [[menu.main]]
+    name = "Poetry"
+    url = "/poetry/"
+    weight = 15
+  [[menu.main]]
     name = "About"
     url = "/about/"
     weight = 20
-  [[menu.main]]
-    name = "Poetry"
-    url = "/poetry/"
-    weight = 40
   [[menu.main]]
     name = "Contact"
     url = "/contact/"
