@@ -1489,6 +1489,7 @@ ${content}`;
               await loadPoetryItems(currentToken);
             } else {
               const error = await response.json();
+              console.error('GitHub API Error:', error);
               alert('Error creating poetry post: ' + (error.message || 'Unknown error'));
             }
           } catch (e) {
@@ -2022,6 +2023,17 @@ ${content}
         window.editPageInternal = editPage;
         window.deletePortfolioItem = deletePortfolioItem;
         window.deletePageAndMenu = deletePageAndMenu;
+        
+        // Expose all required functions for regression testing
+        window.showAddPortfolioForm = showAddPortfolioForm;
+        window.showAddPageForm = showAddPageForm;
+        window.showAddPoetryForm = showAddPoetryForm;
+        window.loadPortfolioItems = loadPortfolioItems;
+        window.loadPages = loadPages;
+        window.loadPoetryItems = loadPoetryItems;
+        window.createPoetryItem = createPoetryItem;
+        window.editSiteSettings = editSiteSettings;
+        window.setupButtonListeners = setupButtonListeners;
       })();
 
 
