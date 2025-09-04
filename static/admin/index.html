@@ -1397,23 +1397,47 @@ ${content}
           );
         });
 
-        // Add portfolio button handler
-        document.getElementById('add-portfolio').addEventListener('click', () => {
-          showAddPortfolioForm();
-        });
 
-        // Edit buttons handlers
-        document.getElementById('edit-about').addEventListener('click', () => {
-          editPage('about');
-        });
-
-        document.getElementById('edit-contact').addEventListener('click', () => {
-          editPage('contact');
-        });
 
         // Function to set up button event listeners
         function setupButtonListeners() {
           console.log('Setting up button listeners...');
+          
+          // Add portfolio button handler
+          const addPortfolioBtn = document.getElementById('add-portfolio');
+          console.log('Add Portfolio button found:', !!addPortfolioBtn);
+          if (addPortfolioBtn) {
+            addPortfolioBtn.addEventListener('click', () => {
+              console.log('Add Portfolio button clicked');
+              showAddPortfolioForm();
+            });
+          } else {
+            console.error('Add Portfolio button not found');
+          }
+
+          // Edit about button handler
+          const editAboutBtn = document.getElementById('edit-about');
+          console.log('Edit About button found:', !!editAboutBtn);
+          if (editAboutBtn) {
+            editAboutBtn.addEventListener('click', () => {
+              console.log('Edit About button clicked');
+              editPage('about');
+            });
+          } else {
+            console.log('Edit About button not found (this is normal if page doesn\'t exist)');
+          }
+
+          // Edit contact button handler
+          const editContactBtn = document.getElementById('edit-contact');
+          console.log('Edit Contact button found:', !!editContactBtn);
+          if (editContactBtn) {
+            editContactBtn.addEventListener('click', () => {
+              console.log('Edit Contact button clicked');
+              editPage('contact');
+            });
+          } else {
+            console.log('Edit Contact button not found (this is normal if page doesn\'t exist)');
+          }
           
           // Site settings button handler
           const editSiteSettingsBtn = document.getElementById('edit-site-settings');
