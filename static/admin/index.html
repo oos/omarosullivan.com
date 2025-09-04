@@ -126,6 +126,85 @@
         return 'Global functions test complete';
       };
 
+      // Regression test suite to prevent breaking existing functionality
+      window.runRegressionTests = function() {
+        console.log('🧪 Running regression tests...');
+        const tests = [];
+        
+        // Test 1: Check if all required DOM elements exist
+        const requiredElements = [
+          'login-section',
+          'cms-interface', 
+          'login-btn',
+          'portfolio-list',
+          'pages-list',
+          'poetry-list',
+          'add-portfolio',
+          'add-page',
+          'add-poetry',
+          'edit-site-settings'
+        ];
+        
+        requiredElements.forEach(id => {
+          const element = document.getElementById(id);
+          const exists = !!element;
+          tests.push({ test: `Element ${id} exists`, passed: exists });
+          if (!exists) console.error(`❌ Missing element: ${id}`);
+        });
+        
+        // Test 2: Check if all required functions exist
+        const requiredFunctions = [
+          'showAddPortfolioForm',
+          'showAddPageForm', 
+          'showAddPoetryForm',
+          'loadPortfolioItems',
+          'loadPages',
+          'loadPoetryItems',
+          'createPoetryItem',
+          'editSiteSettings',
+          'setupButtonListeners'
+        ];
+        
+        requiredFunctions.forEach(funcName => {
+          const exists = typeof window[funcName] === 'function';
+          tests.push({ test: `Function ${funcName} exists`, passed: exists });
+          if (!exists) console.error(`❌ Missing function: ${funcName}`);
+        });
+        
+        // Test 3: Check if authentication variables are defined
+        const authVars = ['currentToken', 'isAuthenticated', 'isLoading'];
+        authVars.forEach(varName => {
+          const exists = window.hasOwnProperty(varName);
+          tests.push({ test: `Variable ${varName} defined`, passed: exists });
+          if (!exists) console.error(`❌ Missing variable: ${varName}`);
+        });
+        
+        // Test 4: Check if event listeners are properly attached
+        const buttons = ['add-portfolio', 'add-page', 'add-poetry', 'edit-site-settings'];
+        buttons.forEach(buttonId => {
+          const button = document.getElementById(buttonId);
+          if (button) {
+            const hasListeners = button.onclick !== null || button.addEventListener !== undefined;
+            tests.push({ test: `Button ${buttonId} has listeners`, passed: hasListeners });
+            if (!hasListeners) console.error(`❌ Button ${buttonId} missing listeners`);
+          }
+        });
+        
+        // Summary
+        const passed = tests.filter(t => t.passed).length;
+        const total = tests.length;
+        const success = passed === total;
+        
+        console.log(`🧪 Regression tests complete: ${passed}/${total} passed`);
+        if (success) {
+          console.log('✅ All regression tests passed!');
+        } else {
+          console.log('❌ Some regression tests failed!');
+        }
+        
+        return { passed, total, success, tests };
+      };
+
       window.showLoginForm = function() {
         // Reset authentication state
         window.currentToken = null;
@@ -1917,9 +1996,9 @@ ${content}
                 console.log('setupButtonListeners called from init');
                 
                 // Load content
-                loadPortfolioItems();
-                loadPoetryItems();
-                loadPages();
+                loadPortfolioItems(currentToken);
+                loadPoetryItems(currentToken);
+                loadPages(currentToken);
               } else {
                 log('[boot] Existing token invalid, clearing storage...');
                 clearInvalidTokens();
@@ -1938,6 +2017,12 @@ ${content}
         setTimeout(initializeAuth, 500);
         setTimeout(initializeAuth, 1500);
         setTimeout(initializeAuth, 3000);
+        
+        // Run regression tests after initialization
+        setTimeout(() => {
+          console.log('🔍 Running automatic regression tests...');
+          window.runRegressionTests();
+        }, 4000);
 
         // Update the global function references to point to the actual functions
         window.editPortfolioItem = editPortfolioItem;
