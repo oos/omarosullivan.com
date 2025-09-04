@@ -1,28 +1,49 @@
-<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-  <a href="javascript:history.back()" style="color: #666; text-decoration: none; font-size: 16px; display: inline-block; padding: 5px 0;">
-    ←
+<!-- Top back button for gallery navigation -->
+<div style="margin-bottom: 20px;">
+  <a id="gallery-back-button" href="#" style="color: #666; text-decoration: none; font-size: 16px; display: inline-block; padding: 5px 0;">
+    ← Back
   </a>
-  <div id="nav-arrows" style="display: flex; gap: 20px;">
-    <a id="prev-arrow" href="#" style="color: #666; text-decoration: none; font-size: 24px; padding: 8px; display: none;">‹</a>
-    <a id="next-arrow" href="#" style="color: #666; text-decoration: none; font-size: 24px; padding: 8px; display: none;">›</a>
-  </div>
+</div>
+
+<!-- Bottom navigation for image navigation - positioned at the very bottom -->
+<div style="position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; z-index: 1000; pointer-events: none;">
+  <a id="prev-bottom-arrow" href="#" style="background: #007cba; color: white; text-decoration: none; padding: 12px 20px; border-radius: 25px; display: none; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.2); margin-right: 10px; pointer-events: auto;">← Prev</a>
+  <a id="next-bottom-arrow" href="#" style="background: #007cba; color: white; text-decoration: none; padding: 12px 20px; border-radius: 25px; display: none; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: auto;">Next →</a>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Get current page info
   const currentPath = window.location.pathname;
+  console.log('Current path:', currentPath);
+  
   const isPhotography = currentPath.includes('/photography/');
   const isPortfolio = currentPath.includes('/portfolio/');
   const isPoetry = currentPath.includes('/poetry/');
-  
+
   if (isPhotography || isPortfolio || isPoetry) {
     // Determine section
     let section = '';
     if (isPhotography) section = 'photography';
     else if (isPortfolio) section = 'portfolio';
     else if (isPoetry) section = 'poetry';
-    
+
+    console.log('Detected section:', section);
+
+    // Set up gallery back button
+    const galleryBackButton = document.getElementById('gallery-back-button');
+    if (galleryBackButton) {
+      galleryBackButton.href = `/${section}/`;
+      galleryBackButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = `/${section}/`;
+      });
+      console.log('Gallery back button set to:', `/${section}/`);
+    }
+
+    // Show the bottom navigation buttons
+    console.log('Setting up bottom navigation');
+
     // Get all pages in this section
     fetch(`/${section}/`)
       .then(response => response.text())
@@ -32,23 +53,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const links = Array.from(doc.querySelectorAll(`a[href*="/${section}/"]`))
           .map(a => a.getAttribute('href'))
           .filter(href => href && href !== `/${section}/` && !href.includes('#'))
+          .map(href => {
+            // Remove any domain prefix (http://, https://, //)
+            return href.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/\/[^\/]+/, '');
+          })
           .sort();
         
+        // Add current page to links if not already present
+        if (!links.includes(currentPath)) {
+          links.push(currentPath);
+          links.sort();
+        }
+        
+        console.log('Found links:', links);
         const currentIndex = links.indexOf(currentPath);
+        console.log('Current index:', currentIndex, 'Total links:', links.length);
         
         if (currentIndex > 0) {
-          const prevLink = document.getElementById('prev-arrow');
-          prevLink.href = links[currentIndex - 1];
-          prevLink.style.display = 'block';
+          const prevLink = document.getElementById('prev-bottom-arrow');
+          if (prevLink) {
+            prevLink.href = links[currentIndex - 1];
+            prevLink.style.display = 'inline-block';
+            console.log('Prev link shown:', links[currentIndex - 1]);
+          }
         }
         
         if (currentIndex < links.length - 1) {
-          const nextLink = document.getElementById('next-arrow');
-          nextLink.href = links[currentIndex + 1];
-          nextLink.style.display = 'block';
+          const nextLink = document.getElementById('next-bottom-arrow');
+          if (nextLink) {
+            nextLink.href = links[currentIndex + 1];
+            nextLink.style.display = 'inline-block';
+            console.log('Next link shown:', links[currentIndex + 1]);
+          }
+        }
+        
+        // Add click handlers to prevent any scrollIntoView errors
+        const prevButton = document.getElementById('prev-bottom-arrow');
+        const nextButton = document.getElementById('next-bottom-arrow');
+        
+        if (prevButton) {
+          prevButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.href;
+          });
+        }
+        
+        if (nextButton) {
+          nextButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.href;
+          });
         }
       })
       .catch(error => console.log('Could not load navigation:', error));
+  } else {
+    console.log('Not a gallery page, hiding bottom nav');
   }
 });
 </script>

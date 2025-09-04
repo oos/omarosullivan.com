@@ -27,7 +27,7 @@
       {{- end }}
     </header>
     {{- if .Params.cover }}
-    <div class="post-cover">
+    <div class="post-cover" style="position: relative;">
       {{- if .Params.cover.image }}
       <img src="{{ .Params.cover.image | absURL }}" alt="{{ .Title }}" style="max-width: 100%; height: auto; border-radius: 8px;" />
       {{- end }}

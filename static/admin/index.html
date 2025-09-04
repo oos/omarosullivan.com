@@ -502,7 +502,7 @@
                   const hasPortfolioDir = items.some(i => i.type === 'dir' && i.name === 'portfolio');
                   
                   return item.name.endsWith('.md') && 
-                         (item.name === '_index.md' || !item.name.startsWith('_')) &&
+                (item.name === '_index.md' || !item.name.startsWith('_')) && 
                          !(isSketchesFile && hasPortfolioDir);
                 } else if (item.type === 'dir') {
                   // Include directories that have _index.md files (sections)
@@ -1700,16 +1700,19 @@ title: "${title}"`;
             let description = '';
             let tags = '';
             let contentText = '';
+            let featured = false;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
               const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
               const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
+              const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
               if (titleMatch) title = titleMatch[1].trim();
               if (descMatch) description = descMatch[1].trim();
               if (tagsMatch) tags = tagsMatch[1].trim();
+              if (featuredMatch) featured = featuredMatch[1] === 'true';
               contentText = frontmatterMatch[2];
             } else {
               contentText = content;
@@ -2800,10 +2803,12 @@ description: "${description}"`;
               const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
               const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
+              const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
               if (titleMatch) title = titleMatch[1].trim();
               if (descMatch) description = descMatch[1].trim();
               if (tagsMatch) tags = tagsMatch[1].trim();
+              if (featuredMatch) featured = featuredMatch[1] === 'true';
               contentText = frontmatterMatch[2];
             } else {
               contentText = content;
