@@ -1481,35 +1481,30 @@ ${content}
               const newTitle = document.getElementById('site-title').value;
               const newDescription = document.getElementById('site-description').value;
               
-              await updateSiteSettings(file.sha, newTitle, newDescription);
-              form.remove();
+              console.log('Updating site settings:', { newTitle, newDescription, sha: file.sha });
+              
+              try {
+                await updateSiteSettings(file.sha, newTitle, newDescription, content);
+                form.remove();
+              } catch (error) {
+                console.error('Error updating site settings:', error);
+                alert('Error updating site settings: ' + error.message);
+              }
             });
           } catch (e) {
             alert('Error loading site settings: ' + e.message);
           }
         }
 
-        async function updateSiteSettings(sha, title, description) {
+        async function updateSiteSettings(sha, title, description, content) {
           try {
-            // Read the current config.toml content
-            const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-
-            if (!response.ok) {
-              alert('Error loading current config');
-              return;
-            }
-
-            const file = await response.json();
-            let content = decodeURIComponent(escape(atob(file.content)));
+            console.log('updateSiteSettings called with:', { sha, title, description, currentToken: currentToken ? 'exists' : 'missing' });
             
             // Update title and description in the content
-            content = content.replace(/title\s*=\s*["'][^"']*["']/, `title = "${title}"`);
-            content = content.replace(/description\s*=\s*["'][^"']*["']/, `description = "${description}"`);
+            let updatedContent = content.replace(/title\s*=\s*["'][^"']*["']/, `title = "${title}"`);
+            updatedContent = updatedContent.replace(/description\s*=\s*["'][^"']*["']/, `description = "${description}"`);
+
+            console.log('Updated content:', updatedContent.substring(0, 200) + '...');
 
             // Update the file
             const updateResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
@@ -1521,18 +1516,22 @@ ${content}
               },
               body: JSON.stringify({
                 message: `Update site settings: ${title}`,
-                content: btoa(unescape(encodeURIComponent(content))),
+                content: btoa(unescape(encodeURIComponent(updatedContent))),
                 sha: sha
               })
             });
+
+            console.log('Update response status:', updateResponse.status);
 
             if (updateResponse.ok) {
               alert('Site settings updated successfully! The changes will be visible after the next site build.');
             } else {
               const error = await updateResponse.json();
+              console.error('GitHub API error:', error);
               alert('Error updating site settings: ' + (error.message || 'Unknown error'));
             }
           } catch (e) {
+            console.error('Exception in updateSiteSettings:', e);
             alert('Error updating site settings: ' + e.message);
           }
         }
