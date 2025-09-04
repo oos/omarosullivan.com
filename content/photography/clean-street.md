@@ -1,5 +1,5 @@
 ---
-title: "Clean street"
+title: "Sacred Lather"
 date: 2025-09-04
 description: ""
 cover:
