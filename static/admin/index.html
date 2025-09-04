@@ -2269,8 +2269,11 @@ ${content}
 
         async function saveMainNavigation(sha) {
           try {
+            console.log('saveMainNavigation called with sha:', sha);
             const container = document.getElementById('nav-items-container');
             const navItems = [];
+            
+            console.log('Container children count:', container.children.length);
             
             // Collect all navigation items
             for (let i = 0; i < container.children.length; i++) {
@@ -2279,10 +2282,14 @@ ${content}
               const url = item.querySelector('[data-field="url"]').value;
               const weight = parseInt(item.querySelector('[data-field="weight"]').value);
               
+              console.log('Item', i, ':', { name, url, weight });
+              
               if (name && url) {
                 navItems.push({ name, url, weight });
               }
             }
+            
+            console.log('Collected nav items:', navItems);
             
             // Sort by weight
             navItems.sort((a, b) => a.weight - b.weight);
@@ -2322,6 +2329,7 @@ ${content}
             }
             
             // Save the updated config
+            console.log('Saving config with content length:', content.length);
             const saveResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
               method: 'PUT',
               headers: {
@@ -2336,11 +2344,15 @@ ${content}
               })
             });
             
+            console.log('Save response status:', saveResponse.status);
+            
             if (saveResponse.ok) {
+              console.log('Navigation updated successfully!');
               alert('Navigation updated successfully!');
               document.getElementById('edit-main-nav-modal').remove();
             } else {
               const error = await saveResponse.json();
+              console.error('Error updating navigation:', error);
               alert('Error updating navigation: ' + (error.message || 'Unknown error'));
             }
             
