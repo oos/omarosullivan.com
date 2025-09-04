@@ -2596,10 +2596,9 @@ description: "${description}"`;
           } finally {
             window.isLoadingPhotography = false;
           }
-          } catch (e) {
-            log(`[api] Error loading photography items: ${e.message}`, 'error');
-            window.isLoadingPhotography = false;
-          }
+        } catch (e) {
+          log(`[api] Error loading photography items: ${e.message}`, 'error');
+          window.isLoadingPhotography = false;
         }
 
         async function editPhotographyItem(filename, sha) {
