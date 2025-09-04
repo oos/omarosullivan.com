@@ -7,8 +7,6 @@ I'm currently exploring the intersection of technology and creativity, building 
 Welcome to my digital space. Here I share my work, thoughts, and experiments across different mediums.
 
 Check it out:
-
-#Sketches
 - **[Poetry](/poetry/)** - My poetic writings
 - **[About](/about/)** - More about me and my background  
 - **[Contact](/contact/)** - Say Hi :)
