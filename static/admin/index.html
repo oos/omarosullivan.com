@@ -448,18 +448,59 @@
               log('[api] Loaded ' + items.length + ' sketches', 'token');
               
               portfolioList.innerHTML = '';
-              items.forEach(item => {
+              for (const item of items) {
                 if (item.name.endsWith('.md')) {
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                  div.innerHTML = `
-                    <strong>${item.name}</strong>
-                    <button onclick="editFile('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                    <button onclick="deleteFile('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                  `;
-                  portfolioList.appendChild(div);
+                  
+                  // Handle _index.md files differently (these are section pages, not individual portfolio items)
+                  if (item.name === '_index.md') {
+                    div.innerHTML = `
+                      <strong>${item.name} (Portfolio Section Page)</strong>
+                      <button onclick="editPage('portfolio')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                    `;
+                    portfolioList.appendChild(div);
+                  } else {
+                    // Get the title from the file content
+                    try {
+                      const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${item.name}`, {
+                        headers: {
+                          'Authorization': 'token ' + token,
+                          'Accept': 'application/vnd.github.v3+json'
+                        }
+                      });
+                      
+                      if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                        
+                        div.innerHTML = `
+                          <strong>${displayTitle}</strong>
+                          <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      } else {
+                        // Fallback to filename if we can't get the title
+                        div.innerHTML = `
+                          <strong>${item.name}</strong>
+                          <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      }
+                    } catch (error) {
+                      // Fallback to filename if there's an error
+                      div.innerHTML = `
+                        <strong>${item.name}</strong>
+                        <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                        <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      `;
+                    }
+                    portfolioList.appendChild(div);
+                  }
                 }
-              });
+              }
               
               return items;
             } else if (response.status === 401) {
@@ -829,7 +870,7 @@
 
         async function createPortfolioItem(title, description, tags, content, imageFile) {
           try {
-            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
             const date = new Date().toISOString().split('T')[0];
             
@@ -1640,26 +1681,58 @@ title: "${title}"`;
               const poetryItems = items.filter(item => item.name.endsWith('.md'));
               console.log('[debug] Filtered poetry items:', poetryItems);
               
-              poetryItems.forEach(item => {
+                              for (const item of poetryItems) {
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                
-                // Handle _index.md files differently (these are section pages, not individual poems)
-                if (item.name === '_index.md') {
-                  div.innerHTML = `
-                    <strong>${item.name} (Poetry Section Page)</strong>
-                    <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                  `;
-                } else {
-                  div.innerHTML = `
-                    <strong>${item.name}</strong>
-                    <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                    <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                  `;
+                  
+                  // Handle _index.md files differently (these are section pages, not individual poems)
+                  if (item.name === '_index.md') {
+                    div.innerHTML = `
+                      <strong>${item.name} (Poetry Section Page)</strong>
+                      <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                    `;
+                    poetryList.appendChild(div);
+                  } else {
+                    // Get the title from the file content
+                    try {
+                      const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${item.name}`, {
+                        headers: {
+                          'Authorization': 'token ' + token,
+                          'Accept': 'application/vnd.github.v3+json'
+                        }
+                      });
+                      
+                      if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                        
+                        div.innerHTML = `
+                          <strong>${displayTitle}</strong>
+                          <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      } else {
+                        // Fallback to filename if we can't get the title
+                        div.innerHTML = `
+                          <strong>${item.name}</strong>
+                          <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      }
+                    } catch (error) {
+                      // Fallback to filename if there's an error
+                      div.innerHTML = `
+                        <strong>${item.name}</strong>
+                        <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                        <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      `;
+                    }
+                    poetryList.appendChild(div);
+                  }
+                  console.log('[debug] Added poetry item to list:', item.name);
                 }
-                poetryList.appendChild(div);
-                console.log('[debug] Added poetry item to list:', item.name);
-              });
               
               return items;
             } else if (response.status === 401) {
@@ -1909,7 +1982,7 @@ description: "${description}"`;
 
         async function createPoetryItem(title, description, tags, content, imagePath, featured = false) {
           try {
-          const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
           const date = new Date().toISOString().split('T')[0];
           
@@ -2676,7 +2749,7 @@ ${content}
 
         async function createPhotographyItem(title, description, tags, content, imagePath) {
           try {
-            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
             const date = new Date().toISOString().split('T')[0];
             
@@ -2754,7 +2827,7 @@ description: "${description}"`;
                 const photographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered photography items:', photographyItems);
                 
-                photographyItems.forEach(item => {
+                for (const item of photographyItems) {
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                   
@@ -2764,16 +2837,48 @@ description: "${description}"`;
                       <strong>${item.name} (Photography Section Page)</strong>
                       <button onclick="editPage('photography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
                     `;
+                    photographyList.appendChild(div);
                   } else {
-                    div.innerHTML = `
-                      <strong>${item.name}</strong>
-                      <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                      <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                    `;
+                    // Get the title from the file content
+                    try {
+                      const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${item.name}`, {
+                        headers: {
+                          'Authorization': 'token ' + token,
+                          'Accept': 'application/vnd.github.v3+json'
+                        }
+                      });
+                      
+                      if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                        
+                        div.innerHTML = `
+                          <strong>${displayTitle}</strong>
+                          <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      } else {
+                        // Fallback to filename if we can't get the title
+                        div.innerHTML = `
+                          <strong>${item.name}</strong>
+                          <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      }
+                    } catch (error) {
+                      // Fallback to filename if there's an error
+                      div.innerHTML = `
+                        <strong>${item.name}</strong>
+                        <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                        <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      `;
+                    }
+                    photographyList.appendChild(div);
                   }
-                  photographyList.appendChild(div);
                   console.log('[debug] Added photography item to list:', item.name);
-                });
+                }
                 
                 return items;
               }
@@ -3236,6 +3341,12 @@ description: "${description}"`;
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown) - Optional:</label>
                   <textarea id="videography-content" rows="6" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;"></textarea>
                 </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+                    <input type="checkbox" id="videography-featured" style="margin:0;">
+                    Featured on Homepage
+                  </label>
+                </div>
                 <div style="text-align:right;">
                   <button type="button" onclick="document.getElementById('add-videography-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin-right:10px;">Cancel</button>
                   <button type="submit" style="background:#fd7e14;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;">Add Video</button>
@@ -3255,9 +3366,10 @@ description: "${description}"`;
               const videoType = document.getElementById('videography-type').value;
               const tags = document.getElementById('videography-tags').value;
               const content = document.getElementById('videography-content').value;
+              const featured = document.getElementById('videography-featured').checked;
               
               // Create videography item
-              await createVideographyItem(title, description, videoUrl, videoType, tags, content);
+              await createVideographyItem(title, description, videoUrl, videoType, tags, content, featured);
 
               form.remove();
               loadVideographyItems(currentToken);
@@ -3267,9 +3379,9 @@ description: "${description}"`;
           });
         }
 
-        async function createVideographyItem(title, description, videoUrl, videoType, tags, content) {
+        async function createVideographyItem(title, description, videoUrl, videoType, tags, content, featured = false) {
           try {
-            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
             const date = new Date().toISOString().split('T')[0];
             
@@ -3279,7 +3391,8 @@ title: "${title}"
 date: ${date}
 description: "${description}"
 video_url: "${videoUrl}"
-video_type: "${videoType}"`;
+video_type: "${videoType}"
+featured: ${featured}`;
 
             if (tags) {
               const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
@@ -3349,7 +3462,7 @@ tags:
                 const videographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered videography items:', videographyItems);
                 
-                videographyItems.forEach(item => {
+                for (const item of videographyItems) {
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                   
@@ -3359,16 +3472,48 @@ tags:
                       <strong>${item.name} (Videography Section Page)</strong>
                       <button onclick="editPage('videography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
                     `;
+                    videographyList.appendChild(div);
                   } else {
-                    div.innerHTML = `
-                      <strong>${item.name}</strong>
-                      <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                      <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                    `;
+                    // Get the title from the file content
+                    try {
+                      const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${item.name}`, {
+                        headers: {
+                          'Authorization': 'token ' + token,
+                          'Accept': 'application/vnd.github.v3+json'
+                        }
+                      });
+                      
+                      if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                        
+                        div.innerHTML = `
+                          <strong>${displayTitle}</strong>
+                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      } else {
+                        // Fallback to filename if we can't get the title
+                        div.innerHTML = `
+                          <strong>${item.name}</strong>
+                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        `;
+                      }
+                    } catch (error) {
+                      // Fallback to filename if there's an error
+                      div.innerHTML = `
+                        <strong>${item.name}</strong>
+                        <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                        <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      `;
+                    }
+                    videographyList.appendChild(div);
                   }
-                  videographyList.appendChild(div);
                   console.log('[debug] Added videography item to list:', item.name);
-                });
+                }
                 
                 return items;
               }
@@ -3413,6 +3558,7 @@ tags:
             let videoType = '';
             let tags = '';
             let contentText = '';
+            let featured = false;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
@@ -3421,12 +3567,14 @@ tags:
               const videoUrlMatch = frontmatter.match(/video_url:\s*["']?([^"'\n]+)["']?/);
               const videoTypeMatch = frontmatter.match(/video_type:\s*["']?([^"'\n]+)["']?/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
+              const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
               if (titleMatch) title = titleMatch[1].trim();
               if (descMatch) description = descMatch[1].trim();
               if (videoUrlMatch) videoUrl = videoUrlMatch[1].trim();
               if (videoTypeMatch) videoType = videoTypeMatch[1].trim();
               if (tagsMatch) tags = tagsMatch[1].trim();
+              if (featuredMatch) featured = featuredMatch[1] === 'true';
               contentText = frontmatterMatch[2];
             } else {
               contentText = content;
@@ -3469,6 +3617,12 @@ tags:
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown) - Optional:</label>
                     <textarea id="edit-videography-content" rows="6" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">${contentText}</textarea>
                   </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-weight:bold;">
+                      <input type="checkbox" id="edit-videography-featured" ${featured ? 'checked' : ''} style="margin:0;">
+                      Featured on Homepage
+                    </label>
+                  </div>
                   <div style="text-align:right;">
                     <button type="button" onclick="document.getElementById('edit-videography-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin-right:10px;">Cancel</button>
                     <button type="submit" style="background:#fd7e14;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;">Save</button>
@@ -3488,8 +3642,9 @@ tags:
                 const newVideoType = document.getElementById('edit-videography-type').value;
                 const newTags = document.getElementById('edit-videography-tags').value;
                 const newContent = document.getElementById('edit-videography-content').value;
+                const newFeatured = document.getElementById('edit-videography-featured').checked;
                 
-                await updateVideographyItem(filename, sha, newTitle, newDescription, newVideoUrl, newVideoType, newTags, newContent);
+                await updateVideographyItem(filename, sha, newTitle, newDescription, newVideoUrl, newVideoType, newTags, newContent, newFeatured);
 
                 form.remove();
                 loadVideographyItems(currentToken);
@@ -3502,7 +3657,7 @@ tags:
           }
         }
 
-        async function updateVideographyItem(filename, sha, title, description, videoUrl, videoType, tags, content) {
+        async function updateVideographyItem(filename, sha, title, description, videoUrl, videoType, tags, content, featured = false) {
           try {
             console.log('updateVideographyItem called with filename:', filename, 'sha:', sha);
             const date = new Date().toISOString().split('T')[0];
@@ -3513,7 +3668,8 @@ title: "${title}"
 date: ${date}
 description: "${description}"
 video_url: "${videoUrl}"
-video_type: "${videoType}"`;
+video_type: "${videoType}"
+featured: ${featured}`;
 
             if (tags) {
               const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);

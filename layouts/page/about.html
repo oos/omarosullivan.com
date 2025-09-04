@@ -2,7 +2,6 @@
 <main class="main">
   <article class="post-single">
     <header class="post-header">
-      {{ partial "back_button.html" . }}
       <h1 class="post-title">{{ .Title }}</h1>
       {{- if .Description }}
       <div class="post-description">
@@ -27,13 +26,13 @@
       {{- end }}
     </header>
     {{- if .Params.cover }}
-    <div class="post-cover" style="position: relative;">
+    <div class="post-cover">
       {{- if .Params.cover.image }}
-      <img src="{{ .Params.cover.image | absURL }}" alt="{{ .Title }}" style="max-width: 100%; height: auto; border-radius: 8px;" />
+      <img src="{{ .Params.cover.image | absURL }}" alt="{{ .Title }}" />
       {{- end }}
     </div>
     {{- end }}
-    <div class="post-content" style="white-space: pre-line;">
+    <div class="post-content">
       {{ .Content }}
     </div>
     {{- if .Params.tags }}

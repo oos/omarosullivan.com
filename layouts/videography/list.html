@@ -1,7 +1,6 @@
 {{- define "main" }}
 
 <header class="page-header">
-  {{- partial "breadcrumbs.html" . }}
   <h1>
     {{ .Title }}
     {{- if and (or (eq .Kind `term`) (eq .Kind `section`)) (.Param "ShowRssButtonInSectionTermList") }}
@@ -57,11 +56,11 @@
     {{- if eq .Params.video_type "youtube" }}
       {{- $videoId := index (split .Params.video_url "v=") 1 }}
       {{- $videoId = index (split $videoId "&") 0 }}
-      <iframe width="100%" height="400" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
+      <iframe width="100%" height="500" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
     {{- else if eq .Params.video_type "vimeo" }}
       {{- $videoId := index (split .Params.video_url "vimeo.com/") 1 }}
       {{- $videoId = index (split $videoId "?") 0 }}
-      <iframe width="100%" height="400" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
+      <iframe width="100%" height="500" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
     {{- end }}
   </div>
   {{- end }}
@@ -149,7 +148,7 @@
 
 .videography-grid .video-cover iframe {
   width: 100% !important;
-  height: 400px !important;
+  height: 500px !important;
   border-radius: 8px !important;
   max-width: 100% !important;
   margin: 0 !important;
@@ -168,7 +167,7 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .videography-grid .video-cover iframe {
-    height: 250px !important;
+    height: 300px !important;
   }
 }
 </style>
