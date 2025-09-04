@@ -1641,7 +1641,7 @@ title: "${title}"`;
                 if (item.name === '_index.md') {
                   div.innerHTML = `
                     <strong>${item.name} (Poetry Section Page)</strong>
-                    <button onclick="editPage('poetry/${item.name.replace('.md', '')}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                    <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
                   `;
                 } else {
                   div.innerHTML = `
@@ -2740,7 +2740,7 @@ description: "${description}"`;
                   if (item.name === '_index.md') {
                     div.innerHTML = `
                       <strong>${item.name} (Photography Section Page)</strong>
-                      <button onclick="editPage('photography/${item.name.replace('.md', '')}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                      <button onclick="editPage('photography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
                     `;
                   } else {
                     div.innerHTML = `
