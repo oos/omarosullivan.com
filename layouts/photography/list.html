@@ -1,4 +1,6 @@
 {{- define "main" }}
+
+{{- if not .IsHome | and .Title }}
 <header class="page-header">
   <h1>
     {{ .Title }}
@@ -21,6 +23,7 @@
   </div>
   {{- end }}
 </header>
+{{- end }}
 
 {{- if .Content }}
 <div class="post-content">
@@ -38,8 +41,6 @@
 {{- end }}
 
 {{- $term := .Data.Term }}
-
-<div class="photography-grid" style="display: grid; grid-template-columns: 1fr; gap: 20px; margin: 20px auto; align-items: start; justify-items: center; max-width: 800px;">
 {{- range $index, $page := $paginator.Pages }}
 
 {{- $class := "post-entry" }}
@@ -49,13 +50,35 @@
 {{- $class = "post-entry tag-entry" }}
 {{- end }}
 
-<article class="{{ $class }}" style="margin-bottom: 20px; break-inside: avoid;">
+<article class="{{ $class }}">
   {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
   {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">
+      {{- .Title }}
+      {{- if .Draft }}
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+      {{- end }}
+    </h2>
+  </header>
+  {{- if (ne (.Param "hideSummary") true) }}
+  <div class="entry-content">
+    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+  </div>
+  {{- end }}
+  {{- if and (not (.Param "hideMeta")) (not .IsHome) }}
+  <footer class="entry-footer">
+    {{- partial "post_meta.html" . -}}
+  </footer>
+  {{- end }}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
-</div>
 
 {{- if gt $paginator.TotalPages 1 }}
 <footer class="page-footer" style="margin-top: 40px; text-align: center; clear: both;">
@@ -80,75 +103,5 @@
 </footer>
 {{- end }}
 
-<style>
-/* Ensure title is left-aligned */
-.page-header h1 {
-  text-align: left !important;
-}
-
-/* Hide sidebar pagination */
-.sidebar .pagination,
-aside .pagination {
-  display: none !important;
-}
-
-/* Ensure proper single column layout */
-.photography-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 20px !important;
-  align-items: start !important;
-  justify-items: center !important;
-}
-
-.photography-grid .post-entry {
-  margin-bottom: 0 !important;
-  break-inside: avoid !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Image styling - match homepage */
-.photography-grid .post-entry .entry-cover img,
-.photography-grid .post-entry figure.entry-cover img {
-  height: 300px !important;
-  object-fit: cover !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  display: block !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  border-radius: 8px !important;
-}
-
-/* Remove card styling */
-.photography-grid .post-entry {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-/* Hide entry headers and titles */
-.photography-grid .post-entry .entry-header,
-.photography-grid .post-entry h2,
-.photography-grid .post-entry .entry-hint-parent {
-  display: none !important;
-}
-
-/* Hide powered by text */
-.page-footer .powered-by,
-footer .powered-by,
-.powered-by {
-  display: none !important;
-}
-
-/* Responsive design - already single column */
-@media (max-width: 768px) {
-  .photography-grid {
-    gap: 15px !important;
-  }
-}
-</style>
 
 {{- end }}
