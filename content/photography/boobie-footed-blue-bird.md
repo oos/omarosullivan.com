@@ -1,5 +1,5 @@
 ---
-title: "Boobie-footed Blue bird"
+title: "Caught blue-footed"
 date: 2025-09-04
 description: ""
 cover:

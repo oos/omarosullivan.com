@@ -15,6 +15,7 @@ theme = "PaperMod"
   ShowBreadCrumbs = false
   ShowReadingTime = false
   ShowDate = false
+  ShowPoweredBy = false
   displayFullLangName = true
   description = "Work, notes, and experiments."
   ShowPostNav = true
