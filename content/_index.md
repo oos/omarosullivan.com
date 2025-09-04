@@ -2,11 +2,13 @@
 title: "Omar O"
 ---
 
-I'm currently exploring the intersection of technology and creativity, building software products while also pursuing visual art and writing. Check it out:
+I'm currently exploring the intersection of technology and creativity, building software products while also pursuing visual art and writing. You can check it out here if you so wish:
 
-- **[Portfolio](/portfolio/)** - My visual work and creative projects
+- **[Sketches](/sketches/)** - My visual work 
+- **[Poetry](/poetry/)** - My poetic writings
 - **[About](/about/)** - More about me and my background  
-- **[Contact](/contact/)** - Get in touch
+- **[Contact](/contact/)** - Say Hi :)
+
 
 
 
