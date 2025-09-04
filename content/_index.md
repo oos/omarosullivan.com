@@ -1,14 +1,8 @@
 ---
-title: "Omar O"
+title: "omaR o'sullivaN"
 ---
 
-I'm currently exploring the intersection of technology and creativity, building software products while also pursuing visual art and writing. You can check it out here if you so wish:
+Hi and Welcome to my digital space :) I'm currently exploring the intersection of technology and creativity... building software products while also pursuing the arts (sketches, photography, music, writing, etc). 
 
-Welcome to my digital space. Here I share my work, thoughts, and experiments across different mediums.
 
-Check it out:
-- **[Sketches](/portfolio/)** - My Sketches
-- **[Poetry](/poetry/)** - My poetic writings
-- **[About](/about/)** - More about me and my background  
-- **[Contact](/contact/)** - Say Hi :)
 
