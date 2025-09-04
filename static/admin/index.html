@@ -42,6 +42,56 @@
     </div>
 
     <script>
+      // Define global functions immediately - before IIFE
+      window.editFile = function(filename, sha) {
+        console.log('editFile called with:', filename, sha);
+        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
+        if (window.editPortfolioItem) {
+          window.editPortfolioItem(filename, sha);
+        } else {
+          alert('Please wait for the page to load completely');
+        }
+      };
+
+      window.editPage = function(pageName) {
+        console.log('editPage called with:', pageName);
+        console.log('window.editPageInternal exists:', !!window.editPageInternal);
+        if (window.editPageInternal) {
+          window.editPageInternal(pageName);
+        } else {
+          alert('Please wait for the page to load completely');
+        }
+      };
+
+      window.deleteFile = function(filename, sha) {
+        if (confirm('Are you sure you want to delete ' + filename + '?')) {
+          if (window.deletePortfolioItem) {
+            window.deletePortfolioItem(filename, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        }
+      };
+
+      window.deletePage = function(pageName, sha) {
+        if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
+          if (window.deletePageAndMenu) {
+            window.deletePageAndMenu(pageName, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        }
+      };
+
+      window.testGlobalFunctions = function() {
+        console.log('Testing global functions...');
+        console.log('window.editFile exists:', !!window.editFile);
+        console.log('window.editPage exists:', !!window.editPage);
+        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
+        console.log('window.editPageInternal exists:', !!window.editPageInternal);
+        return 'Global functions test complete';
+      };
+
       (function () {
         const loginSection = document.getElementById('login-section');
         const cmsInterface = document.getElementById('cms-interface');
@@ -1444,58 +1494,7 @@ ${content}
         window.deletePageAndMenu = deletePageAndMenu;
       })();
 
-      // Test function to verify global scope
-      window.testGlobalFunctions = function() {
-        console.log('Testing global functions...');
-        console.log('window.editFile exists:', !!window.editFile);
-        console.log('window.editPage exists:', !!window.editPage);
-        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
-        console.log('window.editPageInternal exists:', !!window.editPageInternal);
-        return 'Global functions test complete';
-      };
 
-      // Global functions accessible from HTML onclick handlers
-      window.editFile = function(filename, sha) {
-        console.log('editFile called with:', filename, sha);
-        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
-        // Access the function from the IIFE scope
-        if (window.editPortfolioItem) {
-          window.editPortfolioItem(filename, sha);
-        } else {
-          alert('Please wait for the page to load completely');
-        }
-      };
-
-      window.editPage = function(pageName) {
-        console.log('editPage called with:', pageName);
-        console.log('window.editPageInternal exists:', !!window.editPageInternal);
-        // Access the function from the IIFE scope
-        if (window.editPageInternal) {
-          window.editPageInternal(pageName);
-        } else {
-          alert('Please wait for the page to load completely');
-        }
-      };
-
-      window.deleteFile = function(filename, sha) {
-        if (confirm('Are you sure you want to delete ' + filename + '?')) {
-          if (window.deletePortfolioItem) {
-            window.deletePortfolioItem(filename, sha);
-          } else {
-            alert('Please wait for the page to load completely');
-          }
-        }
-      };
-
-      window.deletePage = function(pageName, sha) {
-        if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
-          if (window.deletePageAndMenu) {
-            window.deletePageAndMenu(pageName, sha);
-          } else {
-            alert('Please wait for the page to load completely');
-          }
-        }
-      };
     </script>
   </body>
 </html>
