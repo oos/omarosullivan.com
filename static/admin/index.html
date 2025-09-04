@@ -419,7 +419,9 @@
             cmsInterface.style.display = 'block';
             
             // Set up button event listeners now that CMS interface is visible
+            console.log('About to call setupButtonListeners...');
             setupButtonListeners();
+            console.log('setupButtonListeners called');
             
             // Load portfolio items and pages only if not already loaded
             if (!isLoading) {
@@ -1590,7 +1592,9 @@ ${content}
                 cmsInterface.style.display = 'block';
                 
                 // Set up button event listeners now that CMS interface is visible
+                console.log('About to call setupButtonListeners from init...');
                 setupButtonListeners();
+                console.log('setupButtonListeners called from init');
                 
                 // Load content
                 loadPortfolioItems();
