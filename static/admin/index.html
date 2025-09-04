@@ -1160,8 +1160,8 @@ ${content}
             const isAboutPage = pageName === 'about';
             
             // Parse existing image dimensions from content
-            let existingImageWidth = '200px';
-            let existingImageHeight = '200px';
+            let existingImageWidth = '150px';
+            let existingImageHeight = '150px';
             if (isAboutPage && body) {
               const widthMatch = body.match(/width:\s*(\d+px)/);
               const heightMatch = body.match(/height:\s*(\d+px)/);
@@ -1181,7 +1181,7 @@ ${content}
                   </div>
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Width:</label>
-                    <input type="text" id="edit-page-image-width" value="${existingImageWidth}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 200px, 250px">
+                    <input type="text" id="edit-page-image-width" value="${existingImageWidth}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 150px, 200px">
                     <small style="color:#666;font-size:12px;">Specify the width of the image</small>
                   </div>
                   <div style="margin-bottom:15px;">
