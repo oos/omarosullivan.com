@@ -1444,6 +1444,16 @@ ${content}
         window.deletePageAndMenu = deletePageAndMenu;
       })();
 
+      // Test function to verify global scope
+      window.testGlobalFunctions = function() {
+        console.log('Testing global functions...');
+        console.log('window.editFile exists:', !!window.editFile);
+        console.log('window.editPage exists:', !!window.editPage);
+        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
+        console.log('window.editPageInternal exists:', !!window.editPageInternal);
+        return 'Global functions test complete';
+      };
+
       // Global functions accessible from HTML onclick handlers
       window.editFile = function(filename, sha) {
         console.log('editFile called with:', filename, sha);
