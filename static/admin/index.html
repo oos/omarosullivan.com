@@ -624,6 +624,12 @@
 
         // CRUD Functions
         function showAddPortfolioForm() {
+          // Remove any existing modal first
+          const existingModal = document.getElementById('add-portfolio-modal');
+          if (existingModal) {
+            existingModal.remove();
+          }
+          
           const form = document.createElement('div');
           form.id = 'add-portfolio-modal';
           form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
@@ -804,6 +810,12 @@ ${content}
               body = bodyContent;
             }
 
+            // Remove any existing modal first
+            const existingModal = document.getElementById('edit-portfolio-modal');
+            if (existingModal) {
+              existingModal.remove();
+            }
+            
             // Show edit form
             const form = document.createElement('div');
             form.id = 'edit-portfolio-modal';
@@ -1035,6 +1047,12 @@ ${content}
               body = bodyContent;
             }
 
+            // Remove any existing modal first
+            const existingModal = document.getElementById('edit-page-modal');
+            if (existingModal) {
+              existingModal.remove();
+            }
+            
             // Show edit form
             const form = document.createElement('div');
             form.id = 'edit-page-modal';
@@ -1144,6 +1162,12 @@ ${content}
               body = bodyContent;
             }
 
+            // Remove any existing modal first
+            const existingModal = document.getElementById('edit-section-modal');
+            if (existingModal) {
+              existingModal.remove();
+            }
+            
             // Show edit form
             const form = document.createElement('div');
             form.id = 'edit-section-modal';
@@ -1230,6 +1254,13 @@ title: "${title}"`;
         // Page Management Functions
         function showAddPageForm() {
           console.log('showAddPageForm function called');
+          
+          // Remove any existing modal first
+          const existingModal = document.getElementById('add-page-modal');
+          if (existingModal) {
+            existingModal.remove();
+          }
+          
           const form = document.createElement('div');
           form.id = 'add-page-modal';
           form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
@@ -1582,6 +1613,12 @@ ${content}
             const currentTitle = titleMatch ? titleMatch[1] : 'Omar O\'Sullivan — Portfolio';
             const currentDescription = descMatch ? descMatch[1] : 'Work, notes, and experiments.';
 
+            // Remove any existing modal first
+            const existingModal = document.getElementById('edit-site-settings-modal');
+            if (existingModal) {
+              existingModal.remove();
+            }
+            
             // Show edit form
             const form = document.createElement('div');
             form.id = 'edit-site-settings-modal';
