@@ -186,6 +186,14 @@
           }
         });
         
+        // Test 5: Check if poetry items are displayed in admin
+        const poetryList = document.getElementById('poetry-list');
+        if (poetryList) {
+          const hasPoetryItems = poetryList.children.length > 0;
+          tests.push({ test: 'Poetry items displayed in admin', passed: hasPoetryItems });
+          if (!hasPoetryItems) console.error('❌ No poetry items displayed in admin interface');
+        }
+        
         // Summary
         const passed = tests.filter(t => t.passed).length;
         const total = tests.length;
@@ -1135,12 +1143,36 @@ ${content}
 
         async function updatePage(pageName, sha, title, content) {
           try {
-            const markdownContent = `---
-title: "${title}"
----
+            // First get the current file to preserve existing frontmatter
+            const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
 
-${content}
-`;
+            let frontmatter = `---
+title: "${title}"`;
+
+            if (currentResponse.ok) {
+              const currentFile = await currentResponse.json();
+              const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
+              const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
+              
+              if (frontmatterMatch) {
+                const existingFrontmatter = frontmatterMatch[1];
+                // Preserve date and description if they exist
+                const dateMatch = existingFrontmatter.match(/date:\s*([^\n]+)/);
+                const descMatch = existingFrontmatter.match(/description:\s*([^\n]+)/);
+                
+                if (dateMatch) frontmatter += `\ndate: ${dateMatch[1]}`;
+                if (descMatch) frontmatter += `\ndescription: ${descMatch[1]}`;
+              }
+            }
+
+            frontmatter += `\n---\n\n${content}`;
+
+            const markdownContent = frontmatter;
 
             const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
               method: 'PUT',
@@ -1382,12 +1414,13 @@ title: "${title}"`;
         }
 
         async function loadPoetryItems(token) {
-          if (isLoading) {
+          if (window.isLoadingPoetry) {
             log('[api] Already loading poetry items, skipping...', 'token');
             return;
           }
           
-          isLoading = true;
+          window.isLoadingPoetry = true;
+          console.log('[debug] Starting to load poetry items...');
           try {
             log('[api] Loading poetry items...', 'token');
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry', {
@@ -1433,7 +1466,7 @@ title: "${title}"`;
             log('[api] Error loading poetry items: ' + e.message, 'error');
             return [];
           } finally {
-            isLoading = false;
+            window.isLoadingPoetry = false;
           }
         }
 
