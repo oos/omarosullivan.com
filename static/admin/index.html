@@ -1478,6 +1478,189 @@ title: "${title}"`;
           }
         }
 
+        async function editPoetryItem(filename, sha) {
+          try {
+            console.log('editPoetryItem called with filename:', filename, 'sha:', sha);
+            // First, get the current content
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading poetry item');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            let title = filename.replace('.md', '');
+            let description = '';
+            let tags = '';
+            let contentText = '';
+
+            if (frontmatterMatch) {
+              const frontmatter = frontmatterMatch[1];
+              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
+              
+              if (titleMatch) title = titleMatch[1].trim();
+              if (descMatch) description = descMatch[1].trim();
+              if (tagsMatch) tags = tagsMatch[1].trim();
+              contentText = frontmatterMatch[2];
+            } else {
+              contentText = content;
+            }
+
+            // Create edit form
+            const form = document.createElement('div');
+            form.id = 'edit-poetry-modal';
+            form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+
+            form.innerHTML = `
+              <div style="background:white;padding:20px;border-radius:8px;width:80%;max-width:600px;max-height:80%;overflow-y:auto;position:relative;">
+                <button onclick="document.getElementById('edit-poetry-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                <h3>Edit Poetry Post</h3>
+                <form id="edit-poetry-form">
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
+                    <input type="text" id="edit-poetry-title" value="${title}" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Description:</label>
+                    <input type="text" id="edit-poetry-description" value="${description}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Tags (comma-separated):</label>
+                    <input type="text" id="edit-poetry-tags" value="${tags}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image (optional):</label>
+                    <input type="file" id="edit-poetry-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <textarea id="edit-poetry-content" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">${contentText}</textarea>
+                  </div>
+                  <div style="text-align:right;">
+                    <button type="button" onclick="document.getElementById('edit-poetry-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin-right:10px;">Cancel</button>
+                    <button type="submit" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;">Save</button>
+                  </div>
+                </form>
+              </div>
+            `;
+            document.body.appendChild(form);
+
+            // Handle form submission
+            document.getElementById('edit-poetry-form').addEventListener('submit', async (e) => {
+              e.preventDefault();
+              try {
+                const newTitle = document.getElementById('edit-poetry-title').value;
+                const newDescription = document.getElementById('edit-poetry-description').value;
+                const newTags = document.getElementById('edit-poetry-tags').value;
+                const newContent = document.getElementById('edit-poetry-content').value;
+                const imageFile = document.getElementById('edit-poetry-image').files[0];
+
+                let imagePath = null;
+                if (imageFile) {
+                  imagePath = await uploadImage(imageFile);
+                }
+                
+                await updatePoetryItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath);
+
+                form.remove();
+                loadPoetryItems(currentToken);
+              } catch (error) {
+                alert('Error updating poetry post: ' + error.message);
+              }
+            });
+          } catch (e) {
+            alert('Error loading poetry item: ' + e.message);
+          }
+        }
+
+        async function updatePoetryItem(filename, sha, title, description, tags, content, imageFile) {
+          try {
+            console.log('updatePoetryItem called with filename:', filename, 'sha:', sha);
+            const date = new Date().toISOString().split('T')[0];
+            
+            // First, get the current content to preserve existing image
+            const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            let existingImagePath = null;
+            if (currentResponse.ok) {
+              const currentFile = await currentResponse.json();
+              const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
+              const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
+              if (frontmatterMatch) {
+                const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']?([^"'\n]+)["']?/);
+                if (coverMatch) {
+                  existingImagePath = coverMatch[1].trim();
+                }
+              }
+            }
+
+            // Use new image if provided, otherwise keep existing
+            const imagePath = imageFile ? await uploadImage(imageFile) : existingImagePath;
+            
+            // Build frontmatter
+            let frontmatter = `---
+title: "${title}"
+date: ${date}
+description: "${description}"`;
+
+            if (tags) {
+              const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+              if (tagsArray.length > 0) {
+                frontmatter += `\ntags: [${tagsArray.map(tag => `"${tag}"`).join(', ')}]`;
+              }
+            }
+
+            if (imagePath) {
+              frontmatter += `\ncover:\n  image: "${imagePath}"`;
+            }
+
+            frontmatter += `\n---\n\n`;
+
+            const markdownContent = frontmatter + content;
+
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Update poetry post: ${title}`,
+                content: btoa(unescape(encodeURIComponent(markdownContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert('Poetry post updated successfully!');
+              await loadPoetryItems(currentToken);
+            } else {
+              const error = await response.json();
+              alert('Error updating poetry post: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error updating poetry post: ' + e.message);
+          }
+        }
+
         async function createPoetryItem(title, description, tags, content, imagePath) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
