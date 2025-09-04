@@ -493,12 +493,17 @@
               
               pagesList.innerHTML = '';
               
-              // Filter for .md files and section directories
+              // Filter for .md files and section directories, avoiding duplicates
               const pages = items.filter(item => {
                 if (item.type === 'file') {
                   // Include .md files that are not in subdirectories, include _index.md but exclude other _ files
+                  // Exclude sketches.md if portfolio/ directory exists
+                  const isSketchesFile = item.name === 'sketches.md';
+                  const hasPortfolioDir = items.some(i => i.type === 'dir' && i.name === 'portfolio');
+                  
                   return item.name.endsWith('.md') && 
-                         (item.name === '_index.md' || !item.name.startsWith('_'));
+                         (item.name === '_index.md' || !item.name.startsWith('_')) &&
+                         !(isSketchesFile && hasPortfolioDir);
                 } else if (item.type === 'dir') {
                   // Include directories that have _index.md files (sections)
                   return !item.name.startsWith('_') && item.name !== 'posts';
