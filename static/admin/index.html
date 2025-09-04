@@ -1637,12 +1637,14 @@ ${content}
         async function updateSiteSettings(sha, title, description, content) {
           try {
             console.log('updateSiteSettings called with:', { sha, title, description, currentToken: currentToken ? 'exists' : 'missing' });
+            console.log('Original content preview:', content.substring(0, 200) + '...');
             
             // Update title and description in the content
             let updatedContent = content.replace(/title\s*=\s*["'][^"']*["']/, `title = "${title}"`);
             updatedContent = updatedContent.replace(/description\s*=\s*["'][^"']*["']/, `description = "${description}"`);
 
-            console.log('Updated content:', updatedContent.substring(0, 200) + '...');
+            console.log('Updated content preview:', updatedContent.substring(0, 200) + '...');
+            console.log('Content changed:', content !== updatedContent);
 
             // Update the file
             const updateResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
@@ -1662,11 +1664,14 @@ ${content}
             console.log('Update response status:', updateResponse.status);
 
             if (updateResponse.ok) {
+              const result = await updateResponse.json();
+              console.log('Update successful:', result);
               alert('Site settings updated successfully! The changes will be visible after the next site build.');
             } else {
               const error = await updateResponse.json();
               console.error('GitHub API error:', error);
-              alert('Error updating site settings: ' + (error.message || 'Unknown error'));
+              console.error('Full error response:', error);
+              alert('Error updating site settings: ' + (error.message || 'Unknown error') + '\n\nCheck console for details.');
             }
           } catch (e) {
             console.error('Exception in updateSiteSettings:', e);
