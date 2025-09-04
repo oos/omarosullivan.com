@@ -10,7 +10,7 @@ layout: "page/about"
   
   <p>I love to build beautiful software products that make the world a better place.</p>
   
-<p>I also love entrepreneurship - the creation process makes me come alive!</p> 
+<p>I also love to travel and entrepreneurship - the creation process makes me come alive!</p> 
 
 <p>I'm not very experienced, but I like to draw and experiment with other creative things.</p>
 
