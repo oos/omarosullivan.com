@@ -1,10 +1,7 @@
 ---
-title: "test"
+title: "Beauty of the East"
 date: 2025-09-04
-description: "testa"
-tags: ["street", "family"]
-cover:
-  image: "/uploads/photo-1756986186031.jpg"
+description: "Beuatiful lady from Nepal"
 ---
 
-testb
+This lady in Nepal captured my eye...and my heart. Her presence was beautiful.
