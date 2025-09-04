@@ -1519,6 +1519,13 @@ title: "${title}"`;
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Poetry):</label>
                   <textarea id="poetry-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;" placeholder="Write your poetry here..."></textarea>
                 </div>
+                <div style="margin-bottom:15px;">
+                  <label style="display:flex;align-items:center;cursor:pointer;">
+                    <input type="checkbox" id="poetry-featured" style="margin-right:8px;">
+                    <span style="font-weight:bold;">Featured on Homepage</span>
+                  </label>
+                  <small style="color:#666;margin-left:24px;">Check this to display this poetry on the homepage</small>
+                </div>
                 <div style="text-align:right;">
                   <button type="button" onclick="document.getElementById('add-poetry-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
                   <button type="submit" style="background:#e83e8c;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">Create</button>
@@ -1552,6 +1559,7 @@ title: "${title}"`;
             const tags = document.getElementById('poetry-tags').value;
             const content = document.getElementById('poetry-content').value;
             const imageFile = document.getElementById('poetry-image').files[0];
+            const featured = document.getElementById('poetry-featured').checked;
             
             try {
               let imagePath = '';
@@ -1559,7 +1567,7 @@ title: "${title}"`;
                 imagePath = await uploadImage(imageFile);
               }
               
-              await createPoetryItem(title, description, tags, content, imagePath);
+              await createPoetryItem(title, description, tags, content, imagePath, featured);
               form.remove();
               loadPoetryItems(currentToken);
             } catch (error) {
@@ -1709,6 +1717,13 @@ title: "${title}"`;
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
                     <textarea id="edit-poetry-content" rows="10" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">${contentText}</textarea>
                   </div>
+                  <div style="margin-bottom:15px;">
+                    <label style="display:flex;align-items:center;cursor:pointer;">
+                      <input type="checkbox" id="edit-poetry-featured" ${featured ? 'checked' : ''} style="margin-right:8px;">
+                      <span style="font-weight:bold;">Featured on Homepage</span>
+                    </label>
+                    <small style="color:#666;margin-left:24px;">Check this to display this poetry on the homepage</small>
+                  </div>
                   <div style="text-align:right;">
                     <button type="button" onclick="document.getElementById('edit-poetry-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin-right:10px;">Cancel</button>
                     <button type="submit" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;">Save</button>
@@ -1727,13 +1742,14 @@ title: "${title}"`;
                 const newTags = document.getElementById('edit-poetry-tags').value;
                 const newContent = document.getElementById('edit-poetry-content').value;
                 const imageFile = document.getElementById('edit-poetry-image').files[0];
+                const newFeatured = document.getElementById('edit-poetry-featured').checked;
 
                 let imagePath = null;
                 if (imageFile) {
                   imagePath = await uploadImage(imageFile);
                 }
                 
-                await updatePoetryItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath);
+                await updatePoetryItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath, newFeatured);
 
                 form.remove();
                 loadPoetryItems(currentToken);
@@ -1777,7 +1793,7 @@ title: "${title}"`;
           }
         }
 
-        async function updatePoetryItem(filename, sha, title, description, tags, content, imageFile) {
+        async function updatePoetryItem(filename, sha, title, description, tags, content, imageFile, featured = false) {
           try {
             console.log('updatePoetryItem called with filename:', filename, 'sha:', sha);
             const date = new Date().toISOString().split('T')[0];
@@ -1853,7 +1869,7 @@ description: "${description}"`;
           }
         }
 
-        async function createPoetryItem(title, description, tags, content, imagePath) {
+        async function createPoetryItem(title, description, tags, content, imagePath, featured = false) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -1880,6 +1896,11 @@ date: ${date}
             if (imagePath) {
               frontmatter += `cover:
   image: "${imagePath}"
+`;
+            }
+
+            if (featured) {
+              frontmatter += `featured: true
 `;
             }
 
