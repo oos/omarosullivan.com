@@ -1,5 +1,54 @@
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
   <a href="javascript:history.back()" style="color: #666; text-decoration: none; font-size: 16px; display: inline-block; padding: 5px 0;">
     ←
   </a>
+  <div id="nav-arrows" style="display: flex; gap: 20px;">
+    <a id="prev-arrow" href="#" style="color: #666; text-decoration: none; font-size: 24px; padding: 8px; display: none;">‹</a>
+    <a id="next-arrow" href="#" style="color: #666; text-decoration: none; font-size: 24px; padding: 8px; display: none;">›</a>
+  </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Get current page info
+  const currentPath = window.location.pathname;
+  const isPhotography = currentPath.includes('/photography/');
+  const isPortfolio = currentPath.includes('/portfolio/');
+  const isPoetry = currentPath.includes('/poetry/');
+  
+  if (isPhotography || isPortfolio || isPoetry) {
+    // Determine section
+    let section = '';
+    if (isPhotography) section = 'photography';
+    else if (isPortfolio) section = 'portfolio';
+    else if (isPoetry) section = 'poetry';
+    
+    // Get all pages in this section
+    fetch(`/${section}/`)
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const links = Array.from(doc.querySelectorAll(`a[href*="/${section}/"]`))
+          .map(a => a.getAttribute('href'))
+          .filter(href => href && href !== `/${section}/` && !href.includes('#'))
+          .sort();
+        
+        const currentIndex = links.indexOf(currentPath);
+        
+        if (currentIndex > 0) {
+          const prevLink = document.getElementById('prev-arrow');
+          prevLink.href = links[currentIndex - 1];
+          prevLink.style.display = 'block';
+        }
+        
+        if (currentIndex < links.length - 1) {
+          const nextLink = document.getElementById('next-arrow');
+          nextLink.href = links[currentIndex + 1];
+          nextLink.style.display = 'block';
+        }
+      })
+      .catch(error => console.log('Could not load navigation:', error));
+  }
+});
+</script>
