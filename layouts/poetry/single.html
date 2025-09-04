@@ -1,0 +1,50 @@
+{{ define "main" }}
+<main class="main">
+  <article class="post-single">
+    <header class="post-header">
+      {{ partial "back_button.html" . }}
+      <h1 class="post-title">{{ .Title }}</h1>
+      {{- if .Description }}
+      <div class="post-description">
+        {{ .Description }}
+      </div>
+      {{- end }}
+      {{- if not .Params.hideMeta }}
+      <div class="post-meta">
+        {{- if .Params.tags }}
+        <div class="post-tags">
+          {{- range .Params.tags }}
+          <a href="{{ "tags/" | absURL }}{{ . | urlize }}">{{ . }}</a>
+          {{- end }}
+        </div>
+        {{- end }}
+        {{- if .Params.date }}
+        <div class="post-date">
+          {{ .Date.Format "January 2, 2006" }}
+        </div>
+        {{- end }}
+      </div>
+      {{- end }}
+    </header>
+    {{- if .Params.cover }}
+    <div class="post-cover">
+      {{- if .Params.cover.image }}
+      <img src="{{ .Params.cover.image | absURL }}" alt="{{ .Title }}" style="max-width: 100%; height: auto; border-radius: 8px;" />
+      {{- end }}
+    </div>
+    {{- end }}
+    <div class="post-content">
+      {{ .Content }}
+    </div>
+    {{- if .Params.tags }}
+    <footer class="post-footer">
+      <div class="post-tags">
+        {{- range .Params.tags }}
+        <a href="{{ "tags/" | absURL }}{{ . | urlize }}">{{ . }}</a>
+        {{- end }}
+      </div>
+    </footer>
+    {{- end }}
+  </article>
+</main>
+{{ end }}
