@@ -28,6 +28,10 @@ theme = "PaperMod"
     url = "/poetry/"
     weight = 15
   [[menu.main]]
+    name = "Poetry Page"
+    url = "/poetry-page/"
+    weight = 16
+  [[menu.main]]
     name = "About"
     url = "/about/"
     weight = 20
