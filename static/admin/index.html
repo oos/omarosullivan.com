@@ -1433,20 +1433,25 @@ title: "${title}"`;
             if (response.ok) {
               const items = await response.json();
               log('[api] Loaded ' + items.length + ' poetry items', 'token');
+              console.log('[debug] Poetry items loaded:', items);
               
               const poetryList = document.getElementById('poetry-list');
+              console.log('[debug] Poetry list element:', poetryList);
               poetryList.innerHTML = '';
-              items.forEach(item => {
-                if (item.name.endsWith('.md')) {
-                  const div = document.createElement('div');
-                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                  div.innerHTML = `
-                    <strong>${item.name}</strong>
-                    <button onclick="editFile('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                    <button onclick="deleteFile('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                  `;
-                  poetryList.appendChild(div);
-                }
+              
+              const poetryItems = items.filter(item => item.name.endsWith('.md'));
+              console.log('[debug] Filtered poetry items:', poetryItems);
+              
+              poetryItems.forEach(item => {
+                const div = document.createElement('div');
+                div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                div.innerHTML = `
+                  <strong>${item.name}</strong>
+                  <button onclick="editFile('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                  <button onclick="deleteFile('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                `;
+                poetryList.appendChild(div);
+                console.log('[debug] Added poetry item to list:', item.name);
               });
               
               return items;
