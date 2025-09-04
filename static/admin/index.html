@@ -316,43 +316,10 @@
           }
         }
 
-        async function validateToken(token) {
-          try {
-            const response = await fetch('https://api.github.com/user', {
-              headers: {
-                'Authorization': 'token ' + token,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-
-            if (response.ok) {
-              return true;
-            } else if (response.status === 401) {
-              log('[api] Token validation failed: 401 Unauthorized', 'error');
-              // Clear invalid token and show login form
-              clearInvalidTokens();
-              window.showLoginForm();
-              return false;
-            } else {
-              log('[api] Token validation failed: ' + response.status, 'error');
-              return false;
-            }
-          } catch (e) {
-            log('[api] Token validation error: ' + e.message, 'error');
-            return false;
-          }
-        }
 
         async function loadPortfolioItems(token) {
           if (isLoading) {
             log('[api] Already loading portfolio items, skipping...', 'token');
-            return;
-          }
-          
-          // Validate token before making API call
-          const tokenValid = await validateToken(token);
-          if (!tokenValid) {
-            log('[api] Token invalid, skipping portfolio load', 'error');
             return;
           }
           
@@ -406,13 +373,6 @@
         }
 
         async function loadPages(token) {
-          // Validate token before making API call
-          const tokenValid = await validateToken(token);
-          if (!tokenValid) {
-            log('[api] Token invalid, skipping pages load', 'error');
-            return;
-          }
-          
           try {
             log('[api] Loading pages...', 'token');
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content', {
