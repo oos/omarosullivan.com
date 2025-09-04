@@ -1,28 +1,3 @@
-{{- /* TinaCMS Visual Editing */ -}}
-{{- if .Site.Params.tinacms.enable -}}
-<script>
-  import("https://unpkg.com/@tinacms/cli@latest/dist/index.js")
-    .then(({ TinaCMS }) => {
-      TinaCMS.init({
-        branch: "main",
-        clientId: "{{ .Site.Params.tinacms.clientId }}",
-        token: "{{ .Site.Params.tinacms.token }}",
-        build: {
-          outputDir: "public",
-          publicFolder: "static",
-        },
-        media: {
-          loadCustomStore: async () => {
-            const pack = await import("@tinacms/storage-git");
-            return new pack.GitStore({
-              repoOwner: "oos",
-              repoName: "omarosullivan.com",
-              branch: "main",
-              accessToken: "{{ .Site.Params.tinacms.token }}",
-            });
-          },
-        },
-      });
-    });
-</script>
-{{- end -}}
+{{ if eq .Section "photography" }}
+<link rel="stylesheet" href="/css/photography.css">
+{{ end }}

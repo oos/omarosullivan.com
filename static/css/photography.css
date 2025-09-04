@@ -1,19 +1,25 @@
-/* Photography page compact layout */
-.photography-entries {
+/* Photography page compact layout - 3 columns */
+.posts-entry {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   margin: 20px 0;
 }
 
+/* Target the main posts container */
+.posts-entry .post-entry {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
 @media (max-width: 768px) {
-  .photography-entries {
+  .posts-entry {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .photography-entries {
+  .posts-entry {
     grid-template-columns: 1fr;
   }
 }

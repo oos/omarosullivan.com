@@ -3,8 +3,6 @@ title: "Photography"
 date: 2025-01-04
 ---
 
-<link rel="stylesheet" href="/css/photography.css">
-
 Welcome to my photography collection. Here I share my visual explorations and captured moments.
 
 ## Recent Work
