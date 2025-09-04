@@ -10,6 +10,10 @@ theme = "PaperMod"
 [pagination]
   pagerSize = 10
 
+# Section-specific pagination
+[params.sections.photography]
+  pagination = 20
+
 [params]
   defaultTheme = "auto"
   ShowBreadCrumbs = false
