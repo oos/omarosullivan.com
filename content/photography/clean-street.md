@@ -1,5 +1,5 @@
 ---
-title: "Sacred Lather"
+title: "Snakes & Lather"
 date: 2025-09-04
 description: ""
 cover:
