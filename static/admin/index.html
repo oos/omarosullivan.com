@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager (Custom Auth)</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
   </head>
   <body>
     <div id="login-section" style="text-align:center;margin:20px;">
@@ -2583,16 +2585,17 @@ description: "${description}"`;
                 });
                 
                 return items;
-              } else if (response.status === 401) {
-                log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
-                console.log('[api] Photography: Clearing invalid tokens...');
-                clearInvalidTokens();
-              } else {
-                log(`[api] Failed to load photography items: ${response.status}`, 'error');
               }
-            } finally {
-              window.isLoadingPhotography = false;
+            } else if (response.status === 401) {
+              log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
+              console.log('[api] Photography: Clearing invalid tokens...');
+              clearInvalidTokens();
+            } else {
+              log(`[api] Failed to load photography items: ${response.status}`, 'error');
             }
+          } finally {
+            window.isLoadingPhotography = false;
+          }
           } catch (e) {
             log(`[api] Error loading photography items: ${e.message}`, 'error');
             window.isLoadingPhotography = false;
