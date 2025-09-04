@@ -428,12 +428,12 @@
 
 
         async function loadPortfolioItems(token) {
-          if (isLoading) {
+          if (window.isLoadingPortfolio) {
             log('[api] Already loading sketches, skipping...', 'token');
             return;
           }
           
-          isLoading = true;
+          window.isLoadingPortfolio = true;
           try {
             log('[api] Loading sketches...', 'token');
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio', {
@@ -519,7 +519,7 @@
             log('[api] Error loading sketches: ' + e.message, 'error');
             return [];
           } finally {
-            isLoading = false;
+            window.isLoadingPortfolio = false;
           }
         }
 
@@ -629,14 +629,12 @@
             setupButtonListeners();
             console.log('setupButtonListeners called');
             
-            // Load portfolio items, poetry, and pages only if not already loaded
-            if (!isLoading) {
-              await loadPortfolioItems(token);
-              await loadPhotographyItems(token);
-              await loadVideographyItems(token);
-              await loadPoetryItems(token);
-              await loadPages(token);
-            }
+            // Load all content types
+            await loadPortfolioItems(token);
+            await loadPhotographyItems(token);
+            await loadVideographyItems(token);
+            await loadPoetryItems(token);
+            await loadPages(token);
             
             return true;
           } else {
@@ -1668,12 +1666,12 @@ title: "${title}"`;
         }
 
         async function loadPoetryItems(token) {
-          if (isLoading) {
+          if (window.isLoadingPoetry) {
             log('[api] Already loading poetry items, skipping...', 'token');
             return;
           }
           
-          isLoading = true;
+          window.isLoadingPoetry = true;
           console.log('[debug] Starting to load poetry items...');
           try {
             log('[api] Loading poetry items...', 'token');
@@ -1766,7 +1764,7 @@ title: "${title}"`;
             log('[api] Error loading poetry items: ' + e.message, 'error');
             return [];
           } finally {
-            isLoading = false;
+            window.isLoadingPoetry = false;
           }
         }
 
@@ -3291,15 +3289,12 @@ description: "${description}"`;
                 setupButtonListeners();
                 console.log('setupButtonListeners called from init');
                 
-                // Load content only if not already loaded
-                if (!window.contentLoaded) {
-                  window.contentLoaded = true;
-                  loadPortfolioItems(currentToken);
-                  loadPhotographyItems(currentToken);
-                  loadVideographyItems(currentToken);
-                  loadPoetryItems(currentToken);
-                  loadPages(currentToken);
-                }
+                // Load all content types
+                loadPortfolioItems(currentToken);
+                loadPhotographyItems(currentToken);
+                loadVideographyItems(currentToken);
+                loadPoetryItems(currentToken);
+                loadPages(currentToken);
               } else {
                 log('[boot] Existing token invalid, clearing storage...');
                 clearInvalidTokens();
@@ -3465,12 +3460,12 @@ tags:
         }
 
         async function loadVideographyItems(token) {
-          if (isLoading) {
+          if (window.isLoadingVideography) {
             log('[api] Already loading videography items, skipping...', 'token');
             return;
           }
           
-          isLoading = true;
+          window.isLoadingVideography = true;
           try {
             console.log('[debug] Starting to load videography items...');
             
@@ -3558,7 +3553,7 @@ tags:
           } catch (e) {
             log(`[api] Error loading videography items: ${e.message}`, 'error');
           } finally {
-            isLoading = false;
+            window.isLoadingVideography = false;
           }
         }
 
