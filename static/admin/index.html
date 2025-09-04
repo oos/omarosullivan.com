@@ -334,6 +334,11 @@
               });
               
               return items;
+            } else if (response.status === 401) {
+              log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
+              clearInvalidTokens();
+              showLoginForm();
+              return [];
             } else {
               log('[api] Failed to load portfolio items: ' + response.status, 'error');
               return [];
@@ -384,6 +389,11 @@
               });
               
               return pages;
+            } else if (response.status === 401) {
+              log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
+              clearInvalidTokens();
+              showLoginForm();
+              return [];
             } else {
               log('[api] Failed to load pages: ' + response.status, 'error');
               return [];
