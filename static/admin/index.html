@@ -477,38 +477,50 @@
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/);
-                        const isFeatured = featuredMatch ? featuredMatch[1] === 'true' : false;
+                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                          </label>
-                          <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${displayTitle}</strong>
+                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
-                          <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
                       div.innerHTML = `
-                        <label style="display:flex;align-items:center;gap:8px;">
-                          <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                          <strong>${item.name}</strong>
-                        </label>
-                        <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                        <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                            <strong>${item.name}</strong>
+                          </label>
+                          <div style="display:flex;gap:5px;">
+                            <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
+                        </div>
                       `;
                     }
                     portfolioList.appendChild(div);
@@ -1736,38 +1748,50 @@ title: "${title}"`;
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/);
-                        const isFeatured = featuredMatch ? featuredMatch[1] === 'true' : false;
+                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                          </label>
-                          <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${displayTitle}</strong>
+                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
-                          <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
                       div.innerHTML = `
-                        <label style="display:flex;align-items:center;gap:8px;">
-                          <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                          <strong>${item.name}</strong>
-                        </label>
-                        <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                        <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                            <strong>${item.name}</strong>
+                          </label>
+                          <div style="display:flex;gap:5px;">
+                            <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
+                        </div>
                       `;
                     }
                     poetryList.appendChild(div);
@@ -2909,38 +2933,50 @@ description: "${description}"`;
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/);
-                        const isFeatured = featuredMatch ? featuredMatch[1] === 'true' : false;
+                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                          </label>
-                          <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${displayTitle}</strong>
+                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
-                          <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
                       div.innerHTML = `
-                        <label style="display:flex;align-items:center;gap:8px;">
-                          <input type="checkbox" onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                          <strong>${item.name}</strong>
-                        </label>
-                        <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                        <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <input type="checkbox" onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                            <strong>${item.name}</strong>
+                          </label>
+                          <div style="display:flex;gap:5px;">
+                            <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
+                        </div>
                       `;
                     }
                     photographyList.appendChild(div);
@@ -3747,38 +3783,50 @@ tags:
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/);
-                        const isFeatured = featuredMatch ? featuredMatch[1] === 'true' : false;
+                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                          </label>
-                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${displayTitle}</strong>
+                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
                         div.innerHTML = `
-                          <label style="display:flex;align-items:center;gap:8px;">
-                            <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
-                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;gap:5px;">
+                              <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                              <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                            </div>
+                          </div>
                         `;
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
                       div.innerHTML = `
-                        <label style="display:flex;align-items:center;gap:8px;">
-                          <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                          <strong>${item.name}</strong>
-                        </label>
-                        <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                        <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                            <strong>${item.name}</strong>
+                          </label>
+                          <div style="display:flex;gap:5px;">
+                            <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
+                        </div>
                       `;
                     }
                     videographyList.appendChild(div);
