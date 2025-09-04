@@ -15,7 +15,7 @@ I'm currently exploring the intersection of technology and creativity, building 
 
 Explore the different sections of this site:
 
-- **[Portfolio](/portfolio/)** - My visual work and creative projects
+- **[Sketches](/portfolio/)** - My visual work and creative projects
 - **[About](/about/)** - More about me and my background  
 - **[Contact](/contact/)** - Get in touch
 
