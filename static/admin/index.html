@@ -2593,13 +2593,11 @@ description: "${description}"`;
             } else {
               log(`[api] Failed to load photography items: ${response.status}`, 'error');
             }
+          } catch (e) {
+            log(`[api] Error loading photography items: ${e.message}`, 'error');
           } finally {
             window.isLoadingPhotography = false;
           }
-        } catch (e) {
-          log(`[api] Error loading photography items: ${e.message}`, 'error');
-          window.isLoadingPhotography = false;
-        }
 
         async function editPhotographyItem(filename, sha) {
           try {
