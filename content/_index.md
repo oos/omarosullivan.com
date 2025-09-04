@@ -8,6 +8,7 @@ Welcome to my digital space. Here I share my work, thoughts, and experiments acr
 
 Check it out:
 
+#Sketches
 - **[Poetry](/poetry/)** - My poetic writings
 - **[About](/about/)** - More about me and my background  
 - **[Contact](/contact/)** - Say Hi :)
