@@ -1,7 +1,6 @@
 ---
 title: "About"
 date: 2025-01-04
-description: "Learn more about Omar and his work in tech and creativity."
 ---
 
 <div style="overflow: hidden; margin: 20px 0; max-width: 100%;">
