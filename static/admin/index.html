@@ -2139,6 +2139,17 @@ ${content}
         async function editMainNavigation() {
           try {
             console.log('editMainNavigation function called');
+            
+            // Check if modal is already open
+            if (document.getElementById('edit-main-nav-modal')) {
+              console.log('Modal already open, ignoring duplicate call');
+              return;
+            }
+            
+            // Close any other modals that might be open
+            const existingModals = document.querySelectorAll('[id$="-modal"]');
+            existingModals.forEach(modal => modal.remove());
+            
             // Get the current config.toml file
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
               headers: {
