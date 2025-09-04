@@ -1,0 +1,9 @@
+
+
+In the Sunrise over Wicklow portfolio page... there are labels "Oil" and "Landscape" but I can't edit them in the CMS - make a way to manage these labels
+
+In the CMS page if I edit something but then click Cancel the modal remains - close the modal when the user clicks cancel
+
+How do I Edit the Name of the Website in the CMS Admin?
+
+On the lion page... the image just disppeared and I had to upload it again - make sure that doesn't happen again
