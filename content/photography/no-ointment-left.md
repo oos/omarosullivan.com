@@ -1,5 +1,5 @@
 ---
-title: "No ointment left"
+title: "Flyne dining"
 date: 2025-09-04
 description: ""
 cover:
