@@ -45,40 +45,70 @@
       // Define global functions immediately - before IIFE
       window.editFile = function(filename, sha) {
         console.log('editFile called with:', filename, sha);
-        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
-        if (window.editPortfolioItem) {
+        // Wait for the page to be fully loaded
+        if (document.readyState === 'complete' && window.editPortfolioItem) {
           window.editPortfolioItem(filename, sha);
         } else {
-          alert('Please wait for the page to load completely');
+          // Retry after a short delay
+          setTimeout(() => {
+            if (window.editPortfolioItem) {
+              window.editPortfolioItem(filename, sha);
+            } else {
+              alert('Please wait for the page to load completely');
+            }
+          }, 100);
         }
       };
 
       window.editPage = function(pageName) {
         console.log('editPage called with:', pageName);
-        console.log('window.editPageInternal exists:', !!window.editPageInternal);
-        if (window.editPageInternal) {
+        // Wait for the page to be fully loaded
+        if (document.readyState === 'complete' && window.editPageInternal) {
           window.editPageInternal(pageName);
         } else {
-          alert('Please wait for the page to load completely');
+          // Retry after a short delay
+          setTimeout(() => {
+            if (window.editPageInternal) {
+              window.editPageInternal(pageName);
+            } else {
+              alert('Please wait for the page to load completely');
+            }
+          }, 100);
         }
       };
 
       window.deleteFile = function(filename, sha) {
         if (confirm('Are you sure you want to delete ' + filename + '?')) {
-          if (window.deletePortfolioItem) {
+          // Wait for the page to be fully loaded
+          if (document.readyState === 'complete' && window.deletePortfolioItem) {
             window.deletePortfolioItem(filename, sha);
           } else {
-            alert('Please wait for the page to load completely');
+            // Retry after a short delay
+            setTimeout(() => {
+              if (window.deletePortfolioItem) {
+                window.deletePortfolioItem(filename, sha);
+              } else {
+                alert('Please wait for the page to load completely');
+              }
+            }, 100);
           }
         }
       };
 
       window.deletePage = function(pageName, sha) {
         if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
-          if (window.deletePageAndMenu) {
+          // Wait for the page to be fully loaded
+          if (document.readyState === 'complete' && window.deletePageAndMenu) {
             window.deletePageAndMenu(pageName, sha);
           } else {
-            alert('Please wait for the page to load completely');
+            // Retry after a short delay
+            setTimeout(() => {
+              if (window.deletePageAndMenu) {
+                window.deletePageAndMenu(pageName, sha);
+              } else {
+                alert('Please wait for the page to load completely');
+              }
+            }, 100);
           }
         }
       };
@@ -97,6 +127,43 @@
         const cmsInterface = document.getElementById('cms-interface');
         const loginBtn = document.getElementById('login-btn');
         const portfolioList = document.getElementById('portfolio-list');
+
+        // Expose internal functions to global scope immediately
+        window.editPortfolioItem = function(filename, sha) {
+          // This will be defined later in the IIFE
+          if (typeof editPortfolioItem === 'function') {
+            return editPortfolioItem(filename, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        };
+
+        window.editPageInternal = function(pageName) {
+          // This will be defined later in the IIFE
+          if (typeof editPage === 'function') {
+            return editPage(pageName);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        };
+
+        window.deletePortfolioItem = function(filename, sha) {
+          // This will be defined later in the IIFE
+          if (typeof deletePortfolioItem === 'function') {
+            return deletePortfolioItem(filename, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        };
+
+        window.deletePageAndMenu = function(pageName, sha) {
+          // This will be defined later in the IIFE
+          if (typeof deletePageAndMenu === 'function') {
+            return deletePageAndMenu(pageName, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        };
 
         let currentToken = null;
         let isLoading = false;
@@ -1487,7 +1554,7 @@ ${content}
         setTimeout(initializeAuth, 1500);
         setTimeout(initializeAuth, 3000);
 
-        // Expose internal functions to global scope
+        // Update the global function references to point to the actual functions
         window.editPortfolioItem = editPortfolioItem;
         window.editPageInternal = editPage;
         window.deletePortfolioItem = deletePortfolioItem;
