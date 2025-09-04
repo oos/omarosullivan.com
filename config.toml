@@ -2,6 +2,11 @@ baseURL = "/"
 languageCode = "en-us"
 title = "omarosullivan.com"
 theme = "PaperMod"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
 [pagination]
   pagerSize = 9
 
@@ -28,6 +33,11 @@ theme = "PaperMod"
     token = ""      # Will be provided by TinaCMS
 
 [[menu.main]]
+  name = "About"
+  url = "/about/"
+  weight = 5
+
+[[menu.main]]
   name = "Sketches"
   url = "/portfolio/"
   weight = 10
@@ -41,11 +51,6 @@ theme = "PaperMod"
   name = "Poetry"
   url = "/poetry/"
   weight = 15
-
-[[menu.main]]
-  name = "About"
-  url = "/about/"
-  weight = 20
 
 [[menu.main]]
   name = "Contact"
