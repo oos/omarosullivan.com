@@ -455,11 +455,11 @@
                   
                   // Handle _index.md files differently (these are section pages, not individual portfolio items)
                   if (item.name === '_index.md') {
-                    div.innerHTML = `
+                  div.innerHTML = `
                       <strong>${item.name} (Portfolio Section Page)</strong>
                       <button onclick="editPage('portfolio')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                    `;
-                    portfolioList.appendChild(div);
+                  `;
+                  portfolioList.appendChild(div);
                   } else {
                     // Get the title from the file content
                     try {
@@ -1687,11 +1687,11 @@ title: "${title}"`;
                   
                   // Handle _index.md files differently (these are section pages, not individual poems)
                   if (item.name === '_index.md') {
-                    div.innerHTML = `
+                  div.innerHTML = `
                       <strong>${item.name} (Poetry Section Page)</strong>
                       <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                    `;
-                    poetryList.appendChild(div);
+                  `;
+                  poetryList.appendChild(div);
                   } else {
                     // Get the title from the file content
                     try {
