@@ -71,9 +71,9 @@
           window.editPoetryItem(filename, sha);
         } else if (window.editPortfolioItem) {
           console.log('Editing portfolio file:', filename);
-          window.editPortfolioItem(filename, sha);
-        } else {
-          alert('Please wait for the page to load completely');
+              window.editPortfolioItem(filename, sha);
+            } else {
+              alert('Please wait for the page to load completely');
         }
       };
 
@@ -493,24 +493,39 @@
               
               pagesList.innerHTML = '';
               
-              // Filter for .md files that are not in subdirectories, include _index.md but exclude other _ files
-              const pages = items.filter(item => 
-                item.name.endsWith('.md') && 
-                (item.name === '_index.md' || !item.name.startsWith('_')) && 
-                item.type === 'file'
-              );
+              // Filter for .md files and section directories
+              const pages = items.filter(item => {
+                if (item.type === 'file') {
+                  // Include .md files that are not in subdirectories, include _index.md but exclude other _ files
+                  return item.name.endsWith('.md') && 
+                         (item.name === '_index.md' || !item.name.startsWith('_'));
+                } else if (item.type === 'dir') {
+                  // Include directories that have _index.md files (sections)
+                  return !item.name.startsWith('_') && item.name !== 'posts';
+                }
+                return false;
+              });
               
               log('[api] Loaded ' + pages.length + ' pages', 'token');
               
               pages.forEach(page => {
-                const pageName = page.name.replace('.md', '');
-                const displayName = pageName === '_index' ? 'Homepage' : pageName;
+                let pageName, displayName;
+                
+                if (page.type === 'file') {
+                  pageName = page.name.replace('.md', '');
+                  displayName = pageName === '_index' ? 'Homepage' : pageName;
+                } else {
+                  // It's a directory (section)
+                  pageName = page.name;
+                  displayName = page.name.charAt(0).toUpperCase() + page.name.slice(1);
+                }
+                
                 const div = document.createElement('div');
                 div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                 div.innerHTML = `
                   <strong>${displayName}</strong>
                   <button onclick="editPage('${pageName}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                  <button onclick="deletePage('${pageName}', '${page.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                  ${page.type === 'file' ? `<button onclick="deletePage('${pageName}', '${page.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>` : ''}
                 `;
                 pagesList.appendChild(div);
               });
@@ -1606,8 +1621,8 @@ title: "${title}"`;
               console.log('[debug] Filtered poetry items:', poetryItems);
               
               poetryItems.forEach(item => {
-                const div = document.createElement('div');
-                div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                  const div = document.createElement('div');
+                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                 
                 // Handle _index.md files differently (these are section pages, not individual poems)
                 if (item.name === '_index.md') {
@@ -1871,30 +1886,30 @@ description: "${description}"`;
 
         async function createPoetryItem(title, description, tags, content, imagePath, featured = false) {
           try {
-            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
-            const date = new Date().toISOString().split('T')[0];
-            
-            let frontmatter = `---
+          const date = new Date().toISOString().split('T')[0];
+          
+          let frontmatter = `---
 title: "${title}"
 date: ${date}
 `;
 
-            if (description) {
-              frontmatter += `description: "${description}"
+          if (description) {
+            frontmatter += `description: "${description}"
+`;
+          }
+
+          if (tags) {
+            const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tagArray.length > 0) {
+              frontmatter += `tags: [${tagArray.map(tag => `"${tag}"`).join(', ')}]
 `;
             }
+          }
 
-            if (tags) {
-              const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-              if (tagArray.length > 0) {
-                frontmatter += `tags: [${tagArray.map(tag => `"${tag}"`).join(', ')}]
-`;
-              }
-            }
-
-            if (imagePath) {
-              frontmatter += `cover:
+          if (imagePath) {
+            frontmatter += `cover:
   image: "${imagePath}"
 `;
             }
@@ -1902,9 +1917,9 @@ date: ${date}
             if (featured) {
               frontmatter += `featured: true
 `;
-            }
+          }
 
-            frontmatter += `---
+          frontmatter += `---
 
 ${content}`;
 
@@ -1929,20 +1944,20 @@ ${content}`;
             }
 
             const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
-              method: 'PUT',
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-              },
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + currentToken,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
               body: JSON.stringify(requestBody)
-            });
+          });
 
             if (response.ok) {
               alert('Poetry post created successfully!');
               await loadPoetryItems(currentToken);
             } else {
-              const error = await response.json();
+            const error = await response.json();
               console.error('GitHub API Error:', error);
               alert('Error creating poetry post: ' + (error.message || 'Unknown error'));
             }
@@ -2261,7 +2276,7 @@ ${content}
           } else {
             console.error('Edit Main Navigation button not found');
           }
-
+          
           // Site settings button handler
           const editSiteSettingsBtn = document.getElementById('edit-site-settings');
           console.log('Edit Site Settings button found:', !!editSiteSettingsBtn);
