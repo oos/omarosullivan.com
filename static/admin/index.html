@@ -45,18 +45,21 @@
       // Define global functions immediately - before IIFE
       window.editFile = function(filename, sha) {
         console.log('editFile called with:', filename, sha);
-        // Wait for the page to be fully loaded
-        if (document.readyState === 'complete' && window.editPortfolioItem) {
+        
+        // Determine if this is a poetry file or portfolio file based on context
+        // Check if we're in the poetry section by looking at the current URL or context
+        const isPoetryFile = window.location.hash.includes('poetry') || 
+                           document.querySelector('#poetry-list')?.contains(event?.target) ||
+                           filename.includes('poetry');
+        
+        if (isPoetryFile && window.editPoetryItem) {
+          console.log('Editing poetry file:', filename);
+          window.editPoetryItem(filename, sha);
+        } else if (window.editPortfolioItem) {
+          console.log('Editing portfolio file:', filename);
           window.editPortfolioItem(filename, sha);
         } else {
-          // Retry after a short delay
-          setTimeout(() => {
-            if (window.editPortfolioItem) {
-              window.editPortfolioItem(filename, sha);
-            } else {
-              alert('Please wait for the page to load completely');
-            }
-          }, 100);
+          alert('Please wait for the page to load completely');
         }
       };
 
@@ -1447,8 +1450,8 @@ title: "${title}"`;
                 div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                 div.innerHTML = `
                   <strong>${item.name}</strong>
-                  <button onclick="editFile('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                  <button onclick="deleteFile('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                  <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
+                  <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                 `;
                 poetryList.appendChild(div);
                 console.log('[debug] Added poetry item to list:', item.name);
@@ -2075,8 +2078,10 @@ ${content}
 
         // Update the global function references to point to the actual functions
         window.editPortfolioItem = editPortfolioItem;
+        window.editPoetryItem = editPoetryItem;
         window.editPageInternal = editPage;
         window.deletePortfolioItem = deletePortfolioItem;
+        window.deletePoetryItem = deletePoetryItem;
         window.deletePageAndMenu = deletePageAndMenu;
         
         // Expose all required functions for regression testing
