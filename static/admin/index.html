@@ -54,6 +54,8 @@
     </div>
 
     <script>
+      console.log('Admin script starting...');
+      
       // Define global functions immediately - before IIFE
       window.editFile = function(filename, sha) {
         console.log('editFile called with:', filename, sha);
@@ -240,6 +242,7 @@
       };
 
       (function () {
+        console.log('IIFE starting...');
         const loginSection = document.getElementById('login-section');
         const cmsInterface = document.getElementById('cms-interface');
         const loginBtn = document.getElementById('login-btn');
