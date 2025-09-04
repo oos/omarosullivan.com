@@ -8,7 +8,9 @@ title: "omaR o"
   <p>Hi and Welcome to my digital space :) </p>
 
 <p>I'm currently exploring the intersection of technology and creativity... building software products while also pursuing the arts (sketches, photography, music, writing, etc).</p>
+</div>
 
+<div>
 <h3>Recent Additions to the website...</h3>
 </div>
 
