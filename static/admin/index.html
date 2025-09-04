@@ -1202,13 +1202,22 @@ title: "${title}"`;
             const weight = parseInt(document.getElementById('page-weight').value);
             const content = document.getElementById('page-content').value;
             
-            await createPageAndMenu(title, slug, weight, content);
-            form.remove();
+            console.log('Add page form submitted:', { title, slug, weight, content });
+            
+            try {
+              await createPageAndMenu(title, slug, weight, content);
+              form.remove();
+            } catch (error) {
+              console.error('Error in add page form submission:', error);
+              alert('Error creating page: ' + error.message);
+            }
           });
         }
 
         async function createPageAndMenu(title, slug, weight, content) {
           try {
+            console.log('createPageAndMenu called with:', { title, slug, weight, content, currentToken: currentToken ? 'exists' : 'missing' });
+            
             // Create the page file
             const markdownContent = `---
 title: "${title}"
@@ -1217,6 +1226,7 @@ title: "${title}"
 ${content}
 `;
 
+            console.log('Creating page file...');
             const pageResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${slug}.md`, {
               method: 'PUT',
               headers: {
@@ -1230,13 +1240,17 @@ ${content}
               })
             });
 
+            console.log('Page creation response status:', pageResponse.status);
+
             if (!pageResponse.ok) {
               const error = await pageResponse.json();
+              console.error('Error creating page:', error);
               alert('Error creating page: ' + (error.message || 'Unknown error'));
               return;
             }
 
             // Update the menu in config.toml
+            console.log('Loading config file...');
             const configResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
               headers: {
                 'Authorization': 'token ' + currentToken,
@@ -1244,13 +1258,18 @@ ${content}
               }
             });
 
+            console.log('Config loading response status:', configResponse.status);
+
             if (!configResponse.ok) {
+              console.error('Error loading config file:', configResponse.status);
               alert('Error loading config file');
               return;
             }
 
             const configFile = await configResponse.json();
             let configContent = decodeURIComponent(escape(atob(configFile.content)));
+            
+            console.log('Config file SHA:', configFile.sha);
             
             // Add the new menu item
             const newMenuItem = `  [[menu.main]]
@@ -1266,6 +1285,7 @@ ${content}
               configContent = configContent.slice(0, insertIndex) + newMenuItem + configContent.slice(insertIndex);
             }
 
+            console.log('Updating config file...');
             const updateConfigResponse = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
               method: 'PUT',
               headers: {
@@ -1280,14 +1300,18 @@ ${content}
               })
             });
 
+            console.log('Config update response status:', updateConfigResponse.status);
+
             if (updateConfigResponse.ok) {
               alert('Page created successfully and added to navigation menu!');
               await loadPages(currentToken);
             } else {
               const error = await updateConfigResponse.json();
+              console.error('Error updating config:', error);
               alert('Page created but error updating menu: ' + (error.message || 'Unknown error'));
             }
           } catch (e) {
+            console.error('Exception in createPageAndMenu:', e);
             alert('Error creating page: ' + e.message);
           }
         }
