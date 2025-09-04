@@ -1,5 +1,5 @@
 ---
-title: "not all heroes wear a cape"
+title: "Man of Steel"
 date: 2025-09-04
 description: ""
 cover:
