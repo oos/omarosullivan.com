@@ -2,7 +2,5 @@
 title: "Contact"
 ---
 
-Drop me a line if you want to say Hi :)
-
-hello@omarosullivan.com
+Drop me a message if you want to say Hi :)
 
