@@ -1441,6 +1441,7 @@ title: "${title}"`;
         async function createPoetryItem(title, description, tags, content, imagePath) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const filename = slug + '.md';
             const date = new Date().toISOString().split('T')[0];
             
             let frontmatter = `---
@@ -1471,34 +1472,17 @@ date: ${date}
 
 ${content}`;
 
-            // First check if file exists to get SHA
-            const checkResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${slug}.md`, {
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-
-            let requestBody = {
-              message: `Add poetry post: ${title}`,
-              content: btoa(unescape(encodeURIComponent(frontmatter)))
-            };
-
-            // If file exists, add SHA to update it
-            if (checkResponse.ok) {
-              const existingFile = await checkResponse.json();
-              requestBody.sha = existingFile.sha;
-              requestBody.message = `Update poetry post: ${title}`;
-            }
-
-            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${slug}.md`, {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
               method: 'PUT',
               headers: {
                 'Authorization': 'token ' + currentToken,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify(requestBody)
+              body: JSON.stringify({
+                message: `Add poetry post: ${title}`,
+                content: btoa(unescape(encodeURIComponent(frontmatter)))
+              })
             });
 
             if (response.ok) {
