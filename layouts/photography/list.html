@@ -1,5 +1,75 @@
 {{- define "main" }}
 
+<link rel="stylesheet" href="/css/center-photos.css" type="text/css">
+
+<style>
+/* Nuclear option - center everything with maximum specificity */
+body, html {
+  text-align: center !important;
+}
+
+main, .main, #main, .content, .container {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+}
+
+/* Target every possible element */
+* {
+  text-align: center !important;
+}
+
+/* Force center all images */
+img {
+  display: block !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+/* Force center all figures */
+figure {
+  text-align: center !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Force center all headings */
+h1, h2, h3, h4, h5, h6 {
+  text-align: center !important;
+  margin: 0 auto !important;
+}
+
+/* Force center all articles */
+article {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+/* Force center all divs */
+div {
+  text-align: center !important;
+}
+
+/* Override any theme styles with maximum specificity */
+.photography-grid, .photography-grid *, .post-entry, .post-entry *, .first-entry, .first-entry *, .posts-entry, .posts-entry * {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+</style>
+
 <header class="page-header">
   {{- partial "breadcrumbs.html" . }}
   <h1>
@@ -41,7 +111,8 @@
 
 {{- $term := .Data.Term }}
 
-<div class="photography-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; align-items: start;">
+<div style="text-align: center; width: 100%; max-width: 1200px; margin: 0 auto;">
+<div class="photography-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px auto; align-items: start; justify-items: center; max-width: 1200px;">
 {{- range $index, $page := $paginator.Pages }}
 
 {{- $class := "post-entry" }}
@@ -51,11 +122,13 @@
 {{- $class = "post-entry tag-entry" }}
 {{- end }}
 
-<article class="{{ $class }}" style="margin-bottom: 0; break-inside: avoid;">
+<article class="{{ $class }}" style="margin-bottom: 0; break-inside: avoid; text-align: center !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; width: 100% !important; max-width: 100% !important;">
   {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
-  {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">
+  <div style="text-align: center !important; width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;">
+    {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
+  </div>
+  <header class="entry-header" style="text-align: center !important; width: 100% !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;">
+    <h2 class="entry-hint-parent" style="text-align: center !important; margin: 0 auto !important; width: 100% !important;">
       {{- .Title }}
       {{- if .Draft }}
       <span class="entry-hint" title="Draft">
@@ -80,6 +153,7 @@
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
+</div>
 </div>
 
 {{- if gt $paginator.TotalPages 1 }}
@@ -118,18 +192,90 @@ aside .pagination {
   grid-template-columns: repeat(2, 1fr) !important;
   gap: 15px !important;
   align-items: start !important;
+  justify-items: center !important;
 }
 
 .photography-grid .post-entry {
   margin-bottom: 0 !important;
   break-inside: avoid !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
-/* Increase image height */
-.photography-grid .post-entry .entry-cover img {
+/* Force center all images and content */
+.photography-grid .post-entry .entry-cover,
+.photography-grid .post-entry figure.entry-cover {
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.photography-grid .post-entry .entry-cover img,
+.photography-grid .post-entry figure.entry-cover img {
   height: 300px !important;
   object-fit: cover !important;
   width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.photography-grid .post-entry .entry-header {
+  text-align: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 10px 0 !important;
+}
+
+.photography-grid .post-entry .entry-header h2 {
+  text-align: center !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+/* Override any theme styles that might be interfering */
+.photography-grid article,
+.photography-grid .post-entry,
+.photography-grid .first-entry {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+}
+
+/* Force center everything inside the grid */
+.photography-grid * {
+  text-align: center !important;
+}
+
+.photography-grid img {
+  display: block !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+}
+
+.photography-grid figure {
+  text-align: center !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+.photography-grid h2 {
+  text-align: center !important;
+  margin: 0 auto !important;
 }
 
 /* Responsive design */
