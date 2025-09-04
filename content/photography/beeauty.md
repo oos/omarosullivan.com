@@ -1,5 +1,5 @@
 ---
-title: "Beauty of the East2"
+title: "Beauty of the East"
 date: 2025-09-04
 description: "Beautiful lady from Nepal"
 cover:
