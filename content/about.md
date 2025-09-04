@@ -8,7 +8,7 @@ date: 2025-01-04
   
   <p>Hi, I'm omar.</p>
   
-  <p>I love to build exquisite software products that make the world a better place</p>
+  <p>I love to build beautiful software products that make the world a better place.</p>
   
 <p>I also love entrepreneurship - the creation process makes me come alive!</p> 
 
