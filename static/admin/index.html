@@ -1446,6 +1446,8 @@ ${content}
 
       // Global functions accessible from HTML onclick handlers
       window.editFile = function(filename, sha) {
+        console.log('editFile called with:', filename, sha);
+        console.log('window.editPortfolioItem exists:', !!window.editPortfolioItem);
         // Access the function from the IIFE scope
         if (window.editPortfolioItem) {
           window.editPortfolioItem(filename, sha);
@@ -1455,6 +1457,8 @@ ${content}
       };
 
       window.editPage = function(pageName) {
+        console.log('editPage called with:', pageName);
+        console.log('window.editPageInternal exists:', !!window.editPageInternal);
         // Access the function from the IIFE scope
         if (window.editPageInternal) {
           window.editPageInternal(pageName);
