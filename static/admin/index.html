@@ -418,6 +418,9 @@
             loginSection.style.display = 'none';
             cmsInterface.style.display = 'block';
             
+            // Set up button event listeners now that CMS interface is visible
+            setupButtonListeners();
+            
             // Load portfolio items and pages only if not already loaded
             if (!isLoading) {
               await loadPortfolioItems(token);
@@ -1381,37 +1384,40 @@ ${content}
           editPage('contact');
         });
 
-        // Site settings button handler
-        const editSiteSettingsBtn = document.getElementById('edit-site-settings');
-        if (editSiteSettingsBtn) {
-          editSiteSettingsBtn.addEventListener('click', () => {
-            console.log('Edit Site Settings button clicked');
-            editSiteSettings();
-          });
-        } else {
-          console.error('Edit Site Settings button not found');
-        }
+        // Function to set up button event listeners
+        function setupButtonListeners() {
+          // Site settings button handler
+          const editSiteSettingsBtn = document.getElementById('edit-site-settings');
+          if (editSiteSettingsBtn) {
+            editSiteSettingsBtn.addEventListener('click', () => {
+              console.log('Edit Site Settings button clicked');
+              editSiteSettings();
+            });
+          } else {
+            console.error('Edit Site Settings button not found');
+          }
 
-        // Section page button handler
-        const editPortfolioSectionBtn = document.getElementById('edit-portfolio-section');
-        if (editPortfolioSectionBtn) {
-          editPortfolioSectionBtn.addEventListener('click', () => {
-            console.log('Edit Portfolio Section button clicked');
-            editSectionPage('portfolio');
-          });
-        } else {
-          console.error('Edit Portfolio Section button not found');
-        }
+          // Section page button handler
+          const editPortfolioSectionBtn = document.getElementById('edit-portfolio-section');
+          if (editPortfolioSectionBtn) {
+            editPortfolioSectionBtn.addEventListener('click', () => {
+              console.log('Edit Portfolio Section button clicked');
+              editSectionPage('portfolio');
+            });
+          } else {
+            console.error('Edit Portfolio Section button not found');
+          }
 
-        // Add page button handler
-        const addPageBtn = document.getElementById('add-page');
-        if (addPageBtn) {
-          addPageBtn.addEventListener('click', () => {
-            console.log('Add Page button clicked');
-            showAddPageForm();
-          });
-        } else {
-          console.error('Add Page button not found');
+          // Add page button handler
+          const addPageBtn = document.getElementById('add-page');
+          if (addPageBtn) {
+            addPageBtn.addEventListener('click', () => {
+              console.log('Add Page button clicked');
+              showAddPageForm();
+            });
+          } else {
+            console.error('Add Page button not found');
+          }
         }
 
 
@@ -1549,6 +1555,9 @@ ${content}
                 // Hide login section and show CMS interface
                 loginSection.style.display = 'none';
                 cmsInterface.style.display = 'block';
+                
+                // Set up button event listeners now that CMS interface is visible
+                setupButtonListeners();
                 
                 // Load content
                 loadPortfolioItems();
