@@ -18,24 +18,31 @@ theme = "PaperMod"
     clientId = ""   # Will be provided by TinaCMS
     token = ""      # Will be provided by TinaCMS
 
+[[menu.main]]
+  name = "Sketches"
+  url = "/portfolio/"
+  weight = 10
+
+[[menu.main]]
+  name = "Poetry"
+  url = "/poetry/"
+  weight = 15
+
+[[menu.main]]
+  name = "Poetry Page"
+  url = "/poetry-page/"
+  weight = 16
+
+[[menu.main]]
+  name = "About"
+  url = "/about/"
+  weight = 20
+
+[[menu.main]]
+  name = "Contact"
+  url = "/contact/"
+  weight = 30
+
+
 [menu]
-  [[menu.main]]
-    name = "Sketches"
-    url = "/portfolio/"
-    weight = 10
-  [[menu.main]]
-    name = "Poetry"
-    url = "/poetry/"
-    weight = 15
-  [[menu.main]]
-    name = "Poetry Page"
-    url = "/poetry-page/"
-    weight = 16
-  [[menu.main]]
-    name = "About"
-    url = "/about/"
-    weight = 20
-  [[menu.main]]
-    name = "Contact"
-    url = "/contact/"
-    weight = 30
+          
