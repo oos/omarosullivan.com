@@ -3,7 +3,7 @@ title: "About"
 date: 2025-01-04
 description: "Learn more about Omar and his work in technology and creativity."
 cover:
-  image: "/uploads/about-photo.svg"
+  image: "/uploads/photo-1756978014824.jpg"
 ---
 
 Hi, I'm Omar. 
