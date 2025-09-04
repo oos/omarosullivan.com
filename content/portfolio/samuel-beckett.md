@@ -9,4 +9,8 @@ tags:
   - "Pencil"
 ---
 
-a
+- Medium: Pencil on Paper
+- Size: 200mm x 200mm
+- Year: 2019
+
+
