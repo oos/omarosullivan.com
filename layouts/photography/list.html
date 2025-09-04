@@ -86,7 +86,7 @@
 <footer class="page-footer" style="margin-top: 40px; text-align: center; clear: both;">
   <nav class="pagination" style="display: flex; justify-content: center; gap: 20px; align-items: center;">
     {{- if $paginator.HasPrev }}
-    <a class="prev" href="{{ $paginator.Prev.URL | absURL }}" style="padding: 8px 16px; background: #007cba; color: white; text-decoration: none; border-radius: 4px;">
+    <a class="prev" href="{{ $paginator.Prev.URL | absURL }}" style="padding: 8px 16px; background: white; color: #007cba; text-decoration: none; border-radius: 4px; border: 1px solid #007cba;">
       «&nbsp;{{ i18n "prev_page" }}&nbsp;
       {{- if (.Param "ShowPageNums") }}
       {{- sub $paginator.PageNumber 1 }}/{{ $paginator.TotalPages }}
@@ -94,7 +94,7 @@
     </a>
     {{- end }}
     {{- if $paginator.HasNext }}
-    <a class="next" href="{{ $paginator.Next.URL | absURL }}" style="padding: 8px 16px; background: #007cba; color: white; text-decoration: none; border-radius: 4px;">
+    <a class="next" href="{{ $paginator.Next.URL | absURL }}" style="padding: 8px 16px; background: white; color: #007cba; text-decoration: none; border-radius: 4px; border: 1px solid #007cba;">
       {{- i18n "next_page" }}&nbsp;
       {{- if (.Param "ShowPageNums") }}
       {{- add 1 $paginator.PageNumber }}/{{ $paginator.TotalPages }}
