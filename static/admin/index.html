@@ -1279,29 +1279,7 @@ ${content}
           showAddPageForm();
         });
 
-        // Global function for editing files
-        window.editFile = function(filename, sha) {
-          editPortfolioItem(filename, sha);
-        };
 
-        // Global function for editing pages
-        window.editPage = function(pageName) {
-          editPage(pageName);
-        };
-
-        // Global function for deleting files
-        window.deleteFile = function(filename, sha) {
-          if (confirm('Are you sure you want to delete ' + filename + '?')) {
-            deletePortfolioItem(filename, sha);
-          }
-        };
-
-        // Global function for deleting pages
-        window.deletePage = function(pageName, sha) {
-          if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
-            deletePageAndMenu(pageName, sha);
-          }
-        };
 
         // Site Settings Functions
         async function editSiteSettings() {
@@ -1458,7 +1436,52 @@ ${content}
         setTimeout(initializeAuth, 500);
         setTimeout(initializeAuth, 1500);
         setTimeout(initializeAuth, 3000);
+
+        // Expose internal functions to global scope
+        window.editPortfolioItem = editPortfolioItem;
+        window.editPageInternal = editPage;
+        window.deletePortfolioItem = deletePortfolioItem;
+        window.deletePageAndMenu = deletePageAndMenu;
       })();
+
+      // Global functions accessible from HTML onclick handlers
+      window.editFile = function(filename, sha) {
+        // Access the function from the IIFE scope
+        if (window.editPortfolioItem) {
+          window.editPortfolioItem(filename, sha);
+        } else {
+          alert('Please wait for the page to load completely');
+        }
+      };
+
+      window.editPage = function(pageName) {
+        // Access the function from the IIFE scope
+        if (window.editPageInternal) {
+          window.editPageInternal(pageName);
+        } else {
+          alert('Please wait for the page to load completely');
+        }
+      };
+
+      window.deleteFile = function(filename, sha) {
+        if (confirm('Are you sure you want to delete ' + filename + '?')) {
+          if (window.deletePortfolioItem) {
+            window.deletePortfolioItem(filename, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        }
+      };
+
+      window.deletePage = function(pageName, sha) {
+        if (confirm('Are you sure you want to delete the ' + pageName + ' page? This will also remove it from the navigation menu.')) {
+          if (window.deletePageAndMenu) {
+            window.deletePageAndMenu(pageName, sha);
+          } else {
+            alert('Please wait for the page to load completely');
+          }
+        }
+      };
     </script>
   </body>
 </html>
