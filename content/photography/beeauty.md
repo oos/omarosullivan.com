@@ -1,7 +1,7 @@
 ---
-title: "Beeauty"
+title: "Beauty of the East2"
 date: 2025-09-04
-description: "a"
+description: "Beautiful lady from Nepal"
 cover:
   image: "/uploads/photo-1756992462823.jpg"
 ---
