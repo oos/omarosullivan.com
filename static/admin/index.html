@@ -1159,10 +1159,15 @@ ${content}
             // Check if this is the About page to add image upload and height control
             const isAboutPage = pageName === 'about';
             
-            // Parse existing image height from content
+            // Parse existing image dimensions from content
+            let existingImageWidth = '200px';
             let existingImageHeight = '200px';
             if (isAboutPage && body) {
+              const widthMatch = body.match(/width:\s*(\d+px)/);
               const heightMatch = body.match(/height:\s*(\d+px)/);
+              if (widthMatch) {
+                existingImageWidth = widthMatch[1];
+              }
               if (heightMatch) {
                 existingImageHeight = heightMatch[1];
               }
@@ -1175,9 +1180,14 @@ ${content}
                     <small style="color:#666;font-size:12px;">Leave empty to keep current image, or select a new image to replace it.</small>
                   </div>
                   <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Width:</label>
+                    <input type="text" id="edit-page-image-width" value="${existingImageWidth}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 200px, 250px">
+                    <small style="color:#666;font-size:12px;">Specify the width of the image</small>
+                  </div>
+                  <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Height:</label>
                     <input type="text" id="edit-page-image-height" value="${existingImageHeight}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 200px, 300px">
-                    <small style="color:#666;font-size:12px;">Specify the height of the image (width will maintain aspect ratio)</small>
+                    <small style="color:#666;font-size:12px;">Specify the height of the image</small>
                   </div>
             ` : '';
 
@@ -1224,18 +1234,20 @@ ${content}
               const newDescription = document.getElementById('edit-page-description').value;
               const newContent = document.getElementById('edit-page-content').value;
               
-              // Handle image upload and height for About page
+              // Handle image upload and dimensions for About page
               let imagePath = null;
+              let imageWidth = null;
               let imageHeight = null;
               if (isAboutPage) {
                 const imageFile = document.getElementById('edit-page-image').files[0];
                 if (imageFile) {
                   imagePath = await uploadImage(imageFile);
                 }
+                imageWidth = document.getElementById('edit-page-image-width').value;
                 imageHeight = document.getElementById('edit-page-image-height').value;
               }
               
-              await updatePage(pageName, file.sha, newTitle, newDescription, newContent, imagePath, imageHeight);
+              await updatePage(pageName, file.sha, newTitle, newDescription, newContent, imagePath, imageWidth, imageHeight);
               form.remove();
             });
           } catch (e) {
@@ -1243,7 +1255,7 @@ ${content}
           }
         }
 
-        async function updatePage(pageName, sha, title, description, content, imagePath = null, imageHeight = null) {
+        async function updatePage(pageName, sha, title, description, content, imagePath = null, imageWidth = null, imageHeight = null) {
           try {
             // First get the current file to preserve existing frontmatter
             const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${pageName}.md`, {
@@ -1279,21 +1291,39 @@ title: "${title}"`;
               frontmatter += `\ncover:\n  image: "${imagePath}"`;
             }
 
-            // Update image height in content for About page
+            // Update image dimensions in content for About page
             let updatedContent = content;
-            if (pageName === 'about' && imageHeight) {
-              // Update the height in the img tag
-              updatedContent = content.replace(
-                /height:\s*\d+px/g, 
-                `height: ${imageHeight}`
-              );
-              
-              // If no height was found, add it to the existing style
-              if (!updatedContent.includes('height:')) {
+            if (pageName === 'about' && (imageWidth || imageHeight)) {
+              // Update the width in the img tag
+              if (imageWidth) {
                 updatedContent = updatedContent.replace(
-                  /style="([^"]*)"/g,
-                  `style="$1 height: ${imageHeight};"`
+                  /width:\s*\d+px/g, 
+                  `width: ${imageWidth}`
                 );
+                
+                // If no width was found, add it to the existing style
+                if (!updatedContent.includes('width:')) {
+                  updatedContent = updatedContent.replace(
+                    /style="([^"]*)"/g,
+                    `style="$1 width: ${imageWidth};"`
+                  );
+                }
+              }
+              
+              // Update the height in the img tag
+              if (imageHeight) {
+                updatedContent = updatedContent.replace(
+                  /height:\s*\d+px/g, 
+                  `height: ${imageHeight}`
+                );
+                
+                // If no height was found, add it to the existing style
+                if (!updatedContent.includes('height:')) {
+                  updatedContent = updatedContent.replace(
+                    /style="([^"]*)"/g,
+                    `style="$1 height: ${imageHeight};"`
+                  );
+                }
               }
             }
 
