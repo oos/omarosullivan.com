@@ -1153,6 +1153,7 @@ title: "${title}"`;
 
         // Page Management Functions
         function showAddPageForm() {
+          console.log('showAddPageForm function called');
           const form = document.createElement('div');
           form.id = 'add-page-modal';
           form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
@@ -1410,8 +1411,11 @@ ${content}
 
         // Function to set up button event listeners
         function setupButtonListeners() {
+          console.log('Setting up button listeners...');
+          
           // Site settings button handler
           const editSiteSettingsBtn = document.getElementById('edit-site-settings');
+          console.log('Edit Site Settings button found:', !!editSiteSettingsBtn);
           if (editSiteSettingsBtn) {
             editSiteSettingsBtn.addEventListener('click', () => {
               console.log('Edit Site Settings button clicked');
@@ -1423,6 +1427,7 @@ ${content}
 
           // Section page button handler
           const editPortfolioSectionBtn = document.getElementById('edit-portfolio-section');
+          console.log('Edit Portfolio Section button found:', !!editPortfolioSectionBtn);
           if (editPortfolioSectionBtn) {
             editPortfolioSectionBtn.addEventListener('click', () => {
               console.log('Edit Portfolio Section button clicked');
@@ -1434,6 +1439,7 @@ ${content}
 
           // Add page button handler
           const addPageBtn = document.getElementById('add-page');
+          console.log('Add Page button found:', !!addPageBtn);
           if (addPageBtn) {
             addPageBtn.addEventListener('click', () => {
               console.log('Add Page button clicked');
@@ -1442,13 +1448,17 @@ ${content}
           } else {
             console.error('Add Page button not found');
           }
+          
+          console.log('Button listeners setup complete');
         }
 
 
 
         // Site Settings Functions
         async function editSiteSettings() {
+          console.log('editSiteSettings function called');
           try {
+            console.log('Loading config.toml...');
             // First, get the current config.toml content
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/config.toml', {
               headers: {
