@@ -6,9 +6,94 @@
     <title>Content Manager (Custom Auth)</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Quill.js WYSIWYG Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
     <style>
       h5 { font-size: 24px !important; font-weight: bold !important; margin: 20px 0 10px 0 !important; }
       h6 { font-size: 20px !important; font-weight: bold !important; margin: 15px 0 8px 0 !important; }
+      
+      /* WYSIWYG Editor Styles */
+      .editor-container {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 15px;
+      }
+      
+      .editor-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+        border-radius: 4px 4px 0 0;
+      }
+      
+      .editor-mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .editor-mode-toggle label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #666;
+        cursor: pointer;
+      }
+      
+      .editor-mode-toggle input[type="radio"] {
+        margin: 0;
+      }
+      
+      .quill-editor {
+        min-height: 200px;
+      }
+      
+      .html-editor {
+        display: none;
+        width: 100%;
+        min-height: 200px;
+        padding: 12px;
+        border: none;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 13px;
+        line-height: 1.4;
+        resize: vertical;
+        outline: none;
+      }
+      
+      .html-editor.active {
+        display: block;
+      }
+      
+      .quill-editor.active {
+        display: block;
+      }
+      
+      .quill-editor:not(.active) {
+        display: none;
+      }
+      
+      /* Quill editor customization */
+      .ql-editor {
+        min-height: 180px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      
+      .ql-toolbar {
+        border-bottom: 1px solid #ccc;
+      }
+      
+      .ql-container {
+        border: none;
+      }
     </style>
   </head>
   <body>
@@ -325,6 +410,99 @@
           } else {
             console.log(msg);
           }
+        }
+
+        // WYSIWYG Editor Helper Functions
+        function createWysiwygEditor(containerId, initialContent = '') {
+          const container = document.getElementById(containerId);
+          if (!container) return null;
+
+          // Create editor container
+          const editorContainer = document.createElement('div');
+          editorContainer.className = 'editor-container';
+          editorContainer.innerHTML = `
+            <div class="editor-toolbar">
+              <div class="editor-mode-toggle">
+                <label>
+                  <input type="radio" name="${containerId}-mode" value="wysiwyg" checked>
+                  <span>✏️ Visual Editor</span>
+                </label>
+                <label>
+                  <input type="radio" name="${containerId}-mode" value="html">
+                  <span>📝 HTML Code</span>
+                </label>
+              </div>
+            </div>
+            <div id="${containerId}-quill" class="quill-editor active"></div>
+            <textarea id="${containerId}-html" class="html-editor" placeholder="HTML content...">${initialContent}</textarea>
+          `;
+
+          // Replace the original textarea
+          container.parentNode.insertBefore(editorContainer, container);
+          container.style.display = 'none';
+
+          // Initialize Quill editor
+          const quill = new Quill(`#${containerId}-quill`, {
+            theme: 'snow',
+            modules: {
+              toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+                ['clean']
+              ]
+            }
+          });
+
+          // Set initial content
+          if (initialContent) {
+            quill.root.innerHTML = initialContent;
+          }
+
+          // Mode toggle functionality
+          const modeRadios = editorContainer.querySelectorAll(`input[name="${containerId}-mode"]`);
+          const quillDiv = editorContainer.querySelector('.quill-editor');
+          const htmlTextarea = editorContainer.querySelector('.html-editor');
+
+          modeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+              if (this.value === 'wysiwyg') {
+                // Switch to WYSIWYG mode
+                quillDiv.classList.add('active');
+                htmlTextarea.classList.remove('active');
+                // Sync HTML content to Quill
+                quill.root.innerHTML = htmlTextarea.value;
+              } else {
+                // Switch to HTML mode
+                quillDiv.classList.remove('active');
+                htmlTextarea.classList.add('active');
+                // Sync Quill content to HTML textarea
+                htmlTextarea.value = quill.root.innerHTML;
+              }
+            });
+          });
+
+          // Return object with methods to get/set content
+          return {
+            getContent: function() {
+              if (quillDiv.classList.contains('active')) {
+                return quill.root.innerHTML;
+              } else {
+                return htmlTextarea.value;
+              }
+            },
+            setContent: function(content) {
+              quill.root.innerHTML = content;
+              htmlTextarea.value = content;
+            },
+            getQuill: function() {
+              return quill;
+            }
+          };
         }
 
         function extractTokenFromStorage() {
@@ -1156,17 +1334,17 @@ ${content}
                     </div>
                     <div style="margin-bottom:10px;">
                       <label style="display:block;margin-bottom:5px;font-weight:bold;color:#333;">Replace Image:</label>
-                      <input type="file" id="edit-portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
-                      <div id="edit-image-preview" style="margin-top:10px;display:none;">
+                    <input type="file" id="edit-portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <div id="edit-image-preview" style="margin-top:10px;display:none;">
                         <img id="edit-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;object-fit:cover;">
-                        <div id="edit-image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
-                      </div>
+                      <div id="edit-image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
+                    </div>
                       <div id="edit-portfolio-upload-status" style="display:none;color:#007cba;font-weight:bold;margin-top:5px;"></div>
                     </div>
                     <small style="color:#666;display:block;margin-top:5px;">Select a new image to replace the current one, or leave empty to keep the current image.</small>
                   </div>
                   <div style="margin-bottom:15px;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content:</label>
                     <textarea id="edit-portfolio-content" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:200px;">${body}</textarea>
                   </div>
                   <div style="margin-bottom:15px;">
@@ -1183,6 +1361,9 @@ ${content}
               </div>
             `;
             document.body.appendChild(form);
+            
+            // Initialize WYSIWYG editor for content
+            const contentEditor = createWysiwygEditor('edit-portfolio-content', body);
             
             // Display current image
             const currentImageContainer = document.getElementById('current-image-container');
@@ -1219,7 +1400,7 @@ ${content}
               const newTitle = document.getElementById('edit-portfolio-title').value;
               const newDescription = document.getElementById('edit-portfolio-description').value;
               const newTags = document.getElementById('edit-portfolio-tags').value;
-              const newContent = document.getElementById('edit-portfolio-content').value;
+              const newContent = contentEditor ? contentEditor.getContent() : document.getElementById('edit-portfolio-content').value;
               const newFeatured = document.getElementById('edit-portfolio-featured').checked;
               const imageFile = document.getElementById('edit-portfolio-image').files[0];
               const uploadStatus = document.getElementById('edit-portfolio-upload-status');
@@ -1279,7 +1460,7 @@ ${content}
               const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
               const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
               try {
-                const imageResponse = await uploadImage(imageFile, imageFilename);
+              const imageResponse = await uploadImage(imageFile, imageFilename);
                 coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
               } catch (error) {
                 // If image upload failed, show error and don't proceed with update
@@ -1505,7 +1686,7 @@ ${content}
                   </div>
                   ${imageUploadField}
                   <div style="margin-bottom:15px;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown) - Optional:</label>
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Content - Optional:</label>
                     <textarea id="edit-page-content" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;">${body}</textarea>
                   </div>
                   <div style="text-align:right;">
@@ -1516,6 +1697,9 @@ ${content}
               </div>
             `;
             document.body.appendChild(form);
+            
+            // Initialize WYSIWYG editor for content
+            const contentEditor = createWysiwygEditor('edit-page-content', body);
             
             // Add image preview functionality for About page
             if (isAboutPage) {
@@ -1620,7 +1804,7 @@ ${content}
               e.preventDefault();
               const newTitle = document.getElementById('edit-page-title').value;
               const newDescription = document.getElementById('edit-page-description').value;
-              const newContent = document.getElementById('edit-page-content').value;
+              const newContent = contentEditor ? contentEditor.getContent() : document.getElementById('edit-page-content').value;
               
               // Handle image upload and dimensions for About page
               let imagePath = null;
@@ -1969,7 +2153,7 @@ title: "${title}"`;
               let imagePath = '';
               if (imageFile) {
                 try {
-                  imagePath = await uploadImage(imageFile);
+                imagePath = await uploadImage(imageFile);
                 } catch (error) {
                   alert(error.message);
                   return;
