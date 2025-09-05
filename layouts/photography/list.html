@@ -46,7 +46,18 @@
 
 {{- $pages := union .RegularPages .Sections }}
 {{- $sortedPages := sort $pages "Params.order" "asc" }}
-{{- $paginator := .Paginate $sortedPages 20 }}
+{{- $pageSize := 20 }}
+{{- if .URL }}
+  {{- $urlParams := split .URL "?" }}
+  {{- if gt (len $urlParams) 1 }}
+    {{- $queryString := index $urlParams 1 }}
+    {{- $pageSizeParam := findRE `pageSize=(\d+)` $queryString }}
+    {{- if $pageSizeParam }}
+      {{- $pageSize = int (index (split (index $pageSizeParam 0) "=") 1) }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $paginator := .Paginate $sortedPages $pageSize }}
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
@@ -159,18 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (select) {
     select.value = pageSize;
   }
-  
-  // Show/hide items based on page size
-  const items = document.querySelectorAll('.post-entry');
-  const targetCount = parseInt(pageSize);
-  
-  items.forEach((item, index) => {
-    if (index < targetCount) {
-      item.style.display = 'block';
-    } else {
-      item.style.display = 'none';
-    }
-  });
 });
 </script>
 
