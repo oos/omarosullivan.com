@@ -47,25 +47,22 @@ theme = "PaperMod"
   weight = 10
 
 [[menu.main]]
-name = "Photography"
-url = "/photography/"
-weight = 12
+  name = "Photography"
+  url = "/photography/"
+  weight = 12
 
 [[menu.main]]
-name = "Videography"
-url = "/videography/"
-weight = 13
+  name = "Videography"
+  url = "/videography/"
+  weight = 13
 
 [[menu.main]]
-name = "Poetry"
-url = "/poetry/"
-weight = 15
+  name = "Poetry"
+  url = "/poetry/"
+  weight = 15
 
 [[menu.main]]
   name = "Contact"
   url = "/contact/"
   weight = 30
-
-
-[menu]
           
