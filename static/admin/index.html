@@ -5258,6 +5258,10 @@ tags:
                     const featuredMatch = content.match(/featured:\s*(true|false)/i);
                     const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                     
+                    // Check for featured_date
+                    const featuredDateMatch = content.match(/featured_date:\s*([\d-]+)/);
+                    const featuredDate = featuredDateMatch ? featuredDateMatch[1] : null;
+                    
                     // Check for order field
                     const orderMatch = content.match(/order:\s*(\d+)/);
                     const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
