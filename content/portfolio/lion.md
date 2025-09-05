@@ -8,7 +8,7 @@ tags:
   - "Sketch"
   - "Pencil"
 featured: true
-order: 2
+order: 1
 ---
 
 This is art I drew for my son's 8th birthday (on his request) that was inspired by this CS Lewis Quote: 
