@@ -73,12 +73,9 @@
       {{- end }}
     </h2>
   </header>
-  <div class="entry-content">
-    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+  <div class="entry-content poetry-preview">
+    {{ .Content | markdownify | truncate 500 }}
   </div>
-  <footer class="entry-footer">
-    {{- partial "post_meta.html" . -}}
-  </footer>
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
@@ -105,5 +102,41 @@
   </nav>
 </footer>
 {{- end }}
+
+<style>
+/* Make poetry cards taller and format text properly */
+.post-entry {
+  min-height: 300px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.poetry-preview {
+  flex: 1 !important;
+  white-space: pre-line !important;
+  line-height: 1.6 !important;
+  font-size: 16px !important;
+  padding: 15px 0 !important;
+}
+
+.poetry-preview p {
+  margin: 0 0 10px 0 !important;
+  white-space: pre-line !important;
+}
+
+/* Hide dates */
+.entry-footer,
+.post-meta,
+.entry-meta {
+  display: none !important;
+}
+
+/* Hide powered by text */
+.page-footer .powered-by,
+footer .powered-by,
+.powered-by {
+  display: none !important;
+}
+</style>
 
 {{- end }}{{- /* end main */ -}}
