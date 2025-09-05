@@ -4153,19 +4153,18 @@ tags:
                 const videographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered videography items:', videographyItems);
                 
+                // Load all items first to get their metadata for sorting
+                const itemsWithMetadata = [];
                 for (const item of videographyItems) {
-                  const div = document.createElement('div');
-                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                  
-                  // Handle _index.md files differently (these are section pages, not individual videos)
                   if (item.name === '_index.md') {
-                    div.innerHTML = `
-                      <strong>${item.name} (Videography Section Page)</strong>
-                      <button onclick="editPage('videography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                    `;
-                    videographyList.appendChild(div);
+                    itemsWithMetadata.push({
+                      ...item,
+                      displayTitle: item.name + ' (Videography Section Page)',
+                      date: '1900-01-01',
+                      content: '',
+                      isSectionPage: true
+                    });
                   } else {
-                    // Get the title from the file content
                     try {
                       const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${item.name}`, {
                         headers: {
@@ -4173,93 +4172,97 @@ tags:
                           'Accept': 'application/vnd.github.v3+json'
                         }
                       });
-                      
-                      if (fileResponse.ok) {
-                        const fileData = await fileResponse.json();
-                        const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
-                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
-                        // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
-                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
-                        
-                        // Check for order field
-                        const orderMatch = content.match(/order:\s*(\d+)/);
-                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
-                        
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${displayTitle}</strong>
-                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
-                      } else {
-                        // Fallback to filename if we can't get the title
-                        // Try to read order even in fallback case
-                        let currentOrder = 999;
-                        try {
-                          const orderMatch = content.match(/order:\s*(\d+)/);
-                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
-                        } catch (e) {
-                          currentOrder = 999;
+                        if (fileResponse.ok) {
+                          const fileData = await fileResponse.json();
+                          const content = decodeURIComponent(escape(atob(fileData.content)));
+                          const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
+                          const dateMatch = content.match(/date:\s*(\d{4}-\d{2}-\d{2})/);
+                          const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                          const date = dateMatch ? dateMatch[1] : '1900-01-01';
+                          
+                          itemsWithMetadata.push({
+                            ...item,
+                            displayTitle,
+                            date,
+                            content,
+                            isSectionPage: false
+                          });
                         }
-                        
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${item.name}</strong>
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
-                      }
                     } catch (error) {
-                      // Fallback to filename if there's an error
-                      div.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <label style="display:flex;align-items:center;gap:8px;">
-                              <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
-                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                              <label style="font-size:12px;color:#666;">Order:</label>
-                              <input type="number" value="999" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                            </div>
+                      console.error('Error loading videography item:', error);
+                      itemsWithMetadata.push({
+                        ...item,
+                        displayTitle: item.name.replace('.md', ''),
+                        date: '1900-01-01',
+                        content: '',
+                        isSectionPage: false
+                      });
+                    }
+                  }
+                }
+                
+                // Sort items: section pages first, then by date (newest first), then by title
+                itemsWithMetadata.sort((a, b) => {
+                  if (a.isSectionPage && !b.isSectionPage) return -1;
+                  if (!a.isSectionPage && b.isSectionPage) return 1;
+                  if (a.date !== b.date) {
+                    return b.date.localeCompare(a.date); // Newest first
+                  }
+                  return a.displayTitle.localeCompare(b.displayTitle);
+                });
+                
+                // Display items in the correct order
+                for (const item of itemsWithMetadata) {
+                  const div = document.createElement('div');
+                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                  
+                  // Handle _index.md files differently (these are section pages, not individual videos)
+                  if (item.isSectionPage) {
+                    div.innerHTML = `
+                      <strong>${item.displayTitle}</strong>
+                      <button onclick="editPage('videography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                    `;
+                    videographyList.appendChild(div);
+                  } else {
+                    // Use pre-loaded metadata
+                    const content = item.content;
+                    const displayTitle = item.displayTitle;
+                    const date = item.date;
+                    
+                    // Check if this item is featured
+                    const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                    const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
+                    
+                    // Check for order field
+                    const orderMatch = content.match(/order:\s*(\d+)/);
+                    const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                    
+                    div.innerHTML = `
+                      <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                          <label style="display:flex;align-items:center;gap:8px;">
+                            <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                            <strong>${displayTitle}</strong>
+                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                          </label>
+                          <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                            <label style="font-size:12px;color:#666;">Order Field:</label>
+                            <input type="number" value="${currentOrder}" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
                           </div>
-                          <div style="display:flex;gap:5px;">
-                            <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                            <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                            <label style="font-size:12px;color:#666;">Date:</label>
+                            <span style="font-size:12px;color:#333;">${date}</span>
                           </div>
                         </div>
-                      `;
-                    }
-                    videographyList.appendChild(div);
+                        <div style="display:flex;gap:5px;">
+                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        </div>
+                      </div>
+                    `;
                   }
+                  videographyList.appendChild(div);
                   console.log('[debug] Added videography item to list:', item.name);
                 }
                 
