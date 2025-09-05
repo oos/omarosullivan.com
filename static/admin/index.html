@@ -477,7 +477,7 @@
                       if (fileResponse.ok) {
                         const fileData = await fileResponse.json();
                         const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
@@ -1025,15 +1025,15 @@ ${content}
               const frontmatter = frontmatterMatch[1];
               const bodyContent = frontmatterMatch[2];
               
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
               
               // Parse tags from YAML array format
-              const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s*-\s*["']?[^"'\n]+["']?\s*\n?)*)/);
+              const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s*-\s*["'][^"\n]+["']\s*\n?)*)/);
               if (tagsMatch) {
                 const tagsLines = tagsMatch[1].split('\n').filter(line => line.trim());
                 const tagArray = tagsLines.map(line => {
-                  const match = line.match(/-\s*["']?([^"'\n]+)["']?/);
+                  const match = line.match(/-\s*["']([^"\n]+)["']/);
                   return match ? match[1] : '';
                 }).filter(tag => tag);
                 tags = tagArray.join(', ');
@@ -1106,7 +1106,7 @@ ${content}
             
             // Display current image
             const currentImageContainer = document.getElementById('current-image-container');
-            const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
+            const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']([^"\n]+)["']/);
             if (currentCoverMatch) {
               const currentImagePath = currentCoverMatch[1];
               currentImageContainer.innerHTML = `
@@ -1166,7 +1166,7 @@ ${content}
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
-              const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']?([^"'\n]+)["']?/);
+              const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']([^"\n]+)["']/);
               if (coverMatch) {
                 existingCoverImage = `cover:\n  image: "${coverMatch[1]}"`;
               }
@@ -1286,7 +1286,7 @@ ${content}
               const frontmatter = frontmatterMatch[1];
               const bodyContent = frontmatterMatch[2];
               
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
               
               if (titleMatch) title = titleMatch[1];
               body = bodyContent;
@@ -1341,7 +1341,7 @@ ${content}
             let existingDescription = '';
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
               if (descMatch) {
                 existingDescription = descMatch[1];
               }
@@ -1532,8 +1532,8 @@ title: "${title}"`;
               const frontmatter = frontmatterMatch[1];
               const bodyContent = frontmatterMatch[2];
               
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
               
               if (titleMatch) title = titleMatch[1];
               if (descMatch) description = descMatch[1];
@@ -1779,7 +1779,7 @@ title: "${title}"`;
                       if (fileResponse.ok) {
                         const fileData = await fileResponse.json();
                         const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
@@ -1915,8 +1915,8 @@ title: "${title}"`;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
@@ -2054,7 +2054,7 @@ title: "${title}"`;
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
               const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
               if (frontmatterMatch) {
-                const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']?([^"'\n]+)["']?/);
+                const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']([^"\n]+)["']/);
                 if (coverMatch) {
                   existingImagePath = coverMatch[1].trim();
                 }
@@ -2995,7 +2995,7 @@ description: "${description}"`;
                       if (fileResponse.ok) {
                         const fileData = await fileResponse.json();
                         const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
@@ -3130,8 +3130,8 @@ description: "${description}"`;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
@@ -3230,7 +3230,7 @@ description: "${description}"`;
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
               const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
               if (frontmatterMatch) {
-                const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']?([^"'\n]+)["']?/);
+                const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']([^"\n]+)["']/);
                 if (coverMatch) {
                   existingImagePath = coverMatch[1].trim();
                 }
@@ -4177,7 +4177,7 @@ tags:
                       if (fileResponse.ok) {
                         const fileData = await fileResponse.json();
                         const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']?([^"'\n]+)["']?/);
+                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
                         const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                         
                         // Check if this item is featured
@@ -4313,10 +4313,10 @@ tags:
               console.log('Frontmatter found:', frontmatter);
               
               // Better regex patterns that handle both quoted and unquoted values
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"'\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"'\n]+)["']?/);
-              const videoUrlMatch = frontmatter.match(/video_url:\s*["']?([^"'\n]+)["']?/);
-              const videoTypeMatch = frontmatter.match(/video_type:\s*["']?([^"'\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"\n]+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"\n]+)["']/);
+              const videoUrlMatch = frontmatter.match(/video_url:\s*["']([^"\n]+)["']/);
+              const videoTypeMatch = frontmatter.match(/video_type:\s*["']([^"\n]+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
