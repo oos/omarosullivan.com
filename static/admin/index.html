@@ -4417,6 +4417,7 @@ description: "${description}"`;
             }
             
             // Update all items
+            let hasError = false;
             for (const itemToUpdate of itemsToUpdate) {
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
                 method: 'PUT',
@@ -4432,9 +4433,14 @@ description: "${description}"`;
               });
               
               if (!updateResponse.ok) {
-                alert(`Error updating ${itemToUpdate.filename}`);
-                return;
+                hasError = true;
+                console.error(`Error updating ${itemToUpdate.filename}:`, await updateResponse.text());
               }
+            }
+            
+            if (hasError) {
+              alert('Some items failed to update. Please try again.');
+              return;
             }
             
             alert('Order updated successfully!');
@@ -4527,6 +4533,7 @@ description: "${description}"`;
             }
             
             // Update all items
+            let hasError = false;
             for (const itemToUpdate of itemsToUpdate) {
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${itemToUpdate.filename}`, {
                 method: 'PUT',
@@ -4542,9 +4549,14 @@ description: "${description}"`;
               });
               
               if (!updateResponse.ok) {
-                alert(`Error updating ${itemToUpdate.filename}`);
-                return;
+                hasError = true;
+                console.error(`Error updating ${itemToUpdate.filename}:`, await updateResponse.text());
               }
+            }
+            
+            if (hasError) {
+              alert('Some items failed to update. Please try again.');
+              return;
             }
             
             alert('Order updated successfully!');
@@ -4637,6 +4649,7 @@ description: "${description}"`;
             }
             
             // Update all items
+            let hasError = false;
             for (const itemToUpdate of itemsToUpdate) {
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${itemToUpdate.filename}`, {
                 method: 'PUT',
@@ -4652,9 +4665,14 @@ description: "${description}"`;
               });
               
               if (!updateResponse.ok) {
-                alert(`Error updating ${itemToUpdate.filename}`);
-                return;
+                hasError = true;
+                console.error(`Error updating ${itemToUpdate.filename}:`, await updateResponse.text());
               }
+            }
+            
+            if (hasError) {
+              alert('Some items failed to update. Please try again.');
+              return;
             }
             
             alert('Order updated successfully!');
@@ -4794,6 +4812,7 @@ description: "${description}"`;
             }
             
             // Update all items
+            let hasError = false;
             for (const itemToUpdate of itemsToUpdate) {
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${itemToUpdate.filename}`, {
                 method: 'PUT',
@@ -4809,9 +4828,14 @@ description: "${description}"`;
               });
               
               if (!updateResponse.ok) {
-                alert(`Error updating ${itemToUpdate.filename}`);
-                return;
+                hasError = true;
+                console.error(`Error updating ${itemToUpdate.filename}:`, await updateResponse.text());
               }
+            }
+            
+            if (hasError) {
+              alert('Some items failed to update. Please try again.');
+              return;
             }
             
             alert('Order updated successfully!');
