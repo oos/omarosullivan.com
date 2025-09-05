@@ -45,7 +45,8 @@
 </div>
 
 {{- $pages := union .RegularPages .Sections }}
-{{- $paginator := .Paginate $pages 20 }}
+{{- $sortedPages := sort $pages "Params.order" "asc" }}
+{{- $paginator := .Paginate $sortedPages 20 }}
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
