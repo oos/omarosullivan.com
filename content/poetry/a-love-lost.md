@@ -2,6 +2,7 @@
 title: "A Love Lost"
 date: 2025-09-04
 description: "A poem about my late mum…"
+order: 1
 ---
 
 A moment in time drew you forth.

@@ -5,5 +5,6 @@ description: ""
 cover:
   image: "/uploads/photo-1757013879975.jpg"
 featured: true
+order: 1
 ---
 
