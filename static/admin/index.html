@@ -3970,6 +3970,9 @@ description: "${description}"`;
           `;
           document.body.appendChild(form);
 
+          // Initialize form state
+          toggleVideoInputs();
+          
           // Handle form submission
           document.getElementById('add-videography-form').addEventListener('submit', async (e) => {
             e.preventDefault();
