@@ -6,6 +6,10 @@
     <title>Content Manager (Custom Auth)</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+      h5 { font-size: 24px !important; font-weight: bold !important; margin: 20px 0 10px 0 !important; }
+      h6 { font-size: 20px !important; font-weight: bold !important; margin: 15px 0 8px 0 !important; }
+    </style>
   </head>
   <body>
     <div id="login-section" style="text-align:center;margin:20px;">
@@ -480,13 +484,23 @@
                         const featuredMatch = content.match(/featured:\s*(true|false)/i);
                         const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
+                        // Check for order field
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${displayTitle}</strong>
-                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${displayTitle}</strong>
+                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -495,12 +509,27 @@
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
+                        // Try to read order even in fallback case
+                        let currentOrder = 999;
+                        try {
+                          const orderMatch = content.match(/order:\s*(\d+)/);
+                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        } catch (e) {
+                          currentOrder = 999;
+                        }
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${item.name}</strong>
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -512,10 +541,16 @@
                       // Fallback to filename if there's an error
                       div.innerHTML = `
                         <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
+                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <label style="display:flex;align-items:center;gap:8px;">
+                              <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                              <label style="font-size:12px;color:#666;">Order:</label>
+                              <input type="number" value="999" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                            </div>
+                          </div>
                           <div style="display:flex;gap:5px;">
                             <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                             <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -656,11 +691,11 @@
             console.log('setupButtonListeners called');
             
             // Load all content types
-            await loadPortfolioItems(token);
+              await loadPortfolioItems(token);
             await loadPhotographyItems(token);
             await loadVideographyItems(token);
-            await loadPoetryItems(token);
-            await loadPages(token);
+              await loadPoetryItems(token);
+              await loadPages(token);
             
             return true;
           } else {
@@ -1751,13 +1786,23 @@ title: "${title}"`;
                         const featuredMatch = content.match(/featured:\s*(true|false)/i);
                         const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
+                        // Check for order field
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${displayTitle}</strong>
-                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${displayTitle}</strong>
+                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -1766,12 +1811,27 @@ title: "${title}"`;
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
+                        // Try to read order even in fallback case
+                        let currentOrder = 999;
+                        try {
+                          const orderMatch = content.match(/order:\s*(\d+)/);
+                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        } catch (e) {
+                          currentOrder = 999;
+                        }
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${item.name}</strong>
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -1783,10 +1843,16 @@ title: "${title}"`;
                       // Fallback to filename if there's an error
                       div.innerHTML = `
                         <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
+                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <label style="display:flex;align-items:center;gap:8px;">
+                              <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                              <label style="font-size:12px;color:#666;">Order:</label>
+                              <input type="number" value="999" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                            </div>
+                          </div>
                           <div style="display:flex;gap:5px;">
                             <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                             <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -2961,6 +3027,10 @@ description: "${description}"`;
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
+                        // Check for order field in fallback case too
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
                             <div style="display:flex;align-items:center;gap:8px;flex:1;">
@@ -2970,7 +3040,7 @@ description: "${description}"`;
                               </label>
                               <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                                 <label style="font-size:12px;color:#666;">Order:</label>
-                                <input type="number" value="999" min="1" max="999" onchange="updatePhotographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePhotographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
                               </div>
                             </div>
                             <div style="display:flex;gap:5px;">
@@ -2982,6 +3052,16 @@ description: "${description}"`;
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
+                      // Try to read order even in error case
+                      let currentOrder = 999;
+                      try {
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                      } catch (e) {
+                        // If we can't read order, use default
+                        currentOrder = 999;
+                      }
+                      
                       div.innerHTML = `
                         <div style="display:flex;align-items:center;justify-content:space-between;">
                           <div style="display:flex;align-items:center;gap:8px;flex:1;">
@@ -2991,7 +3071,7 @@ description: "${description}"`;
                             </label>
                             <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                               <label style="font-size:12px;color:#666;">Order:</label>
-                              <input type="number" value="999" min="1" max="999" onchange="updatePhotographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePhotographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
                             </div>
                           </div>
                           <div style="display:flex;gap:5px;">
@@ -3550,6 +3630,100 @@ description: "${description}"`;
           }
         };
 
+        window.updatePortfolioOrder = async function(filename, sha, newOrder) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            
+            if (response.ok) {
+              const fileData = await response.json();
+              const content = decodeURIComponent(escape(atob(fileData.content)));
+              
+              // Update the order field in frontmatter
+              let updatedContent = content;
+              if (content.includes('order:')) {
+                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
+              } else {
+                // Add order field after title
+                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+              }
+              
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                  message: `Update order for ${filename}`,
+                  content: btoa(unescape(encodeURIComponent(updatedContent))),
+                  sha: fileData.sha
+                })
+              });
+              
+              if (updateResponse.ok) {
+                alert('Order updated successfully!');
+                loadPortfolioItems(currentToken);
+              } else {
+                alert('Error updating order');
+              }
+            }
+          } catch (error) {
+            alert('Error updating order: ' + error.message);
+          }
+        };
+
+        window.updatePoetryOrder = async function(filename, sha, newOrder) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            
+            if (response.ok) {
+              const fileData = await response.json();
+              const content = decodeURIComponent(escape(atob(fileData.content)));
+              
+              // Update the order field in frontmatter
+              let updatedContent = content;
+              if (content.includes('order:')) {
+                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
+              } else {
+                // Add order field after title
+                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+              }
+              
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                  message: `Update order for ${filename}`,
+                  content: btoa(unescape(encodeURIComponent(updatedContent))),
+                  sha: fileData.sha
+                })
+              });
+              
+              if (updateResponse.ok) {
+                alert('Order updated successfully!');
+                loadPoetryItems(currentToken);
+              } else {
+                alert('Error updating order');
+              }
+            }
+          } catch (error) {
+            alert('Error updating order: ' + error.message);
+          }
+        };
+
         window.togglePoetryFeatured = async function(filename, sha, isFeatured) {
           try {
             const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
@@ -3594,6 +3768,53 @@ description: "${description}"`;
             }
           } catch (error) {
             alert('Error updating featured status: ' + error.message);
+          }
+        };
+
+        window.updateVideographyOrder = async function(filename, sha, newOrder) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            
+            if (response.ok) {
+              const fileData = await response.json();
+              const content = decodeURIComponent(escape(atob(fileData.content)));
+              
+              // Update the order field in frontmatter
+              let updatedContent = content;
+              if (content.includes('order:')) {
+                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
+              } else {
+                // Add order field after title
+                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+              }
+              
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                  message: `Update order for ${filename}`,
+                  content: btoa(unescape(encodeURIComponent(updatedContent))),
+                  sha: fileData.sha
+                })
+              });
+              
+              if (updateResponse.ok) {
+                alert('Order updated successfully!');
+                loadVideographyItems(currentToken);
+              } else {
+                alert('Error updating order');
+              }
+            }
+          } catch (error) {
+            alert('Error updating order: ' + error.message);
           }
         };
 
@@ -3647,7 +3868,7 @@ description: "${description}"`;
         // Initialize only once to prevent loops
         if (!window.authInitialized) {
           window.authInitialized = true;
-          initializeAuth();
+        initializeAuth();
         }
         
         // Run regression tests after initialization
@@ -3855,13 +4076,23 @@ tags:
                         const featuredMatch = content.match(/featured:\s*(true|false)/i);
                         const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
+                        // Check for order field
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${displayTitle}</strong>
-                              ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${displayTitle}</strong>
+                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -3870,12 +4101,27 @@ tags:
                         `;
                       } else {
                         // Fallback to filename if we can't get the title
+                        // Try to read order even in fallback case
+                        let currentOrder = 999;
+                        try {
+                          const orderMatch = content.match(/order:\s*(\d+)/);
+                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        } catch (e) {
+                          currentOrder = 999;
+                        }
+                        
                         div.innerHTML = `
                           <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
+                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                              <label style="display:flex;align-items:center;gap:8px;">
+                                <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                                <strong>${item.name}</strong>
+                              </label>
+                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                                <label style="font-size:12px;color:#666;">Order:</label>
+                                <input type="number" value="${currentOrder}" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                              </div>
+                            </div>
                             <div style="display:flex;gap:5px;">
                               <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                               <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -3887,10 +4133,16 @@ tags:
                       // Fallback to filename if there's an error
                       div.innerHTML = `
                         <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <label style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                            <strong>${item.name}</strong>
-                          </label>
+                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                            <label style="display:flex;align-items:center;gap:8px;">
+                              <input type="checkbox" onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                              <strong>${item.name}</strong>
+                            </label>
+                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                              <label style="font-size:12px;color:#666;">Order:</label>
+                              <input type="number" value="999" min="1" max="999" onchange="updateVideographyOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                            </div>
+                          </div>
                           <div style="display:flex;gap:5px;">
                             <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                             <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
@@ -4151,6 +4403,9 @@ tags:
         window.editPhotographyItem = editPhotographyItem;
         window.updatePhotographyItem = updatePhotographyItem;
         window.updatePhotographyOrder = updatePhotographyOrder;
+        window.updatePortfolioOrder = updatePortfolioOrder;
+        window.updatePoetryOrder = updatePoetryOrder;
+        window.updateVideographyOrder = updateVideographyOrder;
         window.deletePhotographyItem = deletePhotographyItem;
         window.showAddVideographyForm = showAddVideographyForm;
         window.createVideographyItem = createVideographyItem;
