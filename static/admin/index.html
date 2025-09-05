@@ -1025,6 +1025,7 @@ ${content}
             let title = filename.replace('.md', '');
             let description = '';
             let tags = '';
+            let featured = false;
             let body = content;
             
             if (frontmatterMatch) {
@@ -1033,6 +1034,7 @@ ${content}
               
               const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
               const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
+              const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
               // Parse tags from YAML array format
               const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s*-\s*["'][^"\n]+["']\s*\n?)*)/);
@@ -1047,6 +1049,7 @@ ${content}
               
               if (titleMatch) title = titleMatch[1];
               if (descMatch) description = descMatch[1];
+              if (featuredMatch) featured = featuredMatch[1] === 'true';
               body = bodyContent;
             }
 
@@ -1139,6 +1142,7 @@ ${content}
               }
             });
 
+
             document.getElementById('edit-portfolio-form').addEventListener('submit', async (e) => {
               e.preventDefault();
               const newTitle = document.getElementById('edit-portfolio-title').value;
@@ -1156,7 +1160,7 @@ ${content}
           }
         }
 
-        async function updatePortfolioItem(filename, sha, title, description, tags, content, imageFile) {
+        async function updatePortfolioItem(filename, sha, title, description, tags, content, imageFile, featured = false) {
           try {
             const date = new Date().toISOString().split('T')[0];
             
@@ -1202,6 +1206,7 @@ ${content}
 title: "${title}"
 date: ${date}
 description: "${description}"
+featured: ${featured}
 ${coverImage}
 ${tagsYaml}
 ---
