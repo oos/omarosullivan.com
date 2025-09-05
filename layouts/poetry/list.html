@@ -74,7 +74,7 @@
     </h2>
   </header>
   <div class="entry-content poetry-preview">
-    {{ .Content | markdownify | truncate 500 }}
+    {{ .Content | truncate 500 }}
   </div>
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
@@ -113,15 +113,17 @@
 
 .poetry-preview {
   flex: 1 !important;
-  white-space: pre-line !important;
-  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  line-height: 1.8 !important;
   font-size: 16px !important;
   padding: 15px 0 !important;
+  font-family: inherit !important;
 }
 
 .poetry-preview p {
-  margin: 0 0 10px 0 !important;
-  white-space: pre-line !important;
+  margin: 0 !important;
+  white-space: pre-wrap !important;
+  line-height: 1.8 !important;
 }
 
 /* Hide dates */
