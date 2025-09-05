@@ -1836,6 +1836,18 @@ ${content}
             console.log('Content being passed to WYSIWYG editor:', body);
             const contentEditor = createWysiwygEditor('edit-page-content', body);
             
+            // Special handling for About page - start in HTML mode to preserve layout
+            if (isAboutPage && contentEditor) {
+              // Switch to HTML mode immediately for About page to preserve the div structure
+              setTimeout(() => {
+                const htmlModeRadio = document.querySelector('input[name="edit-page-content-mode"][value="html"]');
+                if (htmlModeRadio) {
+                  htmlModeRadio.checked = true;
+                  htmlModeRadio.dispatchEvent(new Event('change'));
+                }
+              }, 100); // Small delay to ensure the editor is fully initialized
+            }
+            
             // Add image preview functionality for About page
             if (isAboutPage) {
               const imageInput = document.getElementById('edit-page-image');
