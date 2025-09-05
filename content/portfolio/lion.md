@@ -1,14 +1,13 @@
 ---
 title: "Safe? "
-date: 2025-09-04
+date: 2025-09-05
 description: "Inspired by a quote from 'The Lion, the Witch and the Wardrobe' by C.S. Lewis"
+featured: true
 cover:
-  image: "/uploads/lion-1756937474094.jpg"
+  image: "/uploads/safe-1757078794323.jpg"
 tags:
   - "Sketch"
   - "Pencil"
-featured: true
-order: 1
 ---
 
 This is art I drew for my son's 8th birthday (on his request) that was inspired by this CS Lewis Quote: 
@@ -18,6 +17,7 @@ This is art I drew for my son's 8th birthday (on his request) that was inspired 
 - Medium: Pencil on Paper
 - Size: 250mm x 200mm
 - Year: 2020
+
 
 
 
