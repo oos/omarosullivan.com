@@ -1098,15 +1098,19 @@ ${content}
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Cover Image:</label>
                     <div id="current-image-display" style="margin-bottom:10px;padding:10px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;">
-                      <small style="color:#666;display:block;margin-bottom:5px;">Current image:</small>
+                      <label style="display:block;margin-bottom:5px;font-weight:bold;color:#333;">Existing Image:</label>
                       <div id="current-image-container"></div>
                     </div>
-                    <input type="file" id="edit-portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
-                    <small style="color:#666;display:block;margin-top:5px;">Leave empty to keep current image, or select a new image to replace it.</small>
-                    <div id="edit-image-preview" style="margin-top:10px;display:none;">
-                      <img id="edit-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;">
-                      <div id="edit-image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
+                    <div style="margin-bottom:10px;">
+                      <label style="display:block;margin-bottom:5px;font-weight:bold;color:#333;">Replace Image:</label>
+                      <input type="file" id="edit-portfolio-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                      <div id="edit-image-preview" style="margin-top:10px;display:none;">
+                        <img id="edit-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;object-fit:cover;">
+                        <div id="edit-image-info" style="margin-top:5px;font-size:0.9em;color:#666;"></div>
+                      </div>
+                      <div id="edit-portfolio-upload-status" style="display:none;color:#007cba;font-weight:bold;margin-top:5px;"></div>
                     </div>
+                    <small style="color:#666;display:block;margin-top:5px;">Select a new image to replace the current one, or leave empty to keep the current image.</small>
                   </div>
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Content (Markdown):</label>
@@ -1165,8 +1169,28 @@ ${content}
               const newContent = document.getElementById('edit-portfolio-content').value;
               const newFeatured = document.getElementById('edit-portfolio-featured').checked;
               const imageFile = document.getElementById('edit-portfolio-image').files[0];
+              const uploadStatus = document.getElementById('edit-portfolio-upload-status');
+              
+              if (imageFile) {
+                try {
+                  uploadStatus.textContent = `Uploading ${imageFile.name}...`;
+                  uploadStatus.style.display = 'block';
+                  uploadStatus.style.color = '#007cba';
+                } catch (error) {
+                  uploadStatus.textContent = `✗ Upload failed: ${error.message}`;
+                  uploadStatus.style.color = '#dc3545';
+                  alert(error.message);
+                  return;
+                }
+              }
               
               await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile, newFeatured);
+              
+              if (imageFile) {
+                uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
+                uploadStatus.style.color = '#28a745';
+              }
+              
               form.remove();
             });
           } catch (e) {
@@ -1334,25 +1358,52 @@ ${content}
             // Check if this is the About page to add image upload and height control
             const isAboutPage = pageName === 'about';
             
-            // Parse existing image dimensions from content
+            // Parse existing image dimensions and path from content
             let existingImageWidth = '120px';
             let existingImageHeight = '120px';
+            let existingImagePath = null;
             if (isAboutPage && body) {
               const widthMatch = body.match(/width:\s*(\d+px)/);
               const heightMatch = body.match(/height:\s*(\d+px)/);
+              const srcMatch = body.match(/src="([^"]+)"/);
               if (widthMatch) {
                 existingImageWidth = widthMatch[1];
               }
               if (heightMatch) {
                 existingImageHeight = heightMatch[1];
               }
+              if (srcMatch) {
+                existingImagePath = srcMatch[1];
+              }
             }
             
             const imageUploadField = isAboutPage ? `
                   <div style="margin-bottom:15px;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Image (optional):</label>
-                    <input type="file" id="edit-page-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
-                    <small style="color:#666;font-size:12px;">Leave empty to keep current image, or select a new image to replace it.</small>
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Image:</label>
+                    ${existingImagePath ? `
+                      <div style="margin-bottom:10px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:bold;color:#333;">Existing Image:</label>
+                        <img src="${existingImagePath}" alt="Current image" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display:none;color:#666;font-style:italic;padding:10px;border:1px solid #ddd;border-radius:4px;">Image not found: ${existingImagePath}</div>
+                      </div>
+                      <div style="margin-bottom:10px;">
+                        <label style="display:block;margin-bottom:5px;font-weight:bold;color:#333;">Replace Image:</label>
+                        <input type="file" id="edit-page-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                        <div id="edit-page-image-preview" style="display:none;margin-top:10px;">
+                          <img id="edit-page-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;object-fit:cover;">
+                          <div id="edit-page-image-info" style="color:#666;font-size:12px;margin-top:5px;"></div>
+                        </div>
+                        <div id="edit-page-upload-status" style="display:none;color:#007cba;font-weight:bold;margin-top:5px;"></div>
+                      </div>
+                    ` : `
+                      <input type="file" id="edit-page-image" accept="image/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                      <div id="edit-page-image-preview" style="display:none;margin-top:10px;">
+                        <img id="edit-page-preview-img" style="max-width:200px;max-height:150px;border:1px solid #ddd;border-radius:4px;object-fit:cover;">
+                        <div id="edit-page-image-info" style="color:#666;font-size:12px;margin-top:5px;"></div>
+                      </div>
+                      <div id="edit-page-upload-status" style="display:none;color:#007cba;font-weight:bold;margin-top:5px;"></div>
+                    `}
+                    <small style="color:#666;font-size:12px;">Select a new image to replace the current one, or leave empty to keep the current image.</small>
                   </div>
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Width:</label>
@@ -1403,6 +1454,29 @@ ${content}
             `;
             document.body.appendChild(form);
             
+            // Add image preview functionality for About page
+            if (isAboutPage) {
+              const imageInput = document.getElementById('edit-page-image');
+              const previewDiv = document.getElementById('edit-page-image-preview');
+              const previewImg = document.getElementById('edit-page-preview-img');
+              const imageInfo = document.getElementById('edit-page-image-info');
+              
+              imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                    imageInfo.textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                  };
+                  reader.readAsDataURL(file);
+                } else {
+                  previewDiv.style.display = 'none';
+                }
+              });
+            }
+            
             document.getElementById('edit-page-form').addEventListener('submit', async (e) => {
               e.preventDefault();
               const newTitle = document.getElementById('edit-page-title').value;
@@ -1415,10 +1489,17 @@ ${content}
               let imageHeight = null;
               if (isAboutPage) {
                 const imageFile = document.getElementById('edit-page-image').files[0];
+                const uploadStatus = document.getElementById('edit-page-upload-status');
                 if (imageFile) {
                   try {
+                    uploadStatus.textContent = `Uploading ${imageFile.name}...`;
+                    uploadStatus.style.display = 'block';
                     imagePath = await uploadImage(imageFile);
+                    uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
+                    uploadStatus.style.color = '#28a745';
                   } catch (error) {
+                    uploadStatus.textContent = `✗ Upload failed: ${error.message}`;
+                    uploadStatus.style.color = '#dc3545';
                     alert(error.message);
                     return;
                   }
