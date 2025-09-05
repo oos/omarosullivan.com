@@ -20,13 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const isPhotography = currentPath.includes('/photography/');
   const isPortfolio = currentPath.includes('/portfolio/');
   const isPoetry = currentPath.includes('/poetry/');
+  const isVideography = currentPath.includes('/videography/');
 
-  if (isPhotography || isPortfolio || isPoetry) {
+  if (isPhotography || isPortfolio || isPoetry || isVideography) {
     // Determine section
     let section = '';
     if (isPhotography) section = 'photography';
     else if (isPortfolio) section = 'portfolio';
     else if (isPoetry) section = 'poetry';
+    else if (isVideography) section = 'videography';
 
     console.log('Detected section:', section);
 
