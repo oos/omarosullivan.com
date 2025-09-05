@@ -5268,6 +5268,8 @@ tags:
                     const orderMatch = content.match(/order:\s*(\d+)/);
                     const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
                     
+                    console.log('[debug] Video item:', displayTitle, 'isFeatured:', isFeatured, 'featuredDate:', featuredDate);
+                    
                     div.innerHTML = `
                       <div style="display:flex;align-items:center;justify-content:space-between;">
                         <div style="display:flex;align-items:center;gap:8px;flex:1;">
