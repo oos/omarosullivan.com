@@ -8,7 +8,7 @@ cover:
 tags:
   - "Sketch"
   - "Pencil"
-order: 2
+order: 1
 ---
 
 - Medium: Pencil on Paper
