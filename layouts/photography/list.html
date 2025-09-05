@@ -33,8 +33,20 @@
 </div>
 {{- end }}
 
+<!-- Items per page control -->
+<div class="items-per-page-control" style="text-align: right; margin-bottom: 20px;">
+  <label for="items-per-page" style="margin-right: 10px;">Items per page:</label>
+  <select id="items-per-page" onchange="changeItemsPerPage(this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <option value="10" {{ if eq .Paginator.PageSize 10 }}selected{{ end }}>10</option>
+    <option value="20" {{ if eq .Paginator.PageSize 20 }}selected{{ end }}>20</option>
+    <option value="50" {{ if eq .Paginator.PageSize 50 }}selected{{ end }}>50</option>
+    <option value="100" {{ if eq .Paginator.PageSize 100 }}selected{{ end }}>100</option>
+  </select>
+</div>
+
 {{- $pages := union .RegularPages .Sections }}
-{{- $paginator := .Paginate $pages }}
+{{- $pageSize := .URLParam "pageSize" | default 20 }}
+{{- $paginator := .Paginate $pages $pageSize }}
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
@@ -141,5 +153,25 @@ footer .powered-by,
   display: none !important;
 }
 </style>
+
+<script>
+function changeItemsPerPage(pageSize) {
+  // Get current URL and update the page size parameter
+  const url = new URL(window.location);
+  url.searchParams.set('pageSize', pageSize);
+  url.searchParams.delete('page'); // Reset to first page when changing page size
+  window.location.href = url.toString();
+}
+
+// Set default page size to 20 if not specified
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (!urlParams.has('pageSize')) {
+    const url = new URL(window.location);
+    url.searchParams.set('pageSize', '20');
+    window.history.replaceState({}, '', url.toString());
+  }
+});
+</script>
 
 {{- end }}{{- /* end main */ -}}
