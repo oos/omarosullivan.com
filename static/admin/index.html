@@ -4189,6 +4189,7 @@ description: "${description}"`;
         // Try to authenticate on page load - check immediately and with retry
         function initializeAuth() {
           log('[boot] Initializing authentication...');
+          console.log('[debug] Starting authentication initialization...');
           debugStorage();
           
           // Check for existing token immediately
@@ -4226,6 +4227,12 @@ description: "${description}"`;
             });
           } else {
             log('[boot] No existing token found');
+            console.log('[debug] No token found, showing login button');
+            // Ensure login section is visible
+            const loginSection = document.getElementById('login-section');
+            const cmsInterface = document.getElementById('cms-interface');
+            if (loginSection) loginSection.style.display = 'block';
+            if (cmsInterface) cmsInterface.style.display = 'none';
           }
         }
         
