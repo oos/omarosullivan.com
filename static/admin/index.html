@@ -452,6 +452,10 @@
               log('[api] Loaded ' + items.length + ' sketches', 'token');
               
               portfolioList.innerHTML = '';
+              
+              // First, collect all items with their metadata for sorting
+              const itemsWithMetadata = [];
+              
               for (const item of items) {
                 if (item.name.endsWith('.md')) {
                   const div = document.createElement('div');
@@ -459,11 +463,13 @@
                   
                   // Handle _index.md files differently (these are section pages, not individual portfolio items)
                   if (item.name === '_index.md') {
-                  div.innerHTML = `
-                      <strong>${item.name} (Portfolio Section Page)</strong>
-                      <button onclick="editPage('portfolio')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                  `;
-                  portfolioList.appendChild(div);
+                    itemsWithMetadata.push({
+                      item: item,
+                      isSectionPage: true,
+                      order: 0, // Section pages always come first
+                      displayTitle: item.name + ' (Portfolio Section Page)',
+                      div: div
+                    });
                   } else {
                     // Get the title from the file content
                     try {
@@ -488,85 +494,95 @@
                         const orderMatch = content.match(/order:\s*(\d+)/);
                         const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
                         
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${displayTitle}</strong>
-                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <div style="display:inline-flex;align-items:center;gap:5px;">
-                                  <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                                  <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePortfolioOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
+                        // Store metadata for sorting
+                        itemsWithMetadata.push({
+                          item: item,
+                          isSectionPage: false,
+                          order: currentOrder,
+                          displayTitle: displayTitle,
+                          isFeatured: isFeatured,
+                          content: content,
+                          div: div
+                        });
                       } else {
                         // Fallback to filename if we can't get the title
-                        // Try to read order even in fallback case
-                        let currentOrder = 999;
-                        try {
-                          const orderMatch = content.match(/order:\s*(\d+)/);
-                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
-                        } catch (e) {
-                          currentOrder = 999;
-                        }
-                        
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${item.name}</strong>
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <div style="display:inline-flex;align-items:center;gap:5px;">
-                                  <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                                  <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePortfolioOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
+                        itemsWithMetadata.push({
+                          item: item,
+                          isSectionPage: false,
+                          order: 999,
+                          displayTitle: item.name.replace('.md', ''),
+                          isFeatured: false,
+                          content: '',
+                          div: div
+                        });
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
-                      div.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <label style="display:flex;align-items:center;gap:8px;">
-                              <input type="checkbox" onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
-                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                              <label style="font-size:12px;color:#666;">Order:</label>
-                              <input type="number" value="999" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                            </div>
-                          </div>
-                          <div style="display:flex;gap:5px;">
-                            <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                            <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                          </div>
-                        </div>
-                      `;
+                      itemsWithMetadata.push({
+                        item: item,
+                        isSectionPage: false,
+                        order: 999,
+                        displayTitle: item.name.replace('.md', ''),
+                        isFeatured: false,
+                        content: '',
+                        div: div
+                      });
                     }
-                    portfolioList.appendChild(div);
                   }
                 }
+              }
+              
+              // Sort items: section pages first, then by order field, then by title
+              itemsWithMetadata.sort((a, b) => {
+                if (a.isSectionPage && !b.isSectionPage) return -1;
+                if (!a.isSectionPage && b.isSectionPage) return 1;
+                
+                // Sort by order field first (lower numbers first)
+                if (a.order !== b.order) {
+                  return a.order - b.order;
+                }
+                
+                // If order is the same, sort by title alphabetically
+                return a.displayTitle.localeCompare(b.displayTitle);
+              });
+              
+              // Now display the sorted items
+              for (const itemData of itemsWithMetadata) {
+                if (itemData.isSectionPage) {
+                  itemData.div.innerHTML = `
+                    <strong>${itemData.displayTitle}</strong>
+                    <button onclick="editPage('portfolio')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                  `;
+                } else {
+                  const currentOrder = itemData.order;
+                  const isFeatured = itemData.isFeatured;
+                  const displayTitle = itemData.displayTitle;
+                  const item = itemData.item;
+                  
+                  itemData.div.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                          <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                          <strong>${displayTitle}</strong>
+                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                        </label>
+                        <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                          <label style="font-size:12px;color:#666;">Order:</label>
+                          <div style="display:inline-flex;align-items:center;gap:5px;">
+                            <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePortfolioOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                            <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePortfolioOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display:flex;gap:5px;">
+                        <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                        <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      </div>
+                    </div>
+                  `;
+                }
+                portfolioList.appendChild(itemData.div);
               }
               
               return items;
@@ -1766,17 +1782,22 @@ title: "${title}"`;
               const poetryItems = items.filter(item => item.name.endsWith('.md'));
               console.log('[debug] Filtered poetry items:', poetryItems);
               
-                              for (const item of poetryItems) {
+              // First, collect all items with their metadata for sorting
+              const itemsWithMetadata = [];
+              
+              for (const item of poetryItems) {
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                   
                   // Handle _index.md files differently (these are section pages, not individual poems)
                   if (item.name === '_index.md') {
-                  div.innerHTML = `
-                      <strong>${item.name} (Poetry Section Page)</strong>
-                      <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                  `;
-                  poetryList.appendChild(div);
+                    itemsWithMetadata.push({
+                      item: item,
+                      isSectionPage: true,
+                      order: 0, // Section pages always come first
+                      displayTitle: item.name + ' (Poetry Section Page)',
+                      div: div
+                    });
                   } else {
                     // Get the title from the file content
                     try {
@@ -1801,86 +1822,96 @@ title: "${title}"`;
                         const orderMatch = content.match(/order:\s*(\d+)/);
                         const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
                         
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${displayTitle}</strong>
-                                ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <div style="display:inline-flex;align-items:center;gap:5px;">
-                                  <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                                  <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePoetryOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
+                        // Store metadata for sorting
+                        itemsWithMetadata.push({
+                          item: item,
+                          isSectionPage: false,
+                          order: currentOrder,
+                          displayTitle: displayTitle,
+                          isFeatured: isFeatured,
+                          content: content,
+                          div: div
+                        });
                       } else {
                         // Fallback to filename if we can't get the title
-                        // Try to read order even in fallback case
-                        let currentOrder = 999;
-                        try {
-                          const orderMatch = content.match(/order:\s*(\d+)/);
-                          currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
-                        } catch (e) {
-                          currentOrder = 999;
-                        }
-                        
-                        div.innerHTML = `
-                          <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                              <label style="display:flex;align-items:center;gap:8px;">
-                                <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                                <strong>${item.name}</strong>
-                              </label>
-                              <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                                <label style="font-size:12px;color:#666;">Order:</label>
-                                <div style="display:inline-flex;align-items:center;gap:5px;">
-                                  <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                                  <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePoetryOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div style="display:flex;gap:5px;">
-                              <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                              <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                            </div>
-                          </div>
-                        `;
+                        itemsWithMetadata.push({
+                          item: item,
+                          isSectionPage: false,
+                          order: 999,
+                          displayTitle: item.name.replace('.md', ''),
+                          isFeatured: false,
+                          content: '',
+                          div: div
+                        });
                       }
                     } catch (error) {
                       // Fallback to filename if there's an error
-                      div.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                          <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                            <label style="display:flex;align-items:center;gap:8px;">
-                              <input type="checkbox" onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
-                              <strong>${item.name}</strong>
-                            </label>
-                            <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
-                              <label style="font-size:12px;color:#666;">Order:</label>
-                              <input type="number" value="999" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
-                            </div>
-                          </div>
-                          <div style="display:flex;gap:5px;">
-                            <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                            <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
-                          </div>
-                        </div>
-                      `;
+                      itemsWithMetadata.push({
+                        item: item,
+                        isSectionPage: false,
+                        order: 999,
+                        displayTitle: item.name.replace('.md', ''),
+                        isFeatured: false,
+                        content: '',
+                        div: div
+                      });
                     }
-                    poetryList.appendChild(div);
                   }
                   console.log('[debug] Added poetry item to list:', item.name);
                 }
+              
+              // Sort items: section pages first, then by order field, then by title
+              itemsWithMetadata.sort((a, b) => {
+                if (a.isSectionPage && !b.isSectionPage) return -1;
+                if (!a.isSectionPage && b.isSectionPage) return 1;
+                
+                // Sort by order field first (lower numbers first)
+                if (a.order !== b.order) {
+                  return a.order - b.order;
+                }
+                
+                // If order is the same, sort by title alphabetically
+                return a.displayTitle.localeCompare(b.displayTitle);
+              });
+              
+              // Now display the sorted items
+              for (const itemData of itemsWithMetadata) {
+                if (itemData.isSectionPage) {
+                  itemData.div.innerHTML = `
+                    <strong>${itemData.displayTitle}</strong>
+                    <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
+                  `;
+                } else {
+                  const currentOrder = itemData.order;
+                  const isFeatured = itemData.isFeatured;
+                  const displayTitle = itemData.displayTitle;
+                  const item = itemData.item;
+                  
+                  itemData.div.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <label style="display:flex;align-items:center;gap:8px;">
+                          <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
+                          <strong>${displayTitle}</strong>
+                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                        </label>
+                        <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
+                          <label style="font-size:12px;color:#666;">Order:</label>
+                          <div style="display:inline-flex;align-items:center;gap:5px;">
+                            <input type="number" value="${currentOrder}" min="1" max="999" onchange="updatePoetryOrder('${item.name}', '${item.sha}', this.value)" oninput="showSaveIcon(this)" style="width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:12px;">
+                            <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePoetryOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display:flex;gap:5px;">
+                        <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                        <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                      </div>
+                    </div>
+                  `;
+                }
+                poetryList.appendChild(itemData.div);
+              }
               
               return items;
             } else if (response.status === 401) {
