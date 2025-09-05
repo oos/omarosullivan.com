@@ -412,6 +412,92 @@
           }
         }
 
+        // Featured toggle function
+        async function toggleFeatured(section, filename, sha, currentFeatured) {
+          try {
+            const newFeatured = !currentFeatured;
+            const date = new Date().toISOString().split('T')[0];
+            
+            // Get current content
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${section}/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!response.ok) {
+              alert('Error loading item');
+              return;
+            }
+
+            const file = await response.json();
+            const content = decodeURIComponent(escape(atob(file.content)));
+            
+            // Parse and update frontmatter
+            const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            if (!frontmatterMatch) {
+              alert('Error parsing content');
+              return;
+            }
+
+            let frontmatter = frontmatterMatch[1];
+            const bodyContent = frontmatterMatch[2];
+            
+            // Update featured status
+            if (newFeatured) {
+              // Add or update featured: true and featured_date
+              frontmatter = frontmatter.replace(/featured:\s*(true|false)/, 'featured: true');
+              frontmatter = frontmatter.replace(/featured_date:\s*[\d-]+/, `featured_date: ${date}`);
+              if (!frontmatter.includes('featured: true')) {
+                frontmatter += `\nfeatured: true`;
+              }
+              if (!frontmatter.includes('featured_date:')) {
+                frontmatter += `\nfeatured_date: ${date}`;
+              }
+            } else {
+              // Remove featured status
+              frontmatter = frontmatter.replace(/featured:\s*true/, 'featured: false');
+              frontmatter = frontmatter.replace(/\nfeatured_date:\s*[\d-]+/, '');
+            }
+
+            const updatedContent = `---\n${frontmatter}\n---\n\n${bodyContent}`;
+
+            // Update the file
+            const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${section}/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `${newFeatured ? 'Feature' : 'Unfeature'} ${section} item: ${filename}`,
+                content: btoa(unescape(encodeURIComponent(updatedContent))),
+                sha: sha
+              })
+            });
+
+            if (updateResponse.ok) {
+              // Reload the appropriate section
+              if (section === 'portfolio') {
+                await loadPortfolioItems(currentToken);
+              } else if (section === 'poetry') {
+                await loadPoetryItems(currentToken);
+              } else if (section === 'photography') {
+                await loadPhotographyItems(currentToken);
+              } else if (section === 'videography') {
+                await loadVideographyItems(currentToken);
+              }
+            } else {
+              const error = await updateResponse.json();
+              alert('Error updating featured status: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error toggling featured status: ' + e.message);
+          }
+        }
+
         // WYSIWYG Editor Helper Functions
         function createWysiwygEditor(containerId, initialContent = '') {
           const container = document.getElementById(containerId);
@@ -1366,6 +1452,14 @@ ${content}
             // Initialize WYSIWYG editor for content
             const contentEditor = createWysiwygEditor('edit-portfolio-content', body);
             
+            // Add featured checkbox click handler
+            const featuredCheckbox = document.getElementById('edit-portfolio-featured');
+            if (featuredCheckbox) {
+              featuredCheckbox.addEventListener('change', function() {
+                toggleFeatured('portfolio', filename, sha, !this.checked);
+              });
+            }
+            
             // Display current image
             const currentImageContainer = document.getElementById('current-image-container');
             const currentCoverMatch = content.match(/cover:\s*\n\s*image:\s*["']([^"\n]+)["']/);
@@ -1484,11 +1578,14 @@ ${content}
               }
             }
             
+            // Add featured_date if item is being featured
+            const featuredDate = featured ? `\nfeatured_date: ${date}` : '';
+            
             const markdownContent = `---
 title: "${title}"
 date: ${date}
 description: "${description}"
-featured: ${featured}
+featured: ${featured}${featuredDate}
 ${coverImage}
 ${existingOrder ? existingOrder + '\n' : ''}${tagsYaml}
 ---
@@ -2446,6 +2543,14 @@ title: "${title}"`;
             `;
             document.body.appendChild(form);
 
+            // Add featured checkbox click handler
+            const featuredCheckbox = document.getElementById('edit-poetry-featured');
+            if (featuredCheckbox) {
+              featuredCheckbox.addEventListener('change', function() {
+                toggleFeatured('poetry', filename, sha, !this.checked);
+              });
+            }
+
             // Handle form submission
             document.getElementById('edit-poetry-form').addEventListener('submit', async (e) => {
               e.preventDefault();
@@ -2572,6 +2677,13 @@ description: "${description}"`;
 
             if (existingOrder) {
               frontmatter += `\norder: ${existingOrder}`;
+            }
+
+            // Add featured_date if item is being featured
+            if (featured) {
+              frontmatter += `\nfeatured: true\nfeatured_date: ${date}`;
+            } else {
+              frontmatter += `\nfeatured: false`;
             }
 
             frontmatter += `\n---\n\n`;

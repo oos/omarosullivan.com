@@ -47,8 +47,8 @@
   {{- end }}
 {{- end }}
 
-{{- /* Sort featured pages by date (newest first) */ -}}
-{{- $featuredPages = sort $featuredPages "Date" "desc" }}
+{{- /* Sort featured pages by featured_date (most recently featured first) */ -}}
+{{- $featuredPages = sort $featuredPages "Params.featured_date" "desc" }}
 
 {{- range $index, $page := $featuredPages }}
 
