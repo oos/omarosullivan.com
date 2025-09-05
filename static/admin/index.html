@@ -1730,8 +1730,9 @@ ${content}
             let existingImageHeight = '120px';
             let existingImagePath = null;
             if (isAboutPage && body) {
-              const widthMatch = body.match(/width:\s*(\d+px)/);
-              const heightMatch = body.match(/height:\s*(\d+px)/);
+              // Updated regex to handle !important and other CSS properties
+              const widthMatch = body.match(/width:\s*(\d+px)(?:\s*!important)?/);
+              const heightMatch = body.match(/height:\s*(\d+px)(?:\s*!important)?/);
               const srcMatch = body.match(/src="([^"]+)"/);
               if (widthMatch) {
                 existingImageWidth = widthMatch[1];
