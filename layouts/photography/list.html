@@ -57,7 +57,47 @@
     {{- end }}
   {{- end }}
 {{- end }}
+
+{{- /* Use Hugo's pagination with the custom page size */}}
 {{- $paginator := .Paginate $sortedPages $pageSize }}
+
+{{- /* Add JavaScript to handle dynamic page size */}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const pageSizeSelect = document.getElementById('pageSizeSelect');
+  const items = document.querySelectorAll('.post-entry');
+  
+  if (pageSizeSelect && items.length > 0) {
+    // Get current page size from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPageSize = parseInt(urlParams.get('pageSize')) || 20;
+    pageSizeSelect.value = currentPageSize;
+    
+    // Show/hide items based on page size
+    function updateDisplay() {
+      const targetCount = parseInt(pageSizeSelect.value);
+      items.forEach((item, index) => {
+        if (index < targetCount) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+    
+    // Update display on page load
+    updateDisplay();
+    
+    // Update display when page size changes
+    pageSizeSelect.addEventListener('change', function() {
+      const newPageSize = this.value;
+      const url = new URL(window.location);
+      url.searchParams.set('pageSize', newPageSize);
+      window.location.href = url.toString();
+    });
+  }
+});
+</script>
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
