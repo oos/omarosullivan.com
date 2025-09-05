@@ -149,7 +149,13 @@
 /* Hide powered by text */
 .page-footer .powered-by,
 footer .powered-by,
-.powered-by {
+.powered-by,
+footer a[href*="hugo"],
+footer a[href*="papermod"],
+footer:contains("Powered by"),
+.powered-by,
+footer .powered-by,
+.page-footer .powered-by {
   display: none !important;
 }
 </style>
