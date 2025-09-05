@@ -44,12 +44,7 @@
 
 {{- $pages := union .RegularPages .Sections }}
 {{- $sortedPages := sort $pages "Params.order" "asc" }}
-{{- $pageSize := default 20 (int ($.Scratch.Get "pageSize")) }}
-{{- if gt $pageSize 0 }}
-  {{- $paginator = .Paginate $sortedPages $pageSize }}
-{{- else }}
-  {{- $paginator = .Paginate $sortedPages 20 }}
-{{- end }}
+{{- $paginator := .Paginate $sortedPages 20 }}
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
