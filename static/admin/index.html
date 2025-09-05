@@ -1406,14 +1406,24 @@ ${content}
                     <small style="color:#666;font-size:12px;">Select a new image to replace the current one, or leave empty to keep the current image.</small>
                   </div>
                   <div style="margin-bottom:15px;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Width:</label>
-                    <input type="text" id="edit-page-image-width" value="${existingImageWidth}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 120px, 150px">
-                    <small style="color:#666;font-size:12px;">Specify the width of the image</small>
-                  </div>
-                  <div style="margin-bottom:15px;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Image Height:</label>
-                    <input type="text" id="edit-page-image-height" value="${existingImageHeight}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 200px, 300px">
-                    <small style="color:#666;font-size:12px;">Specify the height of the image</small>
+                    <div style="display:flex;align-items:center;margin-bottom:10px;">
+                      <label style="font-weight:bold;margin-right:10px;">Image Dimensions:</label>
+                      <label style="display:flex;align-items:center;cursor:pointer;font-size:14px;color:#666;">
+                        <input type="checkbox" id="edit-page-aspect-lock" checked style="margin-right:5px;">
+                        <span>🔒 Lock aspect ratio</span>
+                      </label>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:end;">
+                      <div style="flex:1;">
+                        <label style="display:block;margin-bottom:5px;font-weight:bold;">Width:</label>
+                        <input type="text" id="edit-page-image-width" value="${existingImageWidth}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 120px, 150px">
+                      </div>
+                      <div style="flex:1;">
+                        <label style="display:block;margin-bottom:5px;font-weight:bold;">Height:</label>
+                        <input type="text" id="edit-page-image-height" value="${existingImageHeight}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 200px, 300px">
+                      </div>
+                    </div>
+                    <small style="color:#666;font-size:12px;display:block;margin-top:5px;">When locked, changing one dimension will automatically adjust the other proportionally.</small>
                   </div>
             ` : '';
 
@@ -1473,6 +1483,82 @@ ${content}
                   reader.readAsDataURL(file);
                 } else {
                   previewDiv.style.display = 'none';
+                }
+              });
+
+              // Aspect ratio lock functionality
+              const aspectLock = document.getElementById('edit-page-aspect-lock');
+              const widthInput = document.getElementById('edit-page-image-width');
+              const heightInput = document.getElementById('edit-page-image-height');
+              let aspectRatio = 1;
+              let isUpdating = false;
+
+              // Calculate initial aspect ratio from existing dimensions
+              const parseValue = (value) => {
+                const match = value.match(/(\d+(?:\.\d+)?)/);
+                return match ? parseFloat(match[1]) : 0;
+              };
+
+              const formatValue = (value, unit) => {
+                return `${Math.round(value)}${unit}`;
+              };
+
+              const getUnit = (value) => {
+                const match = value.match(/(\d+(?:\.\d+)?)(.*)/);
+                return match ? match[2] : 'px';
+              };
+
+              // Initialize aspect ratio from existing values
+              const initialWidth = parseValue(existingImageWidth);
+              const initialHeight = parseValue(existingImageHeight);
+              if (initialWidth > 0 && initialHeight > 0) {
+                aspectRatio = initialWidth / initialHeight;
+              }
+
+              // Update aspect ratio when image changes
+              previewImg.addEventListener('load', function() {
+                if (this.naturalWidth > 0 && this.naturalHeight > 0) {
+                  aspectRatio = this.naturalWidth / this.naturalHeight;
+                }
+              });
+
+              // Handle width changes
+              widthInput.addEventListener('input', function() {
+                if (aspectLock.checked && !isUpdating) {
+                  isUpdating = true;
+                  const newWidth = parseValue(this.value);
+                  if (newWidth > 0) {
+                    const unit = getUnit(this.value);
+                    const newHeight = newWidth / aspectRatio;
+                    heightInput.value = formatValue(newHeight, unit);
+                  }
+                  isUpdating = false;
+                }
+              });
+
+              // Handle height changes
+              heightInput.addEventListener('input', function() {
+                if (aspectLock.checked && !isUpdating) {
+                  isUpdating = true;
+                  const newHeight = parseValue(this.value);
+                  if (newHeight > 0) {
+                    const unit = getUnit(this.value);
+                    const newWidth = newHeight * aspectRatio;
+                    widthInput.value = formatValue(newWidth, unit);
+                  }
+                  isUpdating = false;
+                }
+              });
+
+              // Update lock icon when toggled
+              aspectLock.addEventListener('change', function() {
+                const lockSpan = this.nextElementSibling;
+                if (this.checked) {
+                  lockSpan.textContent = '🔒 Lock aspect ratio';
+                  lockSpan.style.color = '#666';
+                } else {
+                  lockSpan.textContent = '🔓 Unlock aspect ratio';
+                  lockSpan.style.color = '#dc3545';
                 }
               });
             }
