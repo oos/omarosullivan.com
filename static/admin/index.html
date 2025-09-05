@@ -139,6 +139,24 @@
         }
       };
 
+      window.confirmDeletePage = function(pageName, sha, displayName) {
+        if (confirm(`Are you sure you want to delete the "${displayName}" page? This will also remove it from the navigation menu.`)) {
+          // Wait for the page to be fully loaded
+          if (document.readyState === 'complete' && window.deletePageAndMenu) {
+            window.deletePageAndMenu(pageName, sha);
+          } else {
+            // Retry after a short delay
+            setTimeout(() => {
+              if (window.deletePageAndMenu) {
+                window.deletePageAndMenu(pageName, sha);
+              } else {
+                alert('Please wait for the page to load completely');
+              }
+            }, 100);
+          }
+        }
+      };
+
       window.testGlobalFunctions = function() {
         console.log('Testing global functions...');
         console.log('window.editFile exists:', !!window.editFile);
@@ -635,31 +653,66 @@
                          !(isSketchesFile && hasPortfolioDir);
                 } else if (item.type === 'dir') {
                   // Include directories that have _index.md files (sections)
-                  return !item.name.startsWith('_') && item.name !== 'posts';
+                  // Exclude contact directory if contact.md exists to avoid duplicates
+                  const isContactDir = item.name === 'contact';
+                  const hasContactFile = items.some(i => i.type === 'file' && i.name === 'contact.md');
+                  
+                  return !item.name.startsWith('_') && 
+                         item.name !== 'posts' && 
+                         !(isContactDir && hasContactFile);
                 }
                 return false;
               });
               
               log('[api] Loaded ' + pages.length + ' pages', 'token');
               
+              // Sort pages according to website menu order
+              const menuOrder = ['_index', 'about', 'portfolio', 'photography', 'videography', 'poetry', 'contact'];
+              pages.sort((a, b) => {
+                const aName = a.type === 'file' ? a.name.replace('.md', '') : a.name;
+                const bName = b.type === 'file' ? b.name.replace('.md', '') : b.name;
+                const aIndex = menuOrder.indexOf(aName);
+                const bIndex = menuOrder.indexOf(bName);
+                
+                // If both are in menu order, sort by menu order
+                if (aIndex !== -1 && bIndex !== -1) {
+                  return aIndex - bIndex;
+                }
+                // If only one is in menu order, prioritize it
+                if (aIndex !== -1) return -1;
+                if (bIndex !== -1) return 1;
+                // If neither is in menu order, sort alphabetically
+                return aName.localeCompare(bName);
+              });
+              
               pages.forEach(page => {
                 let pageName, displayName;
                 
                 if (page.type === 'file') {
                   pageName = page.name.replace('.md', '');
-                  displayName = pageName === '_index' ? 'Homepage' : pageName;
+                  displayName = pageName === '_index' ? 'Homepage' : pageName.charAt(0).toUpperCase() + pageName.slice(1);
                 } else {
                   // It's a directory (section)
                   pageName = page.name;
-                  displayName = page.name.charAt(0).toUpperCase() + page.name.slice(1);
+                  // Special handling for display names
+                  if (pageName === 'portfolio') {
+                    displayName = 'Sketches';
+                  } else {
+                    displayName = page.name.charAt(0).toUpperCase() + page.name.slice(1);
+                  }
                 }
                 
                 const div = document.createElement('div');
                 div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                const isHomepage = pageName === '_index';
+                const deleteButton = isHomepage ? 
+                  '<span style="float:right;color:#666;font-size:12px;padding:4px 8px;">Cannot delete homepage</span>' :
+                  `<button onclick="confirmDeletePage('${pageName}', '${page.sha}', '${displayName}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>`;
+                
                 div.innerHTML = `
                   <strong>${displayName}</strong>
                   <button onclick="editPage('${pageName}')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit</button>
-                  ${page.type === 'file' ? `<button onclick="deletePage('${pageName}', '${page.sha}')" style="float:right;background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>` : ''}
+                  ${deleteButton}
                 `;
                 pagesList.appendChild(div);
               });
