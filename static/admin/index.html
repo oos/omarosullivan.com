@@ -4190,6 +4190,7 @@ description: "${description}"`;
         function initializeAuth() {
           log('[boot] Initializing authentication...');
           console.log('[debug] Starting authentication initialization...');
+          console.log('[debug] JavaScript is working!');
           debugStorage();
           
           // Check for existing token immediately
@@ -4902,7 +4903,8 @@ description: "${description}"`;
         // Initialize only once to prevent loops
         if (!window.authInitialized) {
           window.authInitialized = true;
-        initializeAuth();
+          console.log('[debug] About to call initializeAuth...');
+          initializeAuth();
         }
         
         // Run regression tests after initialization
