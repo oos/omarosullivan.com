@@ -5142,6 +5142,7 @@ tags:
           }
           
           window.isLoadingVideography = true;
+          console.log('[debug] loadVideographyItems called with token:', token ? 'present' : 'missing');
           try {
             console.log('[debug] Starting to load videography items...');
             
@@ -5163,6 +5164,7 @@ tags:
                 
                 const videographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered videography items:', videographyItems);
+                console.log('[debug] Total videography items found:', videographyItems.length);
                 
                 // Load all items first to get their metadata for sorting
                 const itemsWithMetadata = [];
@@ -5294,7 +5296,7 @@ tags:
                     `;
                   }
                   videographyList.appendChild(div);
-                  console.log('[debug] Added videography item to list:', item.name);
+                  console.log('[debug] Added videography item to list:', item.name, 'isSectionPage:', item.isSectionPage);
                 }
                 
                 return items;
