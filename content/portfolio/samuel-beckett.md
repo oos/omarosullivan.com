@@ -1,18 +1,19 @@
 ---
 title: "Samuel Beckett"
-featured: true
-date: 2025-09-04
+date: 2025-09-05
 description: "A sketch inspired by my uncle donal."
+featured: true
 cover:
-  image: "/uploads/samuel-beckett-1756944320046.jpg"
+  image: "/uploads/samuel-beckett-1757081727952.jpg"
 tags:
   - "Sketch"
   - "Pencil"
-order: 2
 ---
 
+<p>
 - Medium: Pencil on Paper
 - Size: 200mm x 200mm
 - Year: 2019
 
 
+</p>
