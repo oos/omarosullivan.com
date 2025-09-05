@@ -2,7 +2,7 @@
 title: "Safe? "
 date: 2025-09-05
 description: "Inspired by a quote from 'The Lion, the Witch and the Wardrobe' by C.S. Lewis"
-featured: true
+featured: false
 cover:
   image: "/uploads/safe-1757078794323.jpg"
 tags:
