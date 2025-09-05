@@ -31,8 +31,19 @@
 </div>
 {{- end }}
 
+<!-- Items per page control -->
+<div class="items-per-page-control" style="text-align: right; margin-bottom: 20px;">
+  <label for="items-per-page" style="margin-right: 10px;">Items per page:</label>
+  <select id="items-per-page" onchange="changeItemsPerPage(this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <option value="10">10</option>
+    <option value="20" selected>20</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select>
+</div>
+
 {{- $pages := union .RegularPages .Sections }}
-{{- $paginator := .Paginate $pages }}
+{{- $paginator := .Paginate $pages 20 }}
 
 {{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
 {{- partial "home_info.html" . }}
@@ -171,5 +182,37 @@
   }
 }
 </style>
+
+<script>
+function changeItemsPerPage(pageSize) {
+  // Get current URL and update the page size parameter
+  const url = new URL(window.location);
+  url.searchParams.set('pageSize', pageSize);
+  url.searchParams.delete('page'); // Reset to first page when changing page size
+  window.location.href = url.toString();
+}
+
+// Set the correct selection based on URL parameter
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const pageSize = urlParams.get('pageSize') || '20';
+  const select = document.getElementById('items-per-page');
+  if (select) {
+    select.value = pageSize;
+  }
+  
+  // Show/hide items based on page size
+  const items = document.querySelectorAll('.post-entry');
+  const targetCount = parseInt(pageSize);
+  
+  items.forEach((item, index) => {
+    if (index < targetCount) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+});
+</script>
 
 {{- end }}
