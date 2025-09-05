@@ -836,14 +836,12 @@
                 return a.displayTitle.localeCompare(b.displayTitle);
               });
               
-              // Now display the sorted items
+              // Now display the sorted items (skip section pages)
               for (const itemData of itemsWithMetadata) {
+                // Skip _index.md section pages - they're not individual content items
                 if (itemData.isSectionPage) {
-                  itemData.div.innerHTML = `
-                    <strong>${itemData.displayTitle}</strong>
-                    <button onclick="editPage('portfolio')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                  `;
-                } else {
+                  continue;
+                }
                   const currentOrder = itemData.order;
                   const isFeatured = itemData.isFeatured;
                   const featuredDate = itemData.featuredDate;
@@ -851,8 +849,8 @@
                   const item = itemData.item;
                   
                   itemData.div.innerHTML = `
-                    <div style="display:flex;align-items:center;">
-                      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      <div style="display:flex;align-items:center;gap:8px;flex:1;">
                         <label style="display:flex;align-items:center;gap:8px;">
                           <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                           <strong>${displayTitle}</strong>
@@ -866,7 +864,7 @@
                           </div>
                         </div>
                       </div>
-                      <div style="display:flex;gap:5px;flex-shrink:0;margin-left:20px;">
+                      <div style="display:flex;gap:5px;">
                         <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                         <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                       </div>
@@ -2487,14 +2485,12 @@ title: "${title}"`;
                 return a.displayTitle.localeCompare(b.displayTitle);
               });
               
-              // Now display the sorted items
+              // Now display the sorted items (skip section pages)
               for (const itemData of itemsWithMetadata) {
+                // Skip _index.md section pages - they're not individual content items
                 if (itemData.isSectionPage) {
-                  itemData.div.innerHTML = `
-                    <strong>${itemData.displayTitle}</strong>
-                    <button onclick="editPage('poetry')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                  `;
-                } else {
+                  continue;
+                }
                   const currentOrder = itemData.order;
                   const isFeatured = itemData.isFeatured;
                   const featuredDate = itemData.featuredDate;
@@ -2502,8 +2498,8 @@ title: "${title}"`;
                   const item = itemData.item;
                   
                   itemData.div.innerHTML = `
-                    <div style="display:flex;align-items:center;">
-                      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      <div style="display:flex;align-items:center;gap:8px;flex:1;">
                         <label style="display:flex;align-items:center;gap:8px;">
                           <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                           <strong>${displayTitle}</strong>
@@ -2517,7 +2513,7 @@ title: "${title}"`;
                           </div>
                         </div>
                       </div>
-                      <div style="display:flex;gap:5px;flex-shrink:0;margin-left:20px;">
+                      <div style="display:flex;gap:5px;">
                         <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                         <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                       </div>
@@ -3770,19 +3766,15 @@ description: "${description}"`;
                   return a.displayTitle.localeCompare(b.displayTitle);
                 });
                 
-                // Display items in the correct order
+                // Display items in the correct order (skip section pages)
                 for (const item of itemsWithMetadata) {
+                  // Skip _index.md section pages - they're not individual content items
+                  if (item.isSectionPage) {
+                    continue;
+                  }
+                  
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                  
-                  // Handle _index.md files differently (these are section pages, not individual photos)
-                  if (item.isSectionPage) {
-                    div.innerHTML = `
-                      <strong>${item.name} (Photography Section Page)</strong>
-                      <button onclick="editPage('photography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                    `;
-                    photographyList.appendChild(div);
-                  } else {
                     // Use pre-loaded metadata
                     const content = item.content;
                     const displayTitle = item.displayTitle;
@@ -3796,8 +3788,8 @@ description: "${description}"`;
                     const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
                     
                     div.innerHTML = `
-                      <div style="display:flex;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                      <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;flex:1;">
                           <label style="display:flex;align-items:center;gap:8px;">
                             <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                             <strong>${displayTitle}</strong>
@@ -3811,7 +3803,7 @@ description: "${description}"`;
                             </div>
                           </div>
                         </div>
-                        <div style="display:flex;gap:5px;flex-shrink:0;margin-left:20px;">
+                        <div style="display:flex;gap:5px;">
                           <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                           <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                         </div>
@@ -5142,7 +5134,6 @@ tags:
           }
           
           window.isLoadingVideography = true;
-          console.log('[debug] loadVideographyItems called with token:', token ? 'present' : 'missing');
           try {
             console.log('[debug] Starting to load videography items...');
             
@@ -5164,7 +5155,6 @@ tags:
                 
                 const videographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered videography items:', videographyItems);
-                console.log('[debug] Total videography items found:', videographyItems.length);
                 
                 // Load all items first to get their metadata for sorting
                 const itemsWithMetadata = [];
@@ -5238,19 +5228,17 @@ tags:
                   return a.displayTitle.localeCompare(b.displayTitle);
                 });
                 
-                // Display items in the correct order
+                // Display items in the correct order (skip section pages)
                 for (const item of itemsWithMetadata) {
+                  // Skip _index.md section pages - they're not individual content items
+                  if (item.isSectionPage) {
+                    continue;
+                  }
+                  
                   const div = document.createElement('div');
                   div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                   
-                  // Handle _index.md files differently (these are section pages, not individual videos)
-                  if (item.isSectionPage) {
-                    div.innerHTML = `
-                      <strong>${item.displayTitle}</strong>
-                      <button onclick="editPage('videography')" style="float:right;background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;margin-left:5px;">Edit Section</button>
-                    `;
-                    videographyList.appendChild(div);
-                  } else {
+                  // Individual video items
                     // Use pre-loaded metadata
                     const content = item.content;
                     const displayTitle = item.displayTitle;
@@ -5268,11 +5256,9 @@ tags:
                     const orderMatch = content.match(/order:\s*(\d+)/);
                     const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
                     
-                    console.log('[debug] Video item:', displayTitle, 'isFeatured:', isFeatured, 'featuredDate:', featuredDate);
-                    
                     div.innerHTML = `
-                      <div style="display:flex;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                      <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;flex:1;">
                           <label style="display:flex;align-items:center;gap:8px;">
                             <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                             <strong>${displayTitle}</strong>
@@ -5290,7 +5276,7 @@ tags:
                             <span style="font-size:12px;color:#333;">${date}</span>
                           </div>
                         </div>
-                        <div style="display:flex;gap:5px;flex-shrink:0;margin-left:20px;">
+                        <div style="display:flex;gap:5px;">
                           <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
                           <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                         </div>
@@ -5298,7 +5284,7 @@ tags:
                     `;
                   }
                   videographyList.appendChild(div);
-                  console.log('[debug] Added videography item to list:', item.name, 'isSectionPage:', item.isSectionPage);
+                  console.log('[debug] Added videography item to list:', item.name);
                 }
                 
                 return items;
