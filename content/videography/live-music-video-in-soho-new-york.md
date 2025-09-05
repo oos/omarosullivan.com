@@ -1,6 +1,6 @@
 ---
 title: "Live Music Video in Soho, New York"
-featured: true
+featured: false
 featured_date: 2025-01-15
 date: 2025-09-04
 description: "Jessy Carolina and the Hot Mess"
