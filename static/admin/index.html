@@ -887,7 +887,7 @@
               log('[api] Failed to load sketches: ' + response.status, 'error');
               return [];
             }
-                      } catch (e) {
+          } catch (e) {
             log('[api] Error loading sketches: ' + e.message, 'error');
             return [];
           } finally {
@@ -3816,17 +3816,17 @@ description: "${description}"`;
                 
                 return items;
               } else if (response.status === 401) {
-              log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
-              console.log('[api] Photography: Clearing invalid tokens...');
-              clearInvalidTokens();
-            } else {
-              log(`[api] Failed to load photography items: ${response.status}`, 'error');
+                log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
+                console.log('[api] Photography: Clearing invalid tokens...');
+                clearInvalidTokens();
+              } else {
+                log(`[api] Failed to load photography items: ${response.status}`, 'error');
+              }
+            } catch (e) {
+              log(`[api] Error loading photography items: ${e.message}`, 'error');
+            } finally {
+              window.isLoadingPhotography = false;
             }
-          } catch (e) {
-            log(`[api] Error loading photography items: ${e.message}`, 'error');
-          } finally {
-            window.isLoadingPhotography = false;
-          }
         }
 
         async function editPhotographyItem(filename, sha) {
