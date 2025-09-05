@@ -3591,46 +3591,109 @@ description: "${description}"`;
 
         window.updatePhotographyOrder = async function(filename, sha, newOrder) {
           try {
-            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${filename}`, {
+            // First, get all photography items to check for conflicts
+            const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
             
-            if (response.ok) {
-              const fileData = await response.json();
-              const content = decodeURIComponent(escape(atob(fileData.content)));
-              
-              // Update the order field in frontmatter
-              let updatedContent = content;
-              if (content.includes('order:')) {
-                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
-              } else {
-                // Add order field after title
-                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            if (!listResponse.ok) {
+              alert('Error fetching photography items');
+              return;
+            }
+            
+            const items = await listResponse.json();
+            const itemsToUpdate = [];
+            
+            // Get the current item's content
+            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
               }
+            });
+            
+            if (!currentItemResponse.ok) {
+              alert('Error fetching current item');
+              return;
+            }
+            
+            const currentItemData = await currentItemResponse.json();
+            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
+            
+            // Update the current item
+            let updatedContent = currentContent;
+            if (currentContent.includes('order:')) {
+              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
+            } else {
+              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            }
+            
+            itemsToUpdate.push({
+              filename: filename,
+              content: updatedContent,
+              sha: currentItemData.sha
+            });
+            
+            // Check other items for conflicts and increment them
+            for (const item of items) {
+              if (item.name === filename || item.name === '_index.md') continue;
               
-              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${filename}`, {
+              const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${item.name}`, {
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
+              });
+              
+              if (itemResponse.ok) {
+                const itemData = await itemResponse.json();
+                const itemContent = decodeURIComponent(escape(atob(itemData.content)));
+                
+                // Extract current order
+                const orderMatch = itemContent.match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  const currentOrder = parseInt(orderMatch[1]);
+                  if (currentOrder >= newOrder) {
+                    // Increment this item's order
+                    const newItemOrder = currentOrder + 1;
+                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+                    
+                    itemsToUpdate.push({
+                      filename: item.name,
+                      content: updatedItemContent,
+                      sha: itemData.sha
+                    });
+                  }
+                }
+              }
+            }
+            
+            // Update all items
+            for (const itemToUpdate of itemsToUpdate) {
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': 'token ' + currentToken,
                   'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({
-                  message: `Update order for ${filename}`,
-                  content: btoa(unescape(encodeURIComponent(updatedContent))),
-                  sha: fileData.sha
+                  message: `Update order for ${itemToUpdate.filename}`,
+                  content: btoa(unescape(encodeURIComponent(itemToUpdate.content))),
+                  sha: itemToUpdate.sha
                 })
               });
               
-              if (updateResponse.ok) {
-                alert('Order updated successfully!');
-                loadPhotographyItems(currentToken);
-              } else {
-                alert('Error updating order');
+              if (!updateResponse.ok) {
+                alert(`Error updating ${itemToUpdate.filename}`);
+                return;
               }
             }
+            
+            alert('Order updated successfully!');
+            loadPhotographyItems(currentToken);
           } catch (error) {
             alert('Error updating order: ' + error.message);
           }
@@ -3638,46 +3701,109 @@ description: "${description}"`;
 
         window.updatePortfolioOrder = async function(filename, sha, newOrder) {
           try {
-            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+            // First, get all portfolio items to check for conflicts
+            const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
             
-            if (response.ok) {
-              const fileData = await response.json();
-              const content = decodeURIComponent(escape(atob(fileData.content)));
-              
-              // Update the order field in frontmatter
-              let updatedContent = content;
-              if (content.includes('order:')) {
-                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
-              } else {
-                // Add order field after title
-                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            if (!listResponse.ok) {
+              alert('Error fetching portfolio items');
+              return;
+            }
+            
+            const items = await listResponse.json();
+            const itemsToUpdate = [];
+            
+            // Get the current item's content
+            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
               }
+            });
+            
+            if (!currentItemResponse.ok) {
+              alert('Error fetching current item');
+              return;
+            }
+            
+            const currentItemData = await currentItemResponse.json();
+            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
+            
+            // Update the current item
+            let updatedContent = currentContent;
+            if (currentContent.includes('order:')) {
+              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
+            } else {
+              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            }
+            
+            itemsToUpdate.push({
+              filename: filename,
+              content: updatedContent,
+              sha: currentItemData.sha
+            });
+            
+            // Check other items for conflicts and increment them
+            for (const item of items) {
+              if (item.name === filename || item.name === '_index.md') continue;
               
-              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
+              const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${item.name}`, {
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
+              });
+              
+              if (itemResponse.ok) {
+                const itemData = await itemResponse.json();
+                const itemContent = decodeURIComponent(escape(atob(itemData.content)));
+                
+                // Extract current order
+                const orderMatch = itemContent.match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  const currentOrder = parseInt(orderMatch[1]);
+                  if (currentOrder >= newOrder) {
+                    // Increment this item's order
+                    const newItemOrder = currentOrder + 1;
+                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+                    
+                    itemsToUpdate.push({
+                      filename: item.name,
+                      content: updatedItemContent,
+                      sha: itemData.sha
+                    });
+                  }
+                }
+              }
+            }
+            
+            // Update all items
+            for (const itemToUpdate of itemsToUpdate) {
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${itemToUpdate.filename}`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': 'token ' + currentToken,
                   'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({
-                  message: `Update order for ${filename}`,
-                  content: btoa(unescape(encodeURIComponent(updatedContent))),
-                  sha: fileData.sha
+                  message: `Update order for ${itemToUpdate.filename}`,
+                  content: btoa(unescape(encodeURIComponent(itemToUpdate.content))),
+                  sha: itemToUpdate.sha
                 })
               });
               
-              if (updateResponse.ok) {
-                alert('Order updated successfully!');
-                loadPortfolioItems(currentToken);
-              } else {
-                alert('Error updating order');
+              if (!updateResponse.ok) {
+                alert(`Error updating ${itemToUpdate.filename}`);
+                return;
               }
             }
+            
+            alert('Order updated successfully!');
+            loadPortfolioItems(currentToken);
           } catch (error) {
             alert('Error updating order: ' + error.message);
           }
@@ -3685,46 +3811,109 @@ description: "${description}"`;
 
         window.updatePoetryOrder = async function(filename, sha, newOrder) {
           try {
-            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+            // First, get all poetry items to check for conflicts
+            const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
             
-            if (response.ok) {
-              const fileData = await response.json();
-              const content = decodeURIComponent(escape(atob(fileData.content)));
-              
-              // Update the order field in frontmatter
-              let updatedContent = content;
-              if (content.includes('order:')) {
-                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
-              } else {
-                // Add order field after title
-                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            if (!listResponse.ok) {
+              alert('Error fetching poetry items');
+              return;
+            }
+            
+            const items = await listResponse.json();
+            const itemsToUpdate = [];
+            
+            // Get the current item's content
+            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
               }
+            });
+            
+            if (!currentItemResponse.ok) {
+              alert('Error fetching current item');
+              return;
+            }
+            
+            const currentItemData = await currentItemResponse.json();
+            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
+            
+            // Update the current item
+            let updatedContent = currentContent;
+            if (currentContent.includes('order:')) {
+              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
+            } else {
+              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            }
+            
+            itemsToUpdate.push({
+              filename: filename,
+              content: updatedContent,
+              sha: currentItemData.sha
+            });
+            
+            // Check other items for conflicts and increment them
+            for (const item of items) {
+              if (item.name === filename || item.name === '_index.md') continue;
               
-              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
+              const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${item.name}`, {
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
+              });
+              
+              if (itemResponse.ok) {
+                const itemData = await itemResponse.json();
+                const itemContent = decodeURIComponent(escape(atob(itemData.content)));
+                
+                // Extract current order
+                const orderMatch = itemContent.match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  const currentOrder = parseInt(orderMatch[1]);
+                  if (currentOrder >= newOrder) {
+                    // Increment this item's order
+                    const newItemOrder = currentOrder + 1;
+                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+                    
+                    itemsToUpdate.push({
+                      filename: item.name,
+                      content: updatedItemContent,
+                      sha: itemData.sha
+                    });
+                  }
+                }
+              }
+            }
+            
+            // Update all items
+            for (const itemToUpdate of itemsToUpdate) {
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${itemToUpdate.filename}`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': 'token ' + currentToken,
                   'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({
-                  message: `Update order for ${filename}`,
-                  content: btoa(unescape(encodeURIComponent(updatedContent))),
-                  sha: fileData.sha
+                  message: `Update order for ${itemToUpdate.filename}`,
+                  content: btoa(unescape(encodeURIComponent(itemToUpdate.content))),
+                  sha: itemToUpdate.sha
                 })
               });
               
-              if (updateResponse.ok) {
-                alert('Order updated successfully!');
-                loadPoetryItems(currentToken);
-              } else {
-                alert('Error updating order');
+              if (!updateResponse.ok) {
+                alert(`Error updating ${itemToUpdate.filename}`);
+                return;
               }
             }
+            
+            alert('Order updated successfully!');
+            loadPoetryItems(currentToken);
           } catch (error) {
             alert('Error updating order: ' + error.message);
           }
@@ -3779,46 +3968,109 @@ description: "${description}"`;
 
         window.updateVideographyOrder = async function(filename, sha, newOrder) {
           try {
-            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+            // First, get all videography items to check for conflicts
+            const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
                 'Accept': 'application/vnd.github.v3+json'
               }
             });
             
-            if (response.ok) {
-              const fileData = await response.json();
-              const content = decodeURIComponent(escape(atob(fileData.content)));
-              
-              // Update the order field in frontmatter
-              let updatedContent = content;
-              if (content.includes('order:')) {
-                updatedContent = content.replace(/order:\s*\d+/, `order: ${newOrder}`);
-              } else {
-                // Add order field after title
-                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            if (!listResponse.ok) {
+              alert('Error fetching videography items');
+              return;
+            }
+            
+            const items = await listResponse.json();
+            const itemsToUpdate = [];
+            
+            // Get the current item's content
+            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
               }
+            });
+            
+            if (!currentItemResponse.ok) {
+              alert('Error fetching current item');
+              return;
+            }
+            
+            const currentItemData = await currentItemResponse.json();
+            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
+            
+            // Update the current item
+            let updatedContent = currentContent;
+            if (currentContent.includes('order:')) {
+              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
+            } else {
+              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
+            }
+            
+            itemsToUpdate.push({
+              filename: filename,
+              content: updatedContent,
+              sha: currentItemData.sha
+            });
+            
+            // Check other items for conflicts and increment them
+            for (const item of items) {
+              if (item.name === filename || item.name === '_index.md') continue;
               
-              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+              const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${item.name}`, {
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
+              });
+              
+              if (itemResponse.ok) {
+                const itemData = await itemResponse.json();
+                const itemContent = decodeURIComponent(escape(atob(itemData.content)));
+                
+                // Extract current order
+                const orderMatch = itemContent.match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  const currentOrder = parseInt(orderMatch[1]);
+                  if (currentOrder >= newOrder) {
+                    // Increment this item's order
+                    const newItemOrder = currentOrder + 1;
+                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+                    
+                    itemsToUpdate.push({
+                      filename: item.name,
+                      content: updatedItemContent,
+                      sha: itemData.sha
+                    });
+                  }
+                }
+              }
+            }
+            
+            // Update all items
+            for (const itemToUpdate of itemsToUpdate) {
+              const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${itemToUpdate.filename}`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': 'token ' + currentToken,
                   'Accept': 'application/vnd.github.v3+json'
                 },
                 body: JSON.stringify({
-                  message: `Update order for ${filename}`,
-                  content: btoa(unescape(encodeURIComponent(updatedContent))),
-                  sha: fileData.sha
+                  message: `Update order for ${itemToUpdate.filename}`,
+                  content: btoa(unescape(encodeURIComponent(itemToUpdate.content))),
+                  sha: itemToUpdate.sha
                 })
               });
               
-              if (updateResponse.ok) {
-                alert('Order updated successfully!');
-                loadVideographyItems(currentToken);
-              } else {
-                alert('Error updating order');
+              if (!updateResponse.ok) {
+                alert(`Error updating ${itemToUpdate.filename}`);
+                return;
               }
             }
+            
+            alert('Order updated successfully!');
+            loadVideographyItems(currentToken);
           } catch (error) {
             alert('Error updating order: ' + error.message);
           }
