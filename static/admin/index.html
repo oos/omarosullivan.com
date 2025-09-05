@@ -39,25 +39,25 @@
           <div id="pages-list"></div>
         </div>
         <h5>Collections</h5>
-        <div id="portfolio-section">
-          <h6>Sketches</h6>
-          <button id="add-portfolio" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Sketch</button>
-          <div id="portfolio-list"></div>
-        </div>
-        <div id="photography-section">
-          <h6>Photography</h6>
-          <button id="add-photography" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Photo</button>
-          <div id="photography-list"></div>
-        </div>
         <div id="poetry-section">
           <h6>Poetry</h6>
           <button id="add-poetry" style="background:#e83e8c;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Poetry Post</button>
           <div id="poetry-list"></div>
         </div>
+        <div id="portfolio-section">
+          <h6>Sketches</h6>
+          <button id="add-portfolio" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Sketch</button>
+          <div id="portfolio-list"></div>
+        </div>
         <div id="videography-section">
           <h6>Videography</h6>
           <button id="add-videography" style="background:#fd7e14;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Video</button>
           <div id="videography-list"></div>
+        </div>
+        <div id="photography-section">
+          <h6>Photography</h6>
+          <button id="add-photography" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Photo</button>
+          <div id="photography-list"></div>
         </div>
       </div>
     </div>
@@ -691,10 +691,10 @@
             console.log('setupButtonListeners called');
             
             // Load all content types
-              await loadPortfolioItems(token);
-            await loadPhotographyItems(token);
-            await loadVideographyItems(token);
               await loadPoetryItems(token);
+              await loadPortfolioItems(token);
+            await loadVideographyItems(token);
+            await loadPhotographyItems(token);
               await loadPages(token);
             
             return true;
@@ -3470,10 +3470,10 @@ description: "${description}"`;
                 console.log('setupButtonListeners called from init');
                 
                 // Load all content types
-                loadPortfolioItems(currentToken);
-                loadPhotographyItems(currentToken);
-                loadVideographyItems(currentToken);
                 loadPoetryItems(currentToken);
+                loadPortfolioItems(currentToken);
+                loadVideographyItems(currentToken);
+                loadPhotographyItems(currentToken);
                 loadPages(currentToken);
               } else {
                 log('[boot] Existing token invalid, clearing storage...');
