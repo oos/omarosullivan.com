@@ -548,6 +548,8 @@
           if (initialContent) {
             // Use Quill's pasteHTML method for better HTML handling
             quill.clipboard.dangerouslyPasteHTML(initialContent);
+            // Also set the HTML textarea content
+            htmlTextarea.value = initialContent;
           }
 
           // Mode toggle functionality
@@ -1710,6 +1712,12 @@ ${content}
               
               if (titleMatch) title = titleMatch[1];
               body = bodyContent;
+              
+              console.log('Frontmatter found for', pageName);
+              console.log('Body content extracted:', body);
+            } else {
+              console.log('No frontmatter found for', pageName);
+              console.log('Using full content as body:', body);
             }
 
             // Remove any existing modal first
@@ -1834,6 +1842,8 @@ ${content}
             
             // Initialize WYSIWYG editor for content
             console.log('Content being passed to WYSIWYG editor:', body);
+            console.log('Body length:', body ? body.length : 'null');
+            console.log('Body type:', typeof body);
             const contentEditor = createWysiwygEditor('edit-page-content', body);
             
             // Special handling for About page - start in HTML mode to preserve layout
