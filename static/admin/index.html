@@ -854,12 +854,10 @@
                     resolve(`/uploads/${filename}`);
                   } else {
                     const error = await response.json();
-                    alert('Error uploading image: ' + (error.message || 'Unknown error'));
-                    resolve(false);
+                    reject(new Error('Error uploading image: ' + (error.message || 'Unknown error')));
                   }
                 } catch (e) {
-                  alert('Error uploading image: ' + e.message);
-                  resolve(false);
+                  reject(new Error('Error uploading image: ' + e.message));
                 }
               };
               reader.readAsDataURL(file);
@@ -1203,9 +1201,13 @@ ${content}
               // Upload new image only if one is provided
               const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
               const imageFilename = slug + '-' + Date.now() + '.' + imageFile.name.split('.').pop();
-              const imageResponse = await uploadImage(imageFile, imageFilename);
-              if (imageResponse) {
+              try {
+                const imageResponse = await uploadImage(imageFile, imageFilename);
                 coverImage = `cover:\n  image: "/uploads/${imageFilename}"`;
+              } catch (error) {
+                // If image upload failed, show error and don't proceed with update
+                alert(error.message);
+                return;
               }
             }
             
@@ -1414,7 +1416,12 @@ ${content}
               if (isAboutPage) {
                 const imageFile = document.getElementById('edit-page-image').files[0];
                 if (imageFile) {
-                  imagePath = await uploadImage(imageFile);
+                  try {
+                    imagePath = await uploadImage(imageFile);
+                  } catch (error) {
+                    alert(error.message);
+                    return;
+                  }
                 }
                 imageWidth = document.getElementById('edit-page-image-width').value;
                 imageHeight = document.getElementById('edit-page-image-height').value;
@@ -1741,7 +1748,12 @@ title: "${title}"`;
             try {
               let imagePath = '';
               if (imageFile) {
-                imagePath = await uploadImage(imageFile);
+                try {
+                  imagePath = await uploadImage(imageFile);
+                } catch (error) {
+                  alert(error.message);
+                  return;
+                }
               }
               
               await createPoetryItem(title, description, tags, content, imagePath, featured);
@@ -2036,7 +2048,12 @@ title: "${title}"`;
 
                 let imagePath = null;
                 if (imageFile) {
-                  imagePath = await uploadImage(imageFile);
+                  try {
+                    imagePath = await uploadImage(imageFile);
+                  } catch (error) {
+                    alert(error.message);
+                    return;
+                  }
                 }
                 
                 await updatePoetryItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath, newFeatured);
@@ -2110,7 +2127,15 @@ title: "${title}"`;
             }
 
             // Use new image if provided, otherwise keep existing
-            const imagePath = imageFile ? await uploadImage(imageFile) : existingImagePath;
+            let imagePath = existingImagePath;
+            if (imageFile) {
+              try {
+                imagePath = await uploadImage(imageFile);
+              } catch (error) {
+                alert(error.message);
+                return;
+              }
+            }
             
             // Build frontmatter
             let frontmatter = `---
@@ -2915,10 +2940,11 @@ ${content}
               }
 
               // Upload image first
-              const imagePath = await uploadImage(imageFile);
-              
-              if (!imagePath) {
-                alert('Failed to upload image');
+              let imagePath;
+              try {
+                imagePath = await uploadImage(imageFile);
+              } catch (error) {
+                alert(error.message);
                 return;
               }
               
@@ -3252,7 +3278,12 @@ description: "${description}"`;
 
                 let imagePath = null;
                 if (imageFile) {
-                  imagePath = await uploadImage(imageFile);
+                  try {
+                    imagePath = await uploadImage(imageFile);
+                  } catch (error) {
+                    alert(error.message);
+                    return;
+                  }
                 }
                 
                 await updatePhotographyItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath);
@@ -3295,7 +3326,15 @@ description: "${description}"`;
             }
 
             // Use new image if provided, otherwise keep existing
-            const imagePath = imageFile ? await uploadImage(imageFile) : existingImagePath;
+            let imagePath = existingImagePath;
+            if (imageFile) {
+              try {
+                imagePath = await uploadImage(imageFile);
+              } catch (error) {
+                alert(error.message);
+                return;
+              }
+            }
             
             // Build frontmatter
             let frontmatter = `---
