@@ -1446,12 +1446,17 @@ ${content}
             });
             
             let existingCoverImage = '';
+            let existingOrder = '';
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
               const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']([^"\n]+)["']/);
               if (coverMatch) {
                 existingCoverImage = `cover:\n  image: "${coverMatch[1]}"`;
+              }
+              const orderMatch = currentContent.match(/order:\s*(\d+)/);
+              if (orderMatch) {
+                existingOrder = `order: ${orderMatch[1]}`;
               }
             }
             
@@ -1485,7 +1490,7 @@ date: ${date}
 description: "${description}"
 featured: ${featured}
 ${coverImage}
-${tagsYaml}
+${existingOrder ? existingOrder + '\n' : ''}${tagsYaml}
 ---
 
 ${content}
@@ -2520,6 +2525,7 @@ title: "${title}"`;
             });
 
             let existingImagePath = null;
+            let existingOrder = null;
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
@@ -2528,6 +2534,10 @@ title: "${title}"`;
                 const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']([^"\n]+)["']/);
                 if (coverMatch) {
                   existingImagePath = coverMatch[1].trim();
+                }
+                const orderMatch = frontmatterMatch[1].match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  existingOrder = orderMatch[1];
                 }
               }
             }
@@ -2558,6 +2568,10 @@ description: "${description}"`;
 
             if (imagePath) {
               frontmatter += `\ncover:\n  image: "${imagePath}"`;
+            }
+
+            if (existingOrder) {
+              frontmatter += `\norder: ${existingOrder}`;
             }
 
             frontmatter += `\n---\n\n`;
