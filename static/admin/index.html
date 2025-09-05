@@ -460,7 +460,8 @@
 
           // Set initial content
           if (initialContent) {
-            quill.root.innerHTML = initialContent;
+            // Use Quill's pasteHTML method for better HTML handling
+            quill.clipboard.dangerouslyPasteHTML(initialContent);
           }
 
           // Mode toggle functionality
@@ -496,7 +497,7 @@
               }
             },
             setContent: function(content) {
-              quill.root.innerHTML = content;
+              quill.clipboard.dangerouslyPasteHTML(content);
               htmlTextarea.value = content;
             },
             getQuill: function() {
@@ -1699,6 +1700,7 @@ ${content}
             document.body.appendChild(form);
             
             // Initialize WYSIWYG editor for content
+            console.log('Content being passed to WYSIWYG editor:', body);
             const contentEditor = createWysiwygEditor('edit-page-content', body);
             
             // Add image preview functionality for About page
