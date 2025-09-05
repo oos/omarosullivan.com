@@ -3164,12 +3164,14 @@ ${content}
 
         // Login button click handler
         loginBtn.addEventListener('click', () => {
+          console.log('[debug] Login button clicked!');
           log('[login] Opening OAuth popup...');
           const popup = window.open(
             'https://decap-oauth.netlify.app/oauth/authorize?site_id=omarosullivan.netlify.app',
             'github-oauth',
             'width=600,height=600,scrollbars=yes,resizable=yes'
           );
+          console.log('[debug] Popup opened:', popup);
         });
 
 
