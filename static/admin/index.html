@@ -1473,8 +1473,8 @@ ${content}
               currentImageContainer.innerHTML = '<div style="color:#666;font-style:italic;">No current image</div>';
             }
             
-            // Image preview handler for edit form
-            document.getElementById('edit-portfolio-image').addEventListener('change', function(e) {
+            // Image preview and auto-upload handler for edit form
+            document.getElementById('edit-portfolio-image').addEventListener('change', async function(e) {
               const file = e.target.files[0];
               if (file) {
                 const reader = new FileReader();
@@ -1484,6 +1484,25 @@ ${content}
                   document.getElementById('edit-image-info').textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
                 };
                 reader.readAsDataURL(file);
+                
+                // Auto-upload the file immediately
+                const uploadStatus = document.getElementById('edit-portfolio-upload-status');
+                try {
+                  uploadStatus.textContent = `Uploading ${file.name}...`;
+                  uploadStatus.style.display = 'block';
+                  
+                  const imagePath = await uploadImage(file);
+                  
+                  uploadStatus.textContent = `✅ Uploaded successfully!`;
+                  uploadStatus.style.color = '#28a745';
+                  
+                  // Store the uploaded image path for when the form is saved
+                  document.getElementById('edit-portfolio-image').setAttribute('data-uploaded-path', imagePath);
+                  
+                } catch (error) {
+                  uploadStatus.textContent = `❌ Upload failed: ${error.message}`;
+                  uploadStatus.style.color = '#dc3545';
+                }
               } else {
                 document.getElementById('edit-image-preview').style.display = 'none';
               }
@@ -1500,24 +1519,35 @@ ${content}
               const imageFile = document.getElementById('edit-portfolio-image').files[0];
               const uploadStatus = document.getElementById('edit-portfolio-upload-status');
               
-              if (imageFile) {
+              // Check if we have a pre-uploaded image path
+              const preUploadedPath = document.getElementById('edit-portfolio-image').getAttribute('data-uploaded-path');
+              
+              if (preUploadedPath) {
+                // Use the pre-uploaded image
+                await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, preUploadedPath, newFeatured);
+                uploadStatus.textContent = `✅ Updated with new image!`;
+                uploadStatus.style.color = '#28a745';
+              } else if (imageFile) {
+                // Fallback: upload now (for backwards compatibility)
                 try {
                   uploadStatus.textContent = `Uploading ${imageFile.name}...`;
                   uploadStatus.style.display = 'block';
                   uploadStatus.style.color = '#007cba';
+                  
+                  const imagePath = await uploadImage(imageFile);
+                  await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imagePath, newFeatured);
+                  
+                  uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
+                  uploadStatus.style.color = '#28a745';
                 } catch (error) {
                   uploadStatus.textContent = `✗ Upload failed: ${error.message}`;
                   uploadStatus.style.color = '#dc3545';
                   alert(error.message);
                   return;
                 }
-              }
-              
-              await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile, newFeatured);
-              
-              if (imageFile) {
-                uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
-                uploadStatus.style.color = '#28a745';
+              } else {
+                // No new image, update without changing image
+                await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, null, newFeatured);
               }
               
               form.remove();
@@ -1812,7 +1842,7 @@ ${content}
               const previewImg = document.getElementById('edit-page-preview-img');
               const imageInfo = document.getElementById('edit-page-image-info');
               
-              imageInput.addEventListener('change', function(e) {
+              imageInput.addEventListener('change', async function(e) {
                 const file = e.target.files[0];
                 if (file) {
                   const reader = new FileReader();
@@ -1822,6 +1852,25 @@ ${content}
                     imageInfo.textContent = `File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
                   };
                   reader.readAsDataURL(file);
+                  
+                  // Auto-upload the file immediately
+                  const uploadStatus = document.getElementById('edit-page-upload-status');
+                  try {
+                    uploadStatus.textContent = `Uploading ${file.name}...`;
+                    uploadStatus.style.display = 'block';
+                    
+                    const imagePath = await uploadImage(file);
+                    
+                    uploadStatus.textContent = `✅ Uploaded successfully!`;
+                    uploadStatus.style.color = '#28a745';
+                    
+                    // Store the uploaded image path for when the form is saved
+                    imageInput.setAttribute('data-uploaded-path', imagePath);
+                    
+                  } catch (error) {
+                    uploadStatus.textContent = `❌ Upload failed: ${error.message}`;
+                    uploadStatus.style.color = '#dc3545';
+                  }
                 } else {
                   previewDiv.style.display = 'none';
                 }
@@ -1917,7 +1966,17 @@ ${content}
               if (isAboutPage) {
                 const imageFile = document.getElementById('edit-page-image').files[0];
                 const uploadStatus = document.getElementById('edit-page-upload-status');
-                if (imageFile) {
+                
+                // Check if we have a pre-uploaded image path
+                const preUploadedPath = document.getElementById('edit-page-image').getAttribute('data-uploaded-path');
+                
+                if (preUploadedPath) {
+                  // Use the pre-uploaded image
+                  imagePath = preUploadedPath;
+                  uploadStatus.textContent = `✅ Using uploaded image!`;
+                  uploadStatus.style.color = '#28a745';
+                } else if (imageFile) {
+                  // Fallback: upload now (for backwards compatibility)
                   try {
                     uploadStatus.textContent = `Uploading ${imageFile.name}...`;
                     uploadStatus.style.display = 'block';
@@ -2551,6 +2610,26 @@ title: "${title}"`;
               });
             }
 
+            // Add image auto-upload handler
+            const poetryImageInput = document.getElementById('edit-poetry-image');
+            if (poetryImageInput) {
+              poetryImageInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                  // Auto-upload the file immediately
+                  try {
+                    const imagePath = await uploadImage(file);
+                    // Store the uploaded image path for when the form is saved
+                    poetryImageInput.setAttribute('data-uploaded-path', imagePath);
+                    console.log('Poetry image uploaded successfully:', imagePath);
+                  } catch (error) {
+                    console.error('Poetry image upload failed:', error);
+                    alert('Image upload failed: ' + error.message);
+                  }
+                }
+              });
+            }
+
             // Handle form submission
             document.getElementById('edit-poetry-form').addEventListener('submit', async (e) => {
               e.preventDefault();
@@ -2562,8 +2641,15 @@ title: "${title}"`;
                 const imageFile = document.getElementById('edit-poetry-image').files[0];
                 const newFeatured = document.getElementById('edit-poetry-featured').checked;
 
+                // Check if we have a pre-uploaded image path
+                const preUploadedPath = document.getElementById('edit-poetry-image').getAttribute('data-uploaded-path');
+                
                 let imagePath = null;
-                if (imageFile) {
+                if (preUploadedPath) {
+                  // Use the pre-uploaded image
+                  imagePath = preUploadedPath;
+                } else if (imageFile) {
+                  // Fallback: upload now (for backwards compatibility)
                   try {
                     imagePath = await uploadImage(imageFile);
                   } catch (error) {
