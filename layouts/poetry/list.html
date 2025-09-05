@@ -73,6 +73,11 @@
       {{- end }}
     </h2>
   </header>
+  {{- if .Description }}
+  <div class="poetry-description">
+    {{ .Description | markdownify }}
+  </div>
+  {{- end }}
   <div class="entry-content poetry-preview">
     {{ .Content | truncate 500 }}
   </div>
@@ -124,6 +129,14 @@
   margin: 0 !important;
   white-space: pre-wrap !important;
   line-height: 1.8 !important;
+}
+
+.poetry-description {
+  font-style: italic !important;
+  color: #666 !important;
+  font-size: 14px !important;
+  margin: 5px 0 15px 0 !important;
+  padding: 0 !important;
 }
 
 /* Hide dates */
