@@ -875,6 +875,7 @@
               }
               
               return items;
+            }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Portfolio: Clearing invalid tokens...');
@@ -2524,6 +2525,7 @@ title: "${title}"`;
               }
               
               return items;
+            }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Poetry: Clearing invalid tokens...');
@@ -3815,6 +3817,7 @@ description: "${description}"`;
                 }
                 
                 return items;
+            }
               }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
@@ -5321,6 +5324,7 @@ tags:
                 }
                 
                 return items;
+            }
               }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
