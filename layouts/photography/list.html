@@ -106,18 +106,33 @@
 {{- end }}
 
 <style>
-/* Match homepage Recent Additions styling exactly */
+/* Hide ALL text elements - show ONLY images like homepage */
+.post-entry .entry-header,
+.post-entry h2,
+.post-entry .entry-hint-parent,
+.post-entry .entry-content,
+.post-entry .entry-footer,
+.post-entry .post-meta {
+  display: none !important;
+}
+
+/* Remove card styling completely */
+.post-entry {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 0 20px 0 !important;
+}
+
+/* Style images to match homepage exactly */
 .post-entry .entry-cover img {
   width: 100% !important;
   height: 300px !important;
   object-fit: cover !important;
   border-radius: 8px !important;
-}
-
-/* Ensure consistent container width */
-.post-entry {
-  max-width: 800px !important;
-  margin: 0 auto 20px auto !important;
+  display: block !important;
+  margin: 0 auto !important;
 }
 
 /* Hide powered by text */
