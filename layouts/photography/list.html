@@ -105,4 +105,27 @@
 </footer>
 {{- end }}
 
+<style>
+/* Match homepage Recent Additions styling exactly */
+.post-entry .entry-cover img {
+  width: 100% !important;
+  height: 300px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+}
+
+/* Ensure consistent container width */
+.post-entry {
+  max-width: 800px !important;
+  margin: 0 auto 20px auto !important;
+}
+
+/* Hide powered by text */
+.page-footer .powered-by,
+footer .powered-by,
+.powered-by {
+  display: none !important;
+}
+</style>
+
 {{- end }}{{- /* end main */ -}}
