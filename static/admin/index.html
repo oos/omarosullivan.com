@@ -3878,6 +3878,24 @@ description: "${description}"`;
         }, 4000);
 
         // Videography Management Functions
+        function toggleVideoInputs() {
+          const sourceType = document.getElementById('video-source-type').value;
+          const urlInputs = document.getElementById('url-inputs');
+          const fileInputs = document.getElementById('file-inputs');
+          const videoTypeSelect = document.getElementById('videography-type');
+          
+          if (sourceType === 'file') {
+            urlInputs.style.display = 'none';
+            fileInputs.style.display = 'block';
+            videoTypeSelect.value = 'uploaded';
+            videoTypeSelect.disabled = true;
+          } else {
+            urlInputs.style.display = 'block';
+            fileInputs.style.display = 'none';
+            videoTypeSelect.disabled = false;
+          }
+        }
+
         function showAddVideographyForm() {
           console.log('showAddVideographyForm function called');
           
@@ -3905,15 +3923,28 @@ description: "${description}"`;
                   <input type="text" id="videography-description" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
                 </div>
                 <div style="margin-bottom:15px;">
-                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Video URL (YouTube or Vimeo):</label>
-                  <input type="url" id="videography-url" required placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Video Source:</label>
+                  <select id="video-source-type" onchange="toggleVideoInputs()" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;margin-bottom:10px;">
+                    <option value="url">YouTube/Vimeo URL</option>
+                    <option value="file">Upload Video File</option>
+                  </select>
                 </div>
-                <div style="margin-bottom:15px;">
+                <div id="url-inputs" style="margin-bottom:15px;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Video URL (YouTube or Vimeo):</label>
+                  <input type="url" id="videography-url" placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                </div>
+                <div id="file-inputs" style="margin-bottom:15px;display:none;">
+                  <label style="display:block;margin-bottom:5px;font-weight:bold;">Upload Video File:</label>
+                  <input type="file" id="videography-file" accept="video/*" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <small style="color:#666;font-size:12px;margin-top:5px;display:block;">Supported formats: MP4, WebM, MOV, AVI (Max 100MB)</small>
+                </div>
+                <div id="video-type-container" style="margin-bottom:15px;">
                   <label style="display:block;margin-bottom:5px;font-weight:bold;">Video Type:</label>
-                  <select id="videography-type" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                  <select id="videography-type" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
                     <option value="">Select video type</option>
                     <option value="youtube">YouTube</option>
                     <option value="vimeo">Vimeo</option>
+                    <option value="uploaded">Uploaded Video</option>
                   </select>
                 </div>
                 <div style="margin-bottom:15px;">
@@ -3945,11 +3976,41 @@ description: "${description}"`;
             try {
               const title = document.getElementById('videography-title').value;
               const description = document.getElementById('videography-description').value;
-              const videoUrl = document.getElementById('videography-url').value;
-              const videoType = document.getElementById('videography-type').value;
+              const sourceType = document.getElementById('video-source-type').value;
               const tags = document.getElementById('videography-tags').value;
               const content = document.getElementById('videography-content').value;
               const featured = document.getElementById('videography-featured').checked;
+              
+              let videoUrl = '';
+              let videoType = '';
+              
+              if (sourceType === 'file') {
+                const fileInput = document.getElementById('videography-file');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                  alert('Please select a video file to upload');
+                  return;
+                }
+                
+                // Check file size (100MB limit)
+                if (file.size > 100 * 1024 * 1024) {
+                  alert('File size must be less than 100MB');
+                  return;
+                }
+                
+                // Upload the video file
+                videoUrl = await uploadVideoFile(file);
+                videoType = 'uploaded';
+              } else {
+                videoUrl = document.getElementById('videography-url').value;
+                videoType = document.getElementById('videography-type').value;
+                
+                if (!videoUrl) {
+                  alert('Please enter a video URL');
+                  return;
+                }
+              }
               
               // Create videography item
               await createVideographyItem(title, description, videoUrl, videoType, tags, content, featured);
@@ -3960,6 +4021,50 @@ description: "${description}"`;
               alert('Error adding video: ' + error.message);
             }
           });
+        }
+
+        async function uploadVideoFile(file) {
+          try {
+            console.log('Uploading video file:', file.name, 'Size:', file.size);
+            
+            // Convert file to base64
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result.split(',')[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            
+            // Generate filename
+            const timestamp = Date.now();
+            const extension = file.name.split('.').pop();
+            const filename = `video-${timestamp}.${extension}`;
+            
+            // Upload to GitHub
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/static/uploads/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              },
+              body: JSON.stringify({
+                message: `Upload video: ${file.name}`,
+                content: base64
+              })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              console.log('Video uploaded successfully:', result.content.download_url);
+              return result.content.download_url;
+            } else {
+              const error = await response.json();
+              throw new Error('Failed to upload video: ' + (error.message || 'Unknown error'));
+            }
+          } catch (error) {
+            console.error('Error uploading video:', error);
+            throw error;
+          }
         }
 
         async function createVideographyItem(title, description, videoUrl, videoType, tags, content, featured = false) {
@@ -4415,6 +4520,8 @@ tags:
         window.updateVideographyOrder = updateVideographyOrder;
         window.deletePhotographyItem = deletePhotographyItem;
         window.showAddVideographyForm = showAddVideographyForm;
+        window.toggleVideoInputs = toggleVideoInputs;
+        window.uploadVideoFile = uploadVideoFile;
         window.createVideographyItem = createVideographyItem;
         window.loadVideographyItems = loadVideographyItems;
         window.editVideographyItem = editVideographyItem;
