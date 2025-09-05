@@ -158,6 +158,18 @@ document.addEventListener('DOMContentLoaded', function() {
   if (select) {
     select.value = pageSize;
   }
+  
+  // Show/hide items based on page size
+  const items = document.querySelectorAll('.post-entry');
+  const targetCount = parseInt(pageSize);
+  
+  items.forEach((item, index) => {
+    if (index < targetCount) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
 });
 </script>
 
