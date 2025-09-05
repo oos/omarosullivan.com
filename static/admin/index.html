@@ -875,7 +875,6 @@
               }
               
               return items;
-            }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Portfolio: Clearing invalid tokens...');
@@ -2525,7 +2524,6 @@ title: "${title}"`;
               }
               
               return items;
-            }
             } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Poetry: Clearing invalid tokens...');
@@ -3817,9 +3815,7 @@ description: "${description}"`;
                 }
                 
                 return items;
-            }
-              }
-            } else if (response.status === 401) {
+              } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Photography: Clearing invalid tokens...');
               clearInvalidTokens();
@@ -4907,7 +4903,7 @@ description: "${description}"`;
         if (!window.authInitialized) {
           window.authInitialized = true;
           console.log('[debug] About to call initializeAuth...');
-          initializeAuth();
+        initializeAuth();
         }
         
         // Run regression tests after initialization
@@ -5324,9 +5320,7 @@ tags:
                 }
                 
                 return items;
-            }
-              }
-            } else if (response.status === 401) {
+              } else if (response.status === 401) {
               log('[api] Token expired or invalid (401). Clearing tokens and requiring re-authentication.', 'error');
               console.log('[api] Videography: Clearing invalid tokens...');
               clearInvalidTokens();
