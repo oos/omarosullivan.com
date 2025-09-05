@@ -2,7 +2,7 @@
 title: "Samuel Beckett"
 date: 2025-09-05
 description: "A sketch inspired by my uncle donal."
-featured: false
+featured: true
 cover:
   image: "/uploads/samuel-beckett-1757081727952.jpg"
 tags:
