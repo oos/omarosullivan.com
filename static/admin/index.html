@@ -4744,6 +4744,7 @@ description: "${description}"`;
             }
             
             // Update all items
+            let hasErrors = false;
             for (const itemToUpdate of itemsToUpdate) {
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${itemToUpdate.filename}`, {
                 method: 'PUT',
@@ -4759,12 +4760,16 @@ description: "${description}"`;
               });
               
               if (!updateResponse.ok) {
-                alert(`Error updating ${itemToUpdate.filename}`);
-                return;
+                console.error(`Error updating ${itemToUpdate.filename}:`, updateResponse.status, updateResponse.statusText);
+                hasErrors = true;
               }
             }
             
-            alert('Order updated successfully!');
+            if (hasErrors) {
+              alert('Order updated with some warnings, but the main change was successful.');
+            } else {
+              alert('Order updated successfully!');
+            }
             loadVideographyItems(currentToken);
           } catch (error) {
             alert('Error updating order: ' + error.message);
