@@ -47,8 +47,19 @@
   {{- end }}
 {{- end }}
 
-{{- /* Sort featured pages by featured_date (newest first) */ -}}
+{{- /* Sort featured pages by featured_date (newest first), with items without featured_date at the end */ -}}
 {{- $featuredPages = sort $featuredPages "Params.featured_date" "desc" }}
+{{- /* Re-sort to put items without featured_date at the end */ -}}
+{{- $withDate := slice }}
+{{- $withoutDate := slice }}
+{{- range $featuredPages }}
+  {{- if .Params.featured_date }}
+    {{- $withDate = $withDate | append . }}
+  {{- else }}
+    {{- $withoutDate = $withoutDate | append . }}
+  {{- end }}
+{{- end }}
+{{- $featuredPages = $withDate | append $withoutDate }}
 
 {{- range $index, $page := $featuredPages }}
 
