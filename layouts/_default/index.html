@@ -132,11 +132,12 @@ body {
     {{- end }}
   </div>
   {{- end }}
-  {{- if not (.Param "hideMeta") }}
+  {{- /* Hide meta information (including dates) for homepage featured items */ -}}
+  {{- /* {{- if not (.Param "hideMeta") }}
   <footer class="entry-footer">
     {{- partial "post_meta.html" . -}}
   </footer>
-  {{- end }}
+  {{- end }} */ -}}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
