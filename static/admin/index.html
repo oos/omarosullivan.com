@@ -127,21 +127,25 @@
         <div id="poetry-section">
           <h6>Poetry</h6>
           <button id="add-poetry" style="background:#e83e8c;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Poetry Post</button>
+          <button id="bulk-upload-poetry" style="background:#e83e8c;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;opacity:0.8;">Bulk Upload Poetry</button>
           <div id="poetry-list"></div>
         </div>
         <div id="portfolio-section">
           <h6>Sketches</h6>
           <button id="add-portfolio" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Sketch</button>
+          <button id="bulk-upload-portfolio" style="background:#007cba;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;opacity:0.8;">Bulk Upload Sketches</button>
           <div id="portfolio-list"></div>
         </div>
         <div id="videography-section">
           <h6>Videography</h6>
           <button id="add-videography" style="background:#fd7e14;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Video</button>
+          <button id="bulk-upload-videography" style="background:#fd7e14;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;opacity:0.8;">Bulk Upload Videos</button>
           <div id="videography-list"></div>
         </div>
         <div id="photography-section">
           <h6>Photography</h6>
           <button id="add-photography" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;">Add New Photo</button>
+          <button id="bulk-upload-photography" style="background:#6f42c1;color:white;border:none;padding:8px 16px;border-radius:3px;cursor:pointer;margin:5px;opacity:0.8;">Bulk Upload Photos</button>
           <div id="photography-list"></div>
         </div>
       </div>
@@ -3072,6 +3076,18 @@ ${content}
             console.error('Add Portfolio button not found');
           }
 
+          // Bulk upload portfolio button handler
+          const bulkUploadPortfolioBtn = document.getElementById('bulk-upload-portfolio');
+          console.log('Bulk Upload Portfolio button found:', !!bulkUploadPortfolioBtn);
+          if (bulkUploadPortfolioBtn) {
+            bulkUploadPortfolioBtn.addEventListener('click', () => {
+              console.log('Bulk Upload Portfolio button clicked');
+              showBulkUploadModal('portfolio');
+            });
+          } else {
+            console.error('Bulk Upload Portfolio button not found');
+          }
+
           // Edit about button handler
           const editAboutBtn = document.getElementById('edit-about');
           console.log('Edit About button found:', !!editAboutBtn);
@@ -3145,6 +3161,18 @@ ${content}
             console.error('Add Poetry button not found');
           }
 
+          // Bulk upload poetry button handler
+          const bulkUploadPoetryBtn = document.getElementById('bulk-upload-poetry');
+          console.log('Bulk Upload Poetry button found:', !!bulkUploadPoetryBtn);
+          if (bulkUploadPoetryBtn) {
+            bulkUploadPoetryBtn.addEventListener('click', () => {
+              console.log('Bulk Upload Poetry button clicked');
+              showBulkUploadModal('poetry');
+            });
+          } else {
+            console.error('Bulk Upload Poetry button not found');
+          }
+
           // Add photography button handler
           const addPhotographyBtn = document.getElementById('add-photography');
           console.log('Add Photography button found:', !!addPhotographyBtn);
@@ -3157,6 +3185,18 @@ ${content}
             console.error('Add Photography button not found');
           }
 
+          // Bulk upload photography button handler
+          const bulkUploadPhotographyBtn = document.getElementById('bulk-upload-photography');
+          console.log('Bulk Upload Photography button found:', !!bulkUploadPhotographyBtn);
+          if (bulkUploadPhotographyBtn) {
+            bulkUploadPhotographyBtn.addEventListener('click', () => {
+              console.log('Bulk Upload Photography button clicked');
+              showBulkUploadModal('photography');
+            });
+          } else {
+            console.error('Bulk Upload Photography button not found');
+          }
+
           // Add videography button handler
           const addVideographyBtn = document.getElementById('add-videography');
           console.log('Add Videography button found:', !!addVideographyBtn);
@@ -3167,6 +3207,18 @@ ${content}
             });
           } else {
             console.error('Add Videography button not found');
+          }
+
+          // Bulk upload videography button handler
+          const bulkUploadVideographyBtn = document.getElementById('bulk-upload-videography');
+          console.log('Bulk Upload Videography button found:', !!bulkUploadVideographyBtn);
+          if (bulkUploadVideographyBtn) {
+            bulkUploadVideographyBtn.addEventListener('click', () => {
+              console.log('Bulk Upload Videography button clicked');
+              showBulkUploadModal('videography');
+            });
+          } else {
+            console.error('Bulk Upload Videography button not found');
           }
           
           console.log('Button listeners setup complete');
@@ -5533,6 +5585,162 @@ tags:
         window.editPortfolioItem = editPortfolioItem;
         window.editPoetryItem = editPoetryItem;
         window.editPageInternal = editPage;
+        // Bulk Upload Functions
+        async function generateAITitle(file, category) {
+          try {
+            // For now, we'll generate titles based on filename and category
+            // In a real implementation, you'd call an AI service like OpenAI
+            const filename = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+            const cleanName = filename.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            // Generate category-specific titles
+            switch(category) {
+              case 'photography':
+                return `Photo: ${cleanName}`;
+              case 'portfolio':
+                return `Sketch: ${cleanName}`;
+              case 'poetry':
+                return `Poem: ${cleanName}`;
+              case 'videography':
+                return `Video: ${cleanName}`;
+              default:
+                return cleanName;
+            }
+          } catch (error) {
+            console.error('Error generating AI title:', error);
+            return file.name.replace(/\.[^/.]+$/, "");
+          }
+        }
+
+        function showBulkUploadModal(category) {
+          const existingModal = document.getElementById('bulk-upload-modal');
+          if (existingModal) {
+            existingModal.remove();
+          }
+
+          const modal = document.createElement('div');
+          modal.id = 'bulk-upload-modal';
+          modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+          modal.innerHTML = `
+            <div style="background:white;padding:20px;border-radius:8px;width:90%;max-width:800px;max-height:90%;overflow-y:auto;position:relative;">
+              <button onclick="document.getElementById('bulk-upload-modal').remove()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+              <h3>Bulk Upload ${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+              <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:5px;font-weight:bold;">Select Files:</label>
+                <input type="file" id="bulk-files" multiple accept="${category === 'photography' || category === 'portfolio' ? 'image/*' : category === 'videography' ? 'video/*' : '*/*'}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                <small style="color:#666;">You can select multiple files at once. AI will generate titles automatically.</small>
+              </div>
+              <div id="bulk-preview" style="margin-top:20px;max-height:400px;overflow-y:auto;border:1px solid #ddd;border-radius:4px;padding:10px;display:none;">
+                <h4>Preview & Edit Titles:</h4>
+                <div id="bulk-items"></div>
+              </div>
+              <div style="text-align:right;margin-top:20px;">
+                <button type="button" onclick="document.getElementById('bulk-upload-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
+                <button type="button" id="bulk-upload-btn" onclick="processBulkUpload('${category}')" style="background:#28a745;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;display:none;">Upload All</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          // Handle file selection
+          document.getElementById('bulk-files').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            const preview = document.getElementById('bulk-preview');
+            const itemsContainer = document.getElementById('bulk-items');
+            const uploadBtn = document.getElementById('bulk-upload-btn');
+            
+            preview.style.display = 'block';
+            uploadBtn.style.display = 'inline-block';
+            itemsContainer.innerHTML = '';
+
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              const title = await generateAITitle(file, category);
+              
+              const itemDiv = document.createElement('div');
+              itemDiv.style.cssText = 'margin-bottom:15px;padding:10px;border:1px solid #eee;border-radius:4px;';
+              itemDiv.innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex:1;">
+                    <strong>${file.name}</strong>
+                    <br>
+                    <small style="color:#666;">${(file.size / 1024).toFixed(1)} KB</small>
+                  </div>
+                  <div style="flex:2;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
+                    <input type="text" value="${title}" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:3px;" data-file-index="${i}">
+                  </div>
+                </div>
+              `;
+              itemsContainer.appendChild(itemDiv);
+            }
+          });
+        }
+
+        async function processBulkUpload(category) {
+          const files = Array.from(document.getElementById('bulk-files').files);
+          const titleInputs = document.querySelectorAll('#bulk-items input[type="text"]');
+          const uploadBtn = document.getElementById('bulk-upload-btn');
+          
+          uploadBtn.disabled = true;
+          uploadBtn.textContent = 'Uploading...';
+          
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (let i = 0; i < files.length; i++) {
+            try {
+              const file = files[i];
+              const title = titleInputs[i].value.trim() || file.name.replace(/\.[^/.]+$/, "");
+              const description = `Uploaded via bulk upload`;
+              
+              // Create the content based on category
+              let content = '';
+              if (category === 'poetry') {
+                content = `# ${title}\n\n*Uploaded via bulk upload*`;
+              } else {
+                content = `# ${title}\n\n${description}`;
+              }
+
+              // Upload the file and create the content
+              if (category === 'photography') {
+                await createPhotographyItem(title, description, '', content, file, false, 'photography');
+              } else if (category === 'portfolio') {
+                await createPortfolioItem(title, description, '', content, file, false);
+              } else if (category === 'poetry') {
+                await createPoetryItem(title, description, content, false);
+              } else if (category === 'videography') {
+                // For videos, we need to handle differently
+                alert('Video bulk upload not yet implemented. Please use individual upload for videos.');
+                continue;
+              }
+              
+              successCount++;
+            } catch (error) {
+              console.error(`Error uploading file ${files[i].name}:`, error);
+              errorCount++;
+            }
+          }
+
+          // Show results
+          if (errorCount === 0) {
+            alert(`Successfully uploaded ${successCount} files!`);
+            document.getElementById('bulk-upload-modal').remove();
+            // Reload the appropriate section
+            if (category === 'photography') {
+              loadPhotographyItems(currentToken);
+            } else if (category === 'portfolio') {
+              loadPortfolioItems(currentToken);
+            } else if (category === 'poetry') {
+              loadPoetryItems(currentToken);
+            }
+          } else {
+            alert(`Uploaded ${successCount} files successfully, ${errorCount} failed. Check console for details.`);
+          }
+        }
+
         window.deletePortfolioItem = deletePortfolioItem;
         window.deletePoetryItem = deletePoetryItem;
         window.deletePageAndMenu = deletePageAndMenu;
@@ -5541,6 +5749,8 @@ tags:
         window.showAddPortfolioForm = showAddPortfolioForm;
         window.showAddPageForm = showAddPageForm;
         window.showAddPoetryForm = showAddPoetryForm;
+        window.showBulkUploadModal = showBulkUploadModal;
+        window.processBulkUpload = processBulkUpload;
         window.loadPortfolioItems = loadPortfolioItems;
         window.loadPages = loadPages;
         window.loadPhotographyItems = loadPhotographyItems;
