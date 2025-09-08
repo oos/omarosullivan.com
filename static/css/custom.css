@@ -1,0 +1,17 @@
+/* Custom styling for omarosullivan.com */
+
+/* Logo color - burnt orange */
+.logo a {
+    color: #CC5500 !important;
+}
+
+/* Ensure logo color is consistent in both light and dark themes */
+body.dark .logo a {
+    color: #CC5500 !important;
+}
+
+/* Hover effect for logo */
+.logo a:hover {
+    color: #B84A00 !important;
+    text-decoration: none;
+}
