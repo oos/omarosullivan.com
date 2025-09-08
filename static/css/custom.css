@@ -15,3 +15,15 @@ body.dark .logo a {
     color: #B84A00 !important;
     text-decoration: none;
 }
+
+/* Active/selected page in navigation - burnt orange */
+#menu .active {
+    border-bottom: 2px solid #CC5500 !important;
+    color: #CC5500 !important;
+}
+
+/* Ensure active page color is consistent in both light and dark themes */
+body.dark #menu .active {
+    border-bottom: 2px solid #CC5500 !important;
+    color: #CC5500 !important;
+}
