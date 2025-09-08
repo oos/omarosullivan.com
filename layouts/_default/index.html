@@ -4,6 +4,15 @@
 {{- partial "index_profile.html" . }}
 {{- else }}
 
+{{- /* Ensure homepage has correct background color */ -}}
+{{- if .IsHome }}
+<style>
+body {
+  background-color: rgb(245, 245, 245) !important;
+}
+</style>
+{{- end }}
+
 {{- if not .IsHome | and .Title }}
 <header class="page-header">
   {{- partial "breadcrumbs.html" . }}
