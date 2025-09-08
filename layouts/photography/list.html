@@ -88,6 +88,17 @@
   <button id="next-page" onclick="nextPage()" style="padding: 8px 16px; margin: 0 5px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px;">Next »</button>
 </div>
 
+<!-- Items per page control (bottom) -->
+<div class="items-per-page-control" style="text-align: right; margin-top: 20px; margin-bottom: 20px;">
+  <label for="items-per-page-bottom" style="margin-right: 10px;">Items per page:</label>
+  <select id="items-per-page-bottom" onchange="changeItemsPerPage(this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <option value="10">10</option>
+    <option value="20" selected>20</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select>
+</div>
+
 <style>
 /* Style images to match homepage exactly */
 .post-entry .entry-cover img {
@@ -128,6 +139,13 @@ let totalItems = 0;
 function changeItemsPerPage(pageSize) {
   itemsPerPage = parseInt(pageSize);
   currentPage = 1;
+  
+  // Sync both dropdowns
+  const topSelect = document.getElementById('items-per-page');
+  const bottomSelect = document.getElementById('items-per-page-bottom');
+  if (topSelect) topSelect.value = pageSize;
+  if (bottomSelect) bottomSelect.value = pageSize;
+  
   showPage();
   updatePaginationControls();
 }
@@ -192,12 +210,14 @@ function updatePaginationControls() {
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
   const pageSize = urlParams.get('pageSize') || '20';
-  const select = document.getElementById('items-per-page');
-  if (select) {
-    select.value = pageSize;
-    itemsPerPage = parseInt(pageSize);
-  }
   
+  // Set both dropdowns
+  const topSelect = document.getElementById('items-per-page');
+  const bottomSelect = document.getElementById('items-per-page-bottom');
+  if (topSelect) topSelect.value = pageSize;
+  if (bottomSelect) bottomSelect.value = pageSize;
+  
+  itemsPerPage = parseInt(pageSize);
   showPage();
 });
 </script>
