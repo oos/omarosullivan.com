@@ -47,8 +47,8 @@
   {{- end }}
 {{- end }}
 
-{{- /* Sort featured pages by date (newest first) */ -}}
-{{- $featuredPages = sort $featuredPages "Date" "desc" }}
+{{- /* Sort featured pages by featured_date (newest first) */ -}}
+{{- $featuredPages = sort $featuredPages "Params.featured_date" "desc" }}
 
 {{- range $index, $page := $featuredPages }}
 
@@ -77,7 +77,38 @@
   </header>
   {{- if (ne (.Param "hideSummary") true) }}
   <div class="entry-content">
-    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+    {{- if eq .Section "videography" }}
+      {{- if .Params.video_url }}
+        {{- if .Params.video_type }}
+          {{- if eq .Params.video_type "youtube" }}
+            {{- $videoId := index (split .Params.video_url "v=") 1 }}
+            {{- $videoId = index (split $videoId "&") 0 }}
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%; margin: 10px 0;"></iframe>
+          {{- else if eq .Params.video_type "vimeo" }}
+            {{- $videoId := index (split .Params.video_url "vimeo.com/") 1 }}
+            {{- $videoId = index (split $videoId "?") 0 }}
+            <iframe width="560" height="315" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%; margin: 10px 0;"></iframe>
+          {{- else }}
+            <video width="560" height="315" controls style="border-radius: 8px; max-width: 100%; margin: 10px 0;">
+              <source src="{{ .Params.video_url }}" type="video/{{ .Params.video_type }}">
+              Your browser does not support the video tag.
+            </video>
+          {{- end }}
+        {{- else }}
+          <video width="560" height="315" controls style="border-radius: 8px; max-width: 100%; margin: 10px 0;">
+            <source src="{{ .Params.video_url }}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        {{- end }}
+      {{- end }}
+      {{- if .Description }}
+        <p>{{ .Description | plainify | htmlUnescape }}</p>
+      {{- else }}
+        <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+      {{- end }}
+    {{- else }}
+      <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+    {{- end }}
   </div>
   {{- end }}
   {{- if not (.Param "hideMeta") }}

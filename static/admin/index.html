@@ -1445,12 +1445,17 @@ ${content}
             });
             
             let existingCoverImage = '';
+            let existingOrder = '';
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
               const coverMatch = currentContent.match(/cover:\s*\n\s*image:\s*["']([^"\n]+)["']/);
               if (coverMatch) {
                 existingCoverImage = `cover:\n  image: "${coverMatch[1]}"`;
+              }
+              const orderMatch = currentContent.match(/order:\s*(\d+)/);
+              if (orderMatch) {
+                existingOrder = `order: ${orderMatch[1]}`;
               }
             }
             
@@ -1483,7 +1488,7 @@ title: "${title}"
 date: ${date}
 description: "${description}"
 featured: ${featured}
-${coverImage}
+${existingOrder ? existingOrder + '\n' : ''}${coverImage}
 ${tagsYaml}
 ---
 
@@ -1540,6 +1545,93 @@ ${content}
             }
           } catch (e) {
             alert('Error deleting sketch: ' + e.message);
+          }
+        }
+
+        async function toggleFeatured(section, filename, sha, currentFeatured) {
+          try {
+            // Get current content to preserve all fields
+            const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${section}/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (!currentResponse.ok) {
+              alert('Error fetching current content');
+              return;
+            }
+
+            const currentFile = await currentResponse.json();
+            const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
+            
+            // Parse frontmatter
+            const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
+            if (!frontmatterMatch) {
+              alert('Error parsing frontmatter');
+              return;
+            }
+
+            const frontmatter = frontmatterMatch[1];
+            const content = currentContent.replace(/^---\n[\s\S]*?\n---\n\n?/, '');
+
+            // Toggle featured status
+            const newFeatured = !currentFeatured;
+            const featuredDate = new Date().toISOString();
+
+            // Update frontmatter
+            let updatedFrontmatter = frontmatter
+              .replace(/featured:\s*(true|false)/, `featured: ${newFeatured}`)
+              .replace(/featured_date:\s*[^\n]+/, ''); // Remove existing featured_date
+
+            // Add or update featured field
+            if (updatedFrontmatter.includes('featured:')) {
+              // Replace existing featured line
+              updatedFrontmatter = updatedFrontmatter.replace(/featured:\s*(true|false)/, `featured: ${newFeatured}`);
+            } else {
+              // Add featured field
+              updatedFrontmatter += `\nfeatured: ${newFeatured}`;
+            }
+
+            // Add featured_date if featured is true
+            if (newFeatured) {
+              updatedFrontmatter += `\nfeatured_date: ${featuredDate}`;
+            }
+
+            const updatedContent = `---\n${updatedFrontmatter}\n---\n\n${content}`;
+
+            // Update the file
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${section}/${filename}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `${newFeatured ? 'Feature' : 'Unfeature'} ${section} item: ${filename}`,
+                content: btoa(unescape(encodeURIComponent(updatedContent))),
+                sha: sha
+              })
+            });
+
+            if (response.ok) {
+              alert(`Item ${newFeatured ? 'featured' : 'unfeatured'} successfully!`);
+              // Reload the appropriate section
+              if (section === 'portfolio') {
+                await loadPortfolioItems(currentToken);
+              } else if (section === 'poetry') {
+                await loadPoetryItems(currentToken);
+              } else if (section === 'videography') {
+                await loadVideographyItems(currentToken);
+              }
+            } else {
+              const error = await response.json();
+              alert('Error updating featured status: ' + (error.message || 'Unknown error'));
+            }
+          } catch (e) {
+            alert('Error toggling featured status: ' + e.message);
           }
         }
 
@@ -2518,6 +2610,7 @@ title: "${title}"`;
             });
 
             let existingImagePath = null;
+            let existingOrder = '';
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
@@ -2526,6 +2619,10 @@ title: "${title}"`;
                 const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']([^"\n]+)["']/);
                 if (coverMatch) {
                   existingImagePath = coverMatch[1].trim();
+                }
+                const orderMatch = frontmatterMatch[1].match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  existingOrder = `order: ${orderMatch[1]}`;
                 }
               }
             }
@@ -2546,6 +2643,10 @@ title: "${title}"`;
 title: "${title}"
 date: ${date}
 description: "${description}"`;
+
+            if (existingOrder) {
+              frontmatter += `\n${existingOrder}`;
+            }
 
             if (tags) {
               const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
@@ -3717,6 +3818,7 @@ description: "${description}"`;
             });
 
             let existingImagePath = null;
+            let existingOrder = '';
             if (currentResponse.ok) {
               const currentFile = await currentResponse.json();
               const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
@@ -3725,6 +3827,10 @@ description: "${description}"`;
                 const coverMatch = frontmatterMatch[1].match(/cover:\s*image:\s*["']([^"\n]+)["']/);
                 if (coverMatch) {
                   existingImagePath = coverMatch[1].trim();
+                }
+                const orderMatch = frontmatterMatch[1].match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  existingOrder = `order: ${orderMatch[1]}`;
                 }
               }
             }
@@ -3745,6 +3851,10 @@ description: "${description}"`;
 title: "${title}"
 date: ${date}
 description: "${description}"`;
+
+            if (existingOrder) {
+              frontmatter += `\n${existingOrder}`;
+            }
 
             if (tags) {
               const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
@@ -4004,11 +4114,25 @@ description: "${description}"`;
               
               // Update the featured field in frontmatter
               let updatedContent = content;
+              const featuredDate = new Date().toISOString();
+              
               if (content.includes('featured:')) {
                 updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
               } else {
                 // Add featured field after title
                 updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\nfeatured: ${isFeatured}`);
+              }
+              
+              // Add or update featured_date
+              if (isFeatured) {
+                if (content.includes('featured_date:')) {
+                  updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+/, `featured_date: ${featuredDate}`);
+                } else {
+                  updatedContent = updatedContent.replace(/(featured:\s*(true|false))/, `$1\nfeatured_date: ${featuredDate}`);
+                }
+              } else {
+                // Remove featured_date when unfeaturing
+                updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+\n?/, '');
               }
               
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
@@ -4438,11 +4562,25 @@ description: "${description}"`;
               
               // Update the featured field in frontmatter
               let updatedContent = content;
+              const featuredDate = new Date().toISOString();
+              
               if (content.includes('featured:')) {
                 updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
               } else {
                 // Add featured field after title
                 updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\nfeatured: ${isFeatured}`);
+              }
+              
+              // Add or update featured_date
+              if (isFeatured) {
+                if (content.includes('featured_date:')) {
+                  updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+/, `featured_date: ${featuredDate}`);
+                } else {
+                  updatedContent = updatedContent.replace(/(featured:\s*(true|false))/, `$1\nfeatured_date: ${featuredDate}`);
+                }
+              } else {
+                // Remove featured_date when unfeaturing
+                updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+\n?/, '');
               }
               
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
@@ -4595,11 +4733,25 @@ description: "${description}"`;
               
               // Update the featured field in frontmatter
               let updatedContent = content;
+              const featuredDate = new Date().toISOString();
+              
               if (content.includes('featured:')) {
                 updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
               } else {
                 // Add featured field after title
                 updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\nfeatured: ${isFeatured}`);
+              }
+              
+              // Add or update featured_date
+              if (isFeatured) {
+                if (content.includes('featured_date:')) {
+                  updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+/, `featured_date: ${featuredDate}`);
+                } else {
+                  updatedContent = updatedContent.replace(/(featured:\s*(true|false))/, `$1\nfeatured_date: ${featuredDate}`);
+                }
+              } else {
+                // Remove featured_date when unfeaturing
+                updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+\n?/, '');
               }
               
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
@@ -5198,6 +5350,27 @@ tags:
             console.log('updateVideographyItem called with filename:', filename, 'sha:', sha);
             const date = new Date().toISOString().split('T')[0];
             
+            // First, get the current content to preserve existing order
+            const currentResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            let existingOrder = '';
+            if (currentResponse.ok) {
+              const currentFile = await currentResponse.json();
+              const currentContent = decodeURIComponent(escape(atob(currentFile.content)));
+              const frontmatterMatch = currentContent.match(/^---\n([\s\S]*?)\n---/);
+              if (frontmatterMatch) {
+                const orderMatch = frontmatterMatch[1].match(/order:\s*(\d+)/);
+                if (orderMatch) {
+                  existingOrder = `order: ${orderMatch[1]}`;
+                }
+              }
+            }
+            
             // Build frontmatter
             let frontmatter = `---
 title: "${title}"
@@ -5206,6 +5379,10 @@ description: "${description}"
 video_url: "${videoUrl}"
 video_type: "${videoType}"
 featured: ${featured}`;
+
+            if (existingOrder) {
+              frontmatter += `\n${existingOrder}`;
+            }
 
             if (tags) {
               const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
