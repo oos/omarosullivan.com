@@ -1290,8 +1290,8 @@ ${content}
               const frontmatter = frontmatterMatch[1];
               const bodyContent = frontmatterMatch[2];
               
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
               // Parse tags from YAML array format
@@ -2075,8 +2075,8 @@ title: "${title}"`;
               const frontmatter = frontmatterMatch[1];
               const bodyContent = frontmatterMatch[2];
               
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
               
               if (titleMatch) title = titleMatch[1];
               if (descMatch) description = descMatch[1];
@@ -2497,8 +2497,8 @@ title: "${title}"`;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
@@ -3744,8 +3744,8 @@ description: "${description}"`;
 
             if (frontmatterMatch) {
               const frontmatter = frontmatterMatch[1];
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
@@ -5289,10 +5289,10 @@ tags:
               console.log('Frontmatter found:', frontmatter);
               
               // Better regex patterns that handle both quoted and unquoted values
-              const titleMatch = frontmatter.match(/title:\s*["']?([^"\n]+)["']?/);
-              const descMatch = frontmatter.match(/description:\s*["']?([^"\n]+)["']?/);
-              const videoUrlMatch = frontmatter.match(/video_url:\s*["']?([^"\n]+)["']?/);
-              const videoTypeMatch = frontmatter.match(/video_type:\s*["']?([^"\n]+)["']?/);
+              const titleMatch = frontmatter.match(/title:\s*["']([^"']+)["']/);
+              const descMatch = frontmatter.match(/description:\s*["']([^"']+)["']/);
+              const videoUrlMatch = frontmatter.match(/video_url:\s*["']([^"']+)["']/);
+              const videoTypeMatch = frontmatter.match(/video_type:\s*["']([^"']+)["']/);
               const tagsMatch = frontmatter.match(/tags:\s*\[([^\]]*)\]/);
               const featuredMatch = frontmatter.match(/featured:\s*(true|false)/);
               
