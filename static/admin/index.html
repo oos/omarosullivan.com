@@ -765,7 +765,7 @@
                   let featuredDateDisplay = '';
                   if (featuredDate) {
                     const date = new Date(featuredDate);
-                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})})`;
                   }
                   
                   itemData.div.innerHTML = `
@@ -2418,7 +2418,7 @@ title: "${title}"`;
                   let featuredDateDisplay = '';
                   if (featuredDate) {
                     const date = new Date(featuredDate);
-                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})})`;
                   }
                   
                   itemData.div.innerHTML = `
@@ -3682,7 +3682,7 @@ description: "${description}"`;
                     let featuredDateDisplay = '';
                     if (featuredDate) {
                       const date = new Date(featuredDate);
-                      featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                      featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})})`;
                     }
                     
                     div.innerHTML = `
@@ -5232,7 +5232,7 @@ tags:
                     let featuredDateDisplay = '';
                     if (featuredDate) {
                       const featuredDateObj = new Date(featuredDate);
-                      featuredDateDisplay = ` (${featuredDateObj.toLocaleDateString()} ${featuredDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                      featuredDateDisplay = ` (${featuredDateObj.toLocaleDateString()} ${featuredDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})})`;
                     }
                     
                     div.innerHTML = `

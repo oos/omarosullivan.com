@@ -1,7 +1,7 @@
 ---
 title: "Samuel Beckett"
 featured: true
-featured_date: 2025-09-04T10:00:00Z
+featured_date: 2025-09-08T19:30:01Z
 date: 2025-09-04
 description: "A sketch inspired by my uncle donal."
 cover:
