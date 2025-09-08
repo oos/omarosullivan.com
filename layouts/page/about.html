@@ -1,0 +1,66 @@
+{{- define "main" }}
+
+{{- /* Ensure about page has correct background color */ -}}
+<style>
+body {
+  background-color: rgb(245, 245, 245) !important;
+}
+</style>
+
+{{- if not .IsHome | and .Title }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>
+    {{- .Title -}}
+  </h1>
+  {{- if .Description }}
+  <div class="post-description">
+    {{- .Description -}}
+  </div>
+  {{- end }}
+</header>
+{{- end }}
+
+<article class="post">
+  <header class="post-header">
+    {{- partial "back_button.html" . }}
+    <h1 class="post-title">{{ .Title }}</h1>
+    {{- if .Description }}
+    <div class="post-description">
+      {{ .Description }}
+    </div>
+    {{- end }}
+  </header>
+
+  {{- if not (.Param "hideMeta") }}
+  <footer class="post-meta">
+    {{- partial "post_meta.html" . -}}
+  </footer>
+  {{- end }}
+
+  {{- if .Params.toc }}
+  <details class="toc" open>
+    <summary>
+      <b>{{- i18n "toc" | default "Table of Contents" }}</b>
+    </summary>
+    {{- .TableOfContents }}
+  </details>
+  {{- end }}
+
+  <div class="post-content">
+    {{- if not (.Param "hideSummary") }}
+    {{- .Summary }}
+    {{- end }}
+    {{- if not (.Param "hideContent") }}
+    {{- .Content }}
+    {{- end }}
+  </div>
+
+  {{- if .Params.tags }}
+  <footer class="post-footer">
+    {{- partial "post_nav_links.html" . }}
+  </footer>
+  {{- end }}
+</article>
+
+{{- end -}}
