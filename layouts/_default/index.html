@@ -95,19 +95,19 @@
           {{- if eq .Params.video_type "youtube" }}
             {{- $videoId := index (split .Params.video_url "v=") 1 }}
             {{- $videoId = index (split $videoId "&") 0 }}
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%; margin: 10px 0;"></iframe>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 720px; width: 100%; margin: 10px auto; display: block;"></iframe>
           {{- else if eq .Params.video_type "vimeo" }}
             {{- $videoId := index (split .Params.video_url "vimeo.com/") 1 }}
             {{- $videoId = index (split $videoId "?") 0 }}
-            <iframe width="560" height="315" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%; margin: 10px 0;"></iframe>
+            <iframe width="560" height="315" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 720px; width: 100%; margin: 10px auto; display: block;"></iframe>
           {{- else }}
-            <video width="560" height="315" controls style="border-radius: 8px; max-width: 100%; margin: 10px 0;">
+            <video width="560" height="315" controls style="border-radius: 8px; max-width: 720px; width: 100%; margin: 10px auto; display: block;">
               <source src="{{ .Params.video_url }}" type="video/{{ .Params.video_type }}">
               Your browser does not support the video tag.
             </video>
           {{- end }}
         {{- else }}
-          <video width="560" height="315" controls style="border-radius: 8px; max-width: 100%; margin: 10px 0;">
+          <video width="560" height="315" controls style="border-radius: 8px; max-width: 720px; width: 100%; margin: 10px auto; display: block;">
             <source src="{{ .Params.video_url }}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
