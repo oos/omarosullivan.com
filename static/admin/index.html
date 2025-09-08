@@ -686,6 +686,10 @@
                         const featuredMatch = content.match(/featured:\s*(true|false)/i);
                         const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
+                        // Check for featured_date field
+                        const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                        const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                        
                         // Check for order field
                         const orderMatch = content.match(/order:\s*(\d+)/);
                         const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
@@ -697,6 +701,7 @@
                           order: currentOrder,
                           displayTitle: displayTitle,
                           isFeatured: isFeatured,
+                          featuredDate: featuredDate,
                           content: content,
                           div: div
                         });
@@ -752,8 +757,16 @@
                 } else {
                   const currentOrder = itemData.order;
                   const isFeatured = itemData.isFeatured;
+                  const featuredDate = itemData.featuredDate;
                   const displayTitle = itemData.displayTitle;
                   const item = itemData.item;
+                  
+                  // Format featured date for display
+                  let featuredDateDisplay = '';
+                  if (featuredDate) {
+                    const date = new Date(featuredDate);
+                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                  }
                   
                   itemData.div.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -761,7 +774,7 @@
                         <label style="display:flex;align-items:center;gap:8px;">
                           <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePortfolioFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                           <strong>${displayTitle}</strong>
-                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage${featuredDateDisplay}</span>' : ''}
                         </label>
                         <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                           <label style="font-size:12px;color:#666;">Order:</label>
@@ -2326,6 +2339,10 @@ title: "${title}"`;
                         const featuredMatch = content.match(/featured:\s*(true|false)/i);
                         const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
                         
+                        // Check for featured_date field
+                        const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                        const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                        
                         // Check for order field
                         const orderMatch = content.match(/order:\s*(\d+)/);
                         const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
@@ -2337,6 +2354,7 @@ title: "${title}"`;
                           order: currentOrder,
                           displayTitle: displayTitle,
                           isFeatured: isFeatured,
+                          featuredDate: featuredDate,
                           content: content,
                           div: div
                         });
@@ -2392,8 +2410,16 @@ title: "${title}"`;
                 } else {
                   const currentOrder = itemData.order;
                   const isFeatured = itemData.isFeatured;
+                  const featuredDate = itemData.featuredDate;
                   const displayTitle = itemData.displayTitle;
                   const item = itemData.item;
+                  
+                  // Format featured date for display
+                  let featuredDateDisplay = '';
+                  if (featuredDate) {
+                    const date = new Date(featuredDate);
+                    featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                  }
                   
                   itemData.div.innerHTML = `
                     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -2401,7 +2427,7 @@ title: "${title}"`;
                         <label style="display:flex;align-items:center;gap:8px;">
                           <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePoetryFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                           <strong>${displayTitle}</strong>
-                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                          ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage${featuredDateDisplay}</span>' : ''}
                         </label>
                         <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                           <label style="font-size:12px;color:#666;">Order:</label>
@@ -5095,11 +5121,26 @@ tags:
                           const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                           const date = dateMatch ? dateMatch[1] : '1900-01-01';
                           
+                          // Check if this item is featured
+                          const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                          const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
+                          
+                          // Check for featured_date field
+                          const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                          const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                          
+                          // Check for order field
+                          const orderMatch = content.match(/order:\s*(\d+)/);
+                          const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                          
                           itemsWithMetadata.push({
                             ...item,
                             displayTitle,
                             date,
                             content,
+                            isFeatured,
+                            featuredDate,
+                            order: currentOrder,
                             isSectionPage: false
                           });
                         }
@@ -5156,14 +5197,16 @@ tags:
                     const content = item.content;
                     const displayTitle = item.displayTitle;
                     const date = item.date;
+                    const isFeatured = item.isFeatured;
+                    const featuredDate = item.featuredDate;
+                    const currentOrder = item.order;
                     
-                    // Check if this item is featured
-                    const featuredMatch = content.match(/featured:\s*(true|false)/i);
-                    const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
-                    
-                    // Check for order field
-                    const orderMatch = content.match(/order:\s*(\d+)/);
-                    const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                    // Format featured date for display
+                    let featuredDateDisplay = '';
+                    if (featuredDate) {
+                      const featuredDateObj = new Date(featuredDate);
+                      featuredDateDisplay = ` (${featuredDateObj.toLocaleDateString()} ${featuredDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                    }
                     
                     div.innerHTML = `
                       <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -5171,7 +5214,7 @@ tags:
                           <label style="display:flex;align-items:center;gap:8px;">
                             <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="toggleVideographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                             <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage${featuredDateDisplay}</span>' : ''}
                           </label>
                           <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                             <label style="font-size:12px;color:#666;">Order Field:</label>
