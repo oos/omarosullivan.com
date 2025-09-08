@@ -3647,8 +3647,13 @@ description: "${description}"`;
                 const photographyItems = items.filter(item => item.name.endsWith('.md'));
                 console.log('[debug] Filtered photography items:', photographyItems);
                 
+                // Show loading indicator
+                photographyList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Loading photography...</div>';
+                
                 // Load all items first to get their metadata for sorting
                 const itemsWithMetadata = [];
+                
+                // Handle section pages first
                 for (const item of photographyItems) {
                   if (item.name === '_index.md') {
                     itemsWithMetadata.push({
@@ -3658,7 +3663,13 @@ description: "${description}"`;
                       content: '',
                       isSectionPage: true
                     });
-                  } else {
+                  }
+                }
+                
+                // Load all file contents in parallel
+                const filePromises = photographyItems
+                  .filter(item => item.name !== '_index.md')
+                  .map(async (item) => {
                     try {
                       const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${item.name}`, {
                         headers: {
@@ -3667,57 +3678,67 @@ description: "${description}"`;
                         }
                       });
                         
-                        if (fileResponse.ok) {
-                          const fileData = await fileResponse.json();
-                          const content = decodeURIComponent(escape(atob(fileData.content)));
-                          const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
-                          const dateMatch = content.match(/date:\s*(\d{4}-\d{2}-\d{2})/);
-                          const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
-                          const date = dateMatch ? dateMatch[1] : '1900-01-01';
-                          
-                          // Check if this item is featured
-                          const featuredMatch = content.match(/featured:\s*(true|false)/i);
-                          const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
-                          
-                          // Check for featured_date field
-                          const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
-                          const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
-                          
-                          itemsWithMetadata.push({
-                            ...item,
-                            displayTitle,
-                            date,
-                            content,
-                            isFeatured,
-                            featuredDate,
-                            isSectionPage: false
-                          });
-                        }
+                      if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
+                        const dateMatch = content.match(/date:\s*(\d{4}-\d{2}-\d{2})/);
+                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                        const date = dateMatch ? dateMatch[1] : '1900-01-01';
+                        
+                        // Check if this item is featured
+                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
+                        
+                        // Check for featured_date field
+                        const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                        const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                        
+                        // Check for order field
+                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        const order = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        
+                        return {
+                          ...item,
+                          displayTitle,
+                          date,
+                          content,
+                          isFeatured,
+                          featuredDate,
+                          order,
+                          isSectionPage: false
+                        };
+                      }
                     } catch (error) {
                       console.error('Error loading photography item:', error);
-                      itemsWithMetadata.push({
-                        ...item,
-                        displayTitle: item.name.replace('.md', ''),
-                        date: '1900-01-01',
-                        content: '',
-                        isSectionPage: false
-                      });
                     }
-                  }
-                }
+                    
+                    return {
+                      ...item,
+                      displayTitle: item.name.replace('.md', ''),
+                      date: '1900-01-01',
+                      content: '',
+                      isFeatured: false,
+                      featuredDate: null,
+                      order: 999,
+                      isSectionPage: false
+                    };
+                  });
+                
+                // Wait for all file contents to load
+                const fileResults = await Promise.all(filePromises);
+                
+                // Add all results to itemsWithMetadata
+                itemsWithMetadata.push(...fileResults);
                 
                 // Sort items: section pages first, then by order field, then by date, then by title
                 itemsWithMetadata.sort((a, b) => {
                   if (a.isSectionPage && !b.isSectionPage) return -1;
                   if (!a.isSectionPage && b.isSectionPage) return 1;
                   
-                  // Get order values (default to 999 if not set)
-                  const orderA = a.content ? (a.content.match(/order:\s*(\d+)/) ? parseInt(a.content.match(/order:\s*(\d+)/)[1]) : 999) : 999;
-                  const orderB = b.content ? (b.content.match(/order:\s*(\d+)/) ? parseInt(b.content.match(/order:\s*(\d+)/)[1]) : 999) : 999;
-                  
                   // Sort by order field first (lower numbers first)
-                  if (orderA !== orderB) {
-                    return orderA - orderB;
+                  if (a.order !== b.order) {
+                    return a.order - b.order;
                   }
                   
                   // If order is the same, sort by date (newest first)
@@ -3747,7 +3768,7 @@ description: "${description}"`;
                     const displayTitle = item.displayTitle;
                     const isFeatured = item.isFeatured;
                     const featuredDate = item.featuredDate;
-                    const currentOrder = item.order;
+                    const currentOrder = item.order || 999;
                     
                     // Format featured date for display
                     let featuredDateDisplay = '';
