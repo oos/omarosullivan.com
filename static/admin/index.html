@@ -3604,11 +3604,21 @@ description: "${description}"`;
                           const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
                           const date = dateMatch ? dateMatch[1] : '1900-01-01';
                           
+                          // Check if this item is featured
+                          const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                          const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
+                          
+                          // Check for featured_date field
+                          const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                          const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                          
                           itemsWithMetadata.push({
                             ...item,
                             displayTitle,
                             date,
                             content,
+                            isFeatured,
+                            featuredDate,
                             isSectionPage: false
                           });
                         }
@@ -3664,14 +3674,16 @@ description: "${description}"`;
                     // Use pre-loaded metadata
                     const content = item.content;
                     const displayTitle = item.displayTitle;
+                    const isFeatured = item.isFeatured;
+                    const featuredDate = item.featuredDate;
+                    const currentOrder = item.order;
                     
-                    // Check if this item is featured
-                    const featuredMatch = content.match(/featured:\s*(true|false)/i);
-                    const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
-                    
-                    // Check for order field
-                    const orderMatch = content.match(/order:\s*(\d+)/);
-                    const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                    // Format featured date for display
+                    let featuredDateDisplay = '';
+                    if (featuredDate) {
+                      const date = new Date(featuredDate);
+                      featuredDateDisplay = ` (${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+                    }
                     
                     div.innerHTML = `
                       <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -3679,7 +3691,7 @@ description: "${description}"`;
                           <label style="display:flex;align-items:center;gap:8px;">
                             <input type="checkbox" ${isFeatured ? 'checked' : ''} onchange="togglePhotographyFeatured('${item.name}', '${item.sha}', this.checked)" style="margin:0;">
                             <strong>${displayTitle}</strong>
-                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage</span>' : ''}
+                            ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage' + featuredDateDisplay + '</span>' : ''}
                           </label>
                           <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                             <label style="font-size:12px;color:#666;">Order:</label>
@@ -4199,13 +4211,28 @@ description: "${description}"`;
               const fileData = await response.json();
               const content = decodeURIComponent(escape(atob(fileData.content)));
               
-              // Update the featured field in frontmatter
+              // Update the featured field and featured_date in frontmatter
               let updatedContent = content;
-              if (content.includes('featured:')) {
-                updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
+              
+              if (isFeatured) {
+                // Adding to featured - add featured field and featured_date
+                if (content.includes('featured:')) {
+                  updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
+                } else {
+                  updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\nfeatured: ${isFeatured}`);
+                }
+                
+                // Add or update featured_date
+                const now = new Date().toISOString();
+                if (content.includes('featured_date:')) {
+                  updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+/, `featured_date: ${now}`);
+                } else {
+                  updatedContent = updatedContent.replace(/(featured:\s*true)/, `$1\nfeatured_date: ${now}`);
+                }
               } else {
-                // Add featured field after title
-                updatedContent = content.replace(/(title:\s*[^\n]+)/, `$1\nfeatured: ${isFeatured}`);
+                // Removing from featured - remove featured field and featured_date
+                updatedContent = content.replace(/featured:\s*(true|false)/, `featured: ${isFeatured}`);
+                updatedContent = updatedContent.replace(/featured_date:\s*[^\n]+\n?/, '');
               }
               
               const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${filename}`, {
