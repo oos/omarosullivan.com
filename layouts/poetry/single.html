@@ -1,11 +1,11 @@
 {{ define "main" }}
 <main class="main">
   <article class="post-single">
-    <header class="post-header" style="margin-bottom: 20px;">
+    <header class="post-header" style="margin-bottom: 5px;">
       {{ partial "back_button.html" . }}
-      <h1 class="post-title" style="margin-bottom: 10px;">{{ .Title }}</h1>
+      <h1 class="post-title" style="margin-bottom: 5px;">{{ .Title }}</h1>
       {{- if .Description }}
-      <div class="post-description" style="margin-bottom: 10px;">
+      <div class="post-description" style="margin-bottom: 5px;">
         {{ .Description }}
       </div>
       {{- end }}
@@ -28,7 +28,7 @@
       {{- end }}
     </div>
     {{- end }}
-    <div class="post-content" style="white-space: pre-line; line-height: 1.8; font-size: 16px; margin-top: 10px;">
+    <div class="post-content" style="white-space: pre-line; line-height: 1.8; font-size: 16px; margin-top: 0px;">
       {{ .RawContent }}
     </div>
     {{- if .Params.tags }}
