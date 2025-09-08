@@ -47,8 +47,8 @@
 {{- $pages := union .RegularPages .Sections }}
 {{- $sortedPages := sort $pages "Params.order" "asc" }}
 {{- $pageSize := 20 }}
-{{- if .URL }}
-  {{- $urlParams := split .URL "?" }}
+{{- if .RelPermalink }}
+  {{- $urlParams := split .RelPermalink "?" }}
   {{- if gt (len $urlParams) 1 }}
     {{- $queryString := index $urlParams 1 }}
     {{- $pageSizeParam := findRE `pageSize=(\d+)` $queryString }}
