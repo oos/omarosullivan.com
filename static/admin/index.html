@@ -651,91 +651,110 @@
               const items = await response.json();
               log('[api] Loaded ' + items.length + ' sketches', 'token');
               
-              portfolioList.innerHTML = '';
+              // Show loading indicator
+              portfolioList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Loading sketches...</div>';
               
-              // First, collect all items with their metadata for sorting
+              // Filter out non-markdown files and prepare for parallel loading
+              const markdownItems = items.filter(item => item.name.endsWith('.md'));
+              
+              // Create all divs first
               const itemsWithMetadata = [];
               
-              for (const item of items) {
-                if (item.name.endsWith('.md')) {
-                  const div = document.createElement('div');
-                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
-                  
-                  // Handle _index.md files differently (these are section pages, not individual portfolio items)
-                  if (item.name === '_index.md') {
-                    itemsWithMetadata.push({
-                      item: item,
-                      isSectionPage: true,
-                      order: 0, // Section pages always come first
-                      displayTitle: item.name + ' (Portfolio Section Page)',
-                      div: div
-                    });
-                  } else {
-                    // Get the title from the file content
-                    try {
-                      const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${item.name}`, {
-                        headers: {
-                          'Authorization': 'token ' + token,
-                          'Accept': 'application/vnd.github.v3+json'
-                        }
-                      });
-                      
-                      if (fileResponse.ok) {
-                        const fileData = await fileResponse.json();
-                        const content = decodeURIComponent(escape(atob(fileData.content)));
-                        const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
-                        const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
-                        
-                        // Check if this item is featured
-                        const featuredMatch = content.match(/featured:\s*(true|false)/i);
-                        const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
-                        
-                        // Check for featured_date field
-                        const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
-                        const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
-                        
-                        // Check for order field
-                        const orderMatch = content.match(/order:\s*(\d+)/);
-                        const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
-                        
-                        // Store metadata for sorting
-                        itemsWithMetadata.push({
-                          item: item,
-                          isSectionPage: false,
-                          order: currentOrder,
-                          displayTitle: displayTitle,
-                          isFeatured: isFeatured,
-                          featuredDate: featuredDate,
-                          content: content,
-                          div: div
-                        });
-                      } else {
-                        // Fallback to filename if we can't get the title
-                        itemsWithMetadata.push({
-                          item: item,
-                          isSectionPage: false,
-                          order: 999,
-                          displayTitle: item.name.replace('.md', ''),
-                          isFeatured: false,
-                          content: '',
-                          div: div
-                        });
-                      }
-                    } catch (error) {
-                      // Fallback to filename if there's an error
-                      itemsWithMetadata.push({
-                        item: item,
-                        isSectionPage: false,
-                        order: 999,
-                        displayTitle: item.name.replace('.md', ''),
-                        isFeatured: false,
-                        content: '',
-                        div: div
-                      });
-                    }
-                  }
+              for (const item of markdownItems) {
+                const div = document.createElement('div');
+                div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                
+                // Handle _index.md files differently (these are section pages, not individual portfolio items)
+                if (item.name === '_index.md') {
+                  itemsWithMetadata.push({
+                    item: item,
+                    isSectionPage: true,
+                    order: 0, // Section pages always come first
+                    displayTitle: item.name + ' (Portfolio Section Page)',
+                    div: div
+                  });
+                } else {
+                  // Prepare for parallel loading
+                  itemsWithMetadata.push({
+                    item: item,
+                    isSectionPage: false,
+                    order: 999, // Default order
+                    displayTitle: item.name.replace('.md', ''), // Fallback title
+                    isFeatured: false,
+                    featuredDate: null,
+                    content: '',
+                    div: div
+                  });
                 }
               }
+              
+              // Load all file contents in parallel
+              const filePromises = markdownItems
+                .filter(item => item.name !== '_index.md')
+                .map(async (item) => {
+                  try {
+                    const fileResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${item.name}`, {
+                      headers: {
+                        'Authorization': 'token ' + token,
+                        'Accept': 'application/vnd.github.v3+json'
+                      }
+                    });
+                    
+                    if (fileResponse.ok) {
+                      const fileData = await fileResponse.json();
+                      const content = decodeURIComponent(escape(atob(fileData.content)));
+                      const titleMatch = content.match(/title:\s*["']([^"\n]+)["']/);
+                      const displayTitle = titleMatch ? titleMatch[1].trim() : item.name.replace('.md', '');
+                      
+                      // Check if this item is featured
+                      const featuredMatch = content.match(/featured:\s*(true|false)/i);
+                      const isFeatured = featuredMatch ? featuredMatch[1].toLowerCase() === 'true' : false;
+                      
+                      // Check for featured_date field
+                      const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
+                      const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
+                      
+                      // Check for order field
+                      const orderMatch = content.match(/order:\s*(\d+)/);
+                      const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                      
+                      return {
+                        filename: item.name,
+                        displayTitle,
+                        isFeatured,
+                        featuredDate,
+                        order: currentOrder,
+                        content
+                      };
+                    }
+                  } catch (e) {
+                    console.error('Error loading file content for', item.name, ':', e);
+                  }
+                  
+                  return {
+                    filename: item.name,
+                    displayTitle: item.name.replace('.md', ''),
+                    isFeatured: false,
+                    featuredDate: null,
+                    order: 999,
+                    content: ''
+                  };
+                });
+              
+              // Wait for all file contents to load
+              const fileResults = await Promise.all(filePromises);
+              
+              // Update the items with the loaded data
+              fileResults.forEach(result => {
+                const item = itemsWithMetadata.find(i => i.item.name === result.filename);
+                if (item) {
+                  item.displayTitle = result.displayTitle;
+                  item.isFeatured = result.isFeatured;
+                  item.featuredDate = result.featuredDate;
+                  item.order = result.order;
+                  item.content = result.content;
+                }
+              });
               
               // Sort items: section pages first, then by order field, then by title
               itemsWithMetadata.sort((a, b) => {
