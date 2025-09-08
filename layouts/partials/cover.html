@@ -30,7 +30,7 @@
 
     {{- /* Special styling for portfolio/sketches items */}}
     {{- if eq .Section "portfolio" }}
-        <div style="display: inline-block; padding: 20px; background-color: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="display: inline-block; padding: 4px 8px 8px 8px; background-color: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             {{- if $cover -}}
                 {{/* i.e it is present in page bundle */}}
                 {{- if (and (in $processableFormats $cover.MediaType.SubType) ($responsiveImages) (eq $prod true)) }}
@@ -45,13 +45,13 @@
                         sizes="(min-width: 768px) 720px, 100vw"
                         width="{{ $cover.Width }}" height="{{ $cover.Height }}"
                         alt="{{ $alt }}"
-                        style="display: block; max-width: 100%; height: auto;">
+                        style="display: block; max-width: 100%; height: auto; width: 100%;">
                 {{- else }}{{/* Unprocessable image or responsive images disabled */}}
-                    <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto;">
+                    <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto; width: 100%;">
                 {{- end }}
             {{- else }}
                 {{- /* For absolute urls and external links, no img processing here */}}
-                <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto;">
+                <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto; width: 100%;">
             {{- end }}
         </div>
     {{- else }}
