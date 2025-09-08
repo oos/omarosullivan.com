@@ -28,53 +28,27 @@
         <a href="{{ $imgdl }}" target="_blank" rel="noopener noreferrer">
     {{- end }}
 
-    {{- /* Special styling for portfolio/sketches items - just the image */}}
-    {{- if eq .Section "portfolio" }}
-        {{- if $cover -}}
-            {{/* i.e it is present in page bundle */}}
-            {{- if (and (in $processableFormats $cover.MediaType.SubType) ($responsiveImages) (eq $prod true)) }}
-                <img loading="{{$loading}}"
-                    srcset='{{- range $size := $sizes -}}
-                                {{- if (ge $cover.Width $size) }}
-                                    {{- printf "%s %s" (($cover.Resize (printf "%sx" $size)).Permalink) (printf "%sw," $size) }}
-                                {{- end }}
+    {{- /* Default styling for all content types including portfolio/sketches */}}
+    {{- if $cover -}}
+        {{/* i.e it is present in page bundle */}}
+        {{- if (and (in $processableFormats $cover.MediaType.SubType) ($responsiveImages) (eq $prod true)) }}
+            <img loading="{{$loading}}"
+                srcset='{{- range $size := $sizes -}}
+                            {{- if (ge $cover.Width $size) }}
+                                {{- printf "%s %s" (($cover.Resize (printf "%sx" $size)).Permalink) (printf "%sw," $size) }}
                             {{- end }}
-                            {{- printf "%s %dw" ($cover.Permalink) ($cover.Width) }}'
-                    src="{{ $cover.Permalink }}"
-                    sizes="(min-width: 768px) 720px, 100vw"
-                    width="{{ $cover.Width }}" height="{{ $cover.Height }}"
-                    alt="{{ $alt }}"
-                    style="display: block; max-width: 100%; height: auto;">
-            {{- else }}{{/* Unprocessable image or responsive images disabled */}}
-                <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto;">
-            {{- end }}
-        {{- else }}
-            {{- /* For absolute urls and external links, no img processing here */}}
-            <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}" style="display: block; max-width: 100%; height: auto;">
-        {{- end }}
-    {{- else }}
-        {{- /* Default styling for other content types */}}
-        {{- if $cover -}}
-            {{/* i.e it is present in page bundle */}}
-            {{- if (and (in $processableFormats $cover.MediaType.SubType) ($responsiveImages) (eq $prod true)) }}
-                <img loading="{{$loading}}"
-                    srcset='{{- range $size := $sizes -}}
-                                {{- if (ge $cover.Width $size) }}
-                                    {{- printf "%s %s" (($cover.Resize (printf "%sx" $size)).Permalink) (printf "%sw," $size) }}
-                                {{- end }}
-                            {{- end }}
-                            {{- printf "%s %dw" ($cover.Permalink) ($cover.Width) }}'
-                    src="{{ $cover.Permalink }}"
-                    sizes="(min-width: 768px) 720px, 100vw"
-                    width="{{ $cover.Width }}" height="{{ $cover.Height }}"
-                    alt="{{ $alt }}">
-            {{- else }}{{/* Unprocessable image or responsive images disabled */}}
-                <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}">
-            {{- end }}
-        {{- else }}
-            {{- /* For absolute urls and external links, no img processing here */}}
+                        {{- end }}
+                        {{- printf "%s %dw" ($cover.Permalink) ($cover.Width) }}'
+                src="{{ $cover.Permalink }}"
+                sizes="(min-width: 768px) 720px, 100vw"
+                width="{{ $cover.Width }}" height="{{ $cover.Height }}"
+                alt="{{ $alt }}">
+        {{- else }}{{/* Unprocessable image or responsive images disabled */}}
             <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}">
         {{- end }}
+    {{- else }}
+        {{- /* For absolute urls and external links, no img processing here */}}
+        <img loading="{{ $loading }}" src="{{ $imgdl }}" alt="{{ $alt }}">
     {{- end }}
 
     {{- if $addLink }}
