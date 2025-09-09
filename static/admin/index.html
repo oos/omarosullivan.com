@@ -1235,7 +1235,7 @@
           });
         }
 
-        async function createPortfolioItem(title, description, tags, content, imageFile, featured = false) {
+        async function createPortfolioItem(title, description, tags, content, imageFile, featured = false, order = null) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -1267,6 +1267,7 @@ description: "${description}"
 ${coverImage}
 ${tagsYaml}
 ${featured ? 'featured: true' : ''}
+${order !== null ? `order: ${order}` : ''}
 ---
 
 ${content}
@@ -2752,7 +2753,7 @@ description: "${description}"`;
           }
         }
 
-        async function createPoetryItem(title, description, tags, content, imagePath, featured = false) {
+        async function createPoetryItem(title, description, tags, content, imagePath, featured = false, order = null) {
           try {
           const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -2784,6 +2785,12 @@ date: ${date}
 
             if (featured) {
               frontmatter += `featured: true
+`;
+          }
+
+          // Add order field
+          if (order !== null) {
+            frontmatter += `order: ${order}
 `;
           }
 
@@ -3575,7 +3582,7 @@ ${content}
           });
         }
 
-        async function createPhotographyItem(title, description, tags, content, imagePath, featured = false) {
+        async function createPhotographyItem(title, description, tags, content, imagePath, featured = false, order = null) {
           try {
             const slug = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-').replace(/^-|-$/g, '');
             const filename = slug + '.md';
@@ -3600,6 +3607,11 @@ description: "${description}"`;
 
             if (featured) {
               frontmatter += `\nfeatured: true`;
+            }
+
+            // Add order field
+            if (order !== null) {
+              frontmatter += `\norder: ${order}`;
             }
 
             frontmatter += `\n---\n\n`;
@@ -5671,6 +5683,54 @@ tags:
           }
         }
 
+        async function getNextOrderNumber(category) {
+          try {
+            const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${category}`, {
+              headers: {
+                'Authorization': 'token ' + currentToken,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+
+            if (response.ok) {
+              const items = await response.json();
+              let maxOrder = 0;
+              
+              // Get all existing order numbers
+              for (const item of items) {
+                if (item.type === 'file' && item.name.endsWith('.md')) {
+                  try {
+                    const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${category}/${item.name}`, {
+                      headers: {
+                        'Authorization': 'token ' + currentToken,
+                        'Accept': 'application/vnd.github.v3+json'
+                      }
+                    });
+                    
+                    if (itemResponse.ok) {
+                      const itemData = await itemResponse.json();
+                      const content = decodeURIComponent(escape(atob(itemData.content)));
+                      const orderMatch = content.match(/order:\s*(\d+)/);
+                      const order = orderMatch ? parseInt(orderMatch[1]) : 999;
+                      if (order > maxOrder) {
+                        maxOrder = order;
+                      }
+                    }
+                  } catch (error) {
+                    console.error(`Error getting order for ${item.name}:`, error);
+                  }
+                }
+              }
+              
+              return maxOrder + 1;
+            }
+          } catch (error) {
+            console.error('Error getting next order number:', error);
+          }
+          
+          return 1; // Fallback to 1 if we can't determine the next order
+        }
+
         function showBulkUploadModal(category) {
           const existingModal = document.getElementById('bulk-upload-modal');
           if (existingModal) {
@@ -5749,6 +5809,9 @@ tags:
           let successCount = 0;
           let errorCount = 0;
 
+          // Get the next available order number for this category
+          let nextOrder = await getNextOrderNumber(category);
+
           for (let i = 0; i < files.length; i++) {
             try {
               const file = files[i];
@@ -5763,19 +5826,20 @@ tags:
                 content = `# ${title}\n\n${description}`;
               }
 
-              // Upload the file and create the content
+              // Upload the file and create the content with proper order
               if (category === 'photography') {
-                await createPhotographyItem(title, description, '', content, file, false, 'photography');
+                await createPhotographyItem(title, description, '', content, file, false, nextOrder);
               } else if (category === 'portfolio') {
-                await createPortfolioItem(title, description, '', content, file, false);
+                await createPortfolioItem(title, description, '', content, file, false, nextOrder);
               } else if (category === 'poetry') {
-                await createPoetryItem(title, description, content, false);
+                await createPoetryItem(title, description, '', content, false, nextOrder);
               } else if (category === 'videography') {
                 // For videos, we need to handle differently
                 alert('Video bulk upload not yet implemented. Please use individual upload for videos.');
                 continue;
               }
               
+              nextOrder++; // Increment order for next item
               successCount++;
             } catch (error) {
               console.error(`Error uploading file ${files[i].name}:`, error);
@@ -5810,6 +5874,7 @@ tags:
         window.showAddPoetryForm = showAddPoetryForm;
         window.showBulkUploadModal = showBulkUploadModal;
         window.processBulkUpload = processBulkUpload;
+        window.getNextOrderNumber = getNextOrderNumber;
         window.loadPortfolioItems = loadPortfolioItems;
         window.loadPages = loadPages;
         window.loadPhotographyItems = loadPhotographyItems;
