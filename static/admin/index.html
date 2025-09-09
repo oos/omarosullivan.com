@@ -1589,7 +1589,14 @@ ${content}
 
             if (response.ok) {
               alert('Sketch deleted successfully!');
-              await loadPortfolioItems(currentToken);
+              console.log('Sketch deleted, reloading portfolio items...');
+              try {
+                await loadPortfolioItems(currentToken);
+                console.log('Portfolio items reloaded successfully');
+              } catch (error) {
+                console.error('Error reloading portfolio items:', error);
+                alert('Sketch deleted but failed to refresh the list. Please refresh the page.');
+              }
             } else {
               const error = await response.json();
               alert('Error deleting sketch: ' + (error.message || 'Unknown error'));
@@ -2659,7 +2666,14 @@ title: "${title}"`;
 
             if (response.ok) {
               alert('Poetry post deleted successfully!');
-              await loadPoetryItems(currentToken);
+              console.log('Poetry post deleted, reloading poetry items...');
+              try {
+                await loadPoetryItems(currentToken);
+                console.log('Poetry items reloaded successfully');
+              } catch (error) {
+                console.error('Error reloading poetry items:', error);
+                alert('Poetry post deleted but failed to refresh the list. Please refresh the page.');
+              }
             } else {
               const error = await response.json();
               alert('Error deleting poetry post: ' + (error.message || 'Unknown error'));
@@ -4094,7 +4108,14 @@ description: "${description}"`;
 
             if (response.ok) {
               alert('Photo deleted successfully!');
-              await loadPhotographyItems(currentToken);
+              console.log('Photo deleted, reloading photography items...');
+              try {
+                await loadPhotographyItems(currentToken);
+                console.log('Photography items reloaded successfully');
+              } catch (error) {
+                console.error('Error reloading photography items:', error);
+                alert('Photo deleted but failed to refresh the list. Please refresh the page.');
+              }
             } else {
               const error = await response.json();
               alert('Error deleting photo: ' + (error.message || 'Unknown error'));
@@ -5668,7 +5689,14 @@ tags:
 
             if (response.ok) {
               alert('Video deleted successfully!');
-              await loadVideographyItems(currentToken);
+              console.log('Video deleted, reloading videography items...');
+              try {
+                await loadVideographyItems(currentToken);
+                console.log('Videography items reloaded successfully');
+              } catch (error) {
+                console.error('Error reloading videography items:', error);
+                alert('Video deleted but failed to refresh the list. Please refresh the page.');
+              }
             } else {
               const error = await response.json().catch(() => ({}));
               console.error('Delete video error:', response.status, error);
