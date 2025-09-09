@@ -5828,9 +5828,25 @@ tags:
 
               // Upload the file and create the content with proper order
               if (category === 'photography') {
-                await createPhotographyItem(title, description, '', content, file, false, nextOrder);
+                // Upload image first for photography
+                const imageFilename = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-') + '-' + Date.now() + '.' + file.name.split('.').pop();
+                const imageResponse = await uploadImage(file, imageFilename);
+                if (imageResponse) {
+                  const imagePath = `/uploads/${imageFilename}`;
+                  await createPhotographyItem(title, description, '', content, imagePath, false, nextOrder);
+                } else {
+                  throw new Error('Failed to upload image');
+                }
               } else if (category === 'portfolio') {
-                await createPortfolioItem(title, description, '', content, file, false, nextOrder);
+                // Upload image first for portfolio
+                const imageFilename = title.toLowerCase().replace(/[^a-z0-9\s]+/g, '').replace(/\s+/g, '-') + '-' + Date.now() + '.' + file.name.split('.').pop();
+                const imageResponse = await uploadImage(file, imageFilename);
+                if (imageResponse) {
+                  const imagePath = `/uploads/${imageFilename}`;
+                  await createPortfolioItem(title, description, '', content, imagePath, false, nextOrder);
+                } else {
+                  throw new Error('Failed to upload image');
+                }
               } else if (category === 'poetry') {
                 await createPoetryItem(title, description, '', content, false, nextOrder);
               } else if (category === 'videography') {
