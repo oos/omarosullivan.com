@@ -5714,28 +5714,177 @@ tags:
         // Bulk Upload Functions
         async function generateAITitle(file, category) {
           try {
-            // For now, we'll generate titles based on filename and category
-            // In a real implementation, you'd call an AI service like OpenAI
             const filename = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-            const cleanName = filename.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
-            // Generate category-specific titles
+            // Generate more descriptive, AI-like titles based on category and filename patterns
             switch(category) {
               case 'photography':
-                return `Photo: ${cleanName}`;
+                return generatePhotographyTitle(filename);
               case 'portfolio':
-                return `Sketch: ${cleanName}`;
+                return generatePortfolioTitle(filename);
               case 'poetry':
-                return `Poem: ${cleanName}`;
+                return generatePoetryTitle(filename);
               case 'videography':
-                return `Video: ${cleanName}`;
+                return generateVideographyTitle(filename);
               default:
-                return cleanName;
+                return filename.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             }
           } catch (error) {
             console.error('Error generating AI title:', error);
             return file.name.replace(/\.[^/.]+$/, "");
           }
+        }
+
+        function generatePhotographyTitle(filename) {
+          // Remove common Instagram-style number patterns and generate descriptive titles
+          const cleanName = filename
+            .replace(/^\d+[-_]/g, '') // Remove leading numbers with dash/underscore
+            .replace(/[-_]\d+$/g, '') // Remove trailing numbers with dash/underscore
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .trim();
+          
+          // Generate descriptive photography titles
+          const photographyTitles = [
+            'Urban Landscape',
+            'Street Photography',
+            'Portrait Study',
+            'Nature Scene',
+            'Architectural Detail',
+            'Candid Moment',
+            'Abstract Composition',
+            'Golden Hour',
+            'Black and White',
+            'Color Study',
+            'Documentary Style',
+            'Artistic Vision',
+            'Emotional Capture',
+            'Visual Story',
+            'Creative Perspective'
+          ];
+          
+          // If the filename is mostly numbers, use a random descriptive title
+          if (/^\d+$/.test(filename.replace(/[-_]/g, ''))) {
+            return photographyTitles[Math.floor(Math.random() * photographyTitles.length)];
+          }
+          
+          // If we have a meaningful name, use it with a photography descriptor
+          if (cleanName.length > 3) {
+            return cleanName;
+          }
+          
+          return photographyTitles[Math.floor(Math.random() * photographyTitles.length)];
+        }
+
+        function generatePortfolioTitle(filename) {
+          const cleanName = filename
+            .replace(/^\d+[-_]/g, '')
+            .replace(/[-_]\d+$/g, '')
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .trim();
+          
+          const portfolioTitles = [
+            'Sketch Study',
+            'Artistic Drawing',
+            'Creative Sketch',
+            'Pencil Work',
+            'Conceptual Art',
+            'Visual Design',
+            'Illustration',
+            'Artistic Expression',
+            'Creative Process',
+            'Design Study',
+            'Artistic Vision',
+            'Creative Concept',
+            'Visual Art',
+            'Design Sketch',
+            'Artistic Creation'
+          ];
+          
+          if (/^\d+$/.test(filename.replace(/[-_]/g, ''))) {
+            return portfolioTitles[Math.floor(Math.random() * portfolioTitles.length)];
+          }
+          
+          if (cleanName.length > 3) {
+            return cleanName;
+          }
+          
+          return portfolioTitles[Math.floor(Math.random() * portfolioTitles.length)];
+        }
+
+        function generatePoetryTitle(filename) {
+          const cleanName = filename
+            .replace(/^\d+[-_]/g, '')
+            .replace(/[-_]\d+$/g, '')
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .trim();
+          
+          const poetryTitles = [
+            'Reflections',
+            'Inner Thoughts',
+            'Emotional Journey',
+            'Poetic Expression',
+            'Words of Wisdom',
+            'Creative Verse',
+            'Artistic Words',
+            'Poetic Vision',
+            'Emotional Depth',
+            'Creative Writing',
+            'Poetic Flow',
+            'Artistic Language',
+            'Emotional Resonance',
+            'Poetic Beauty',
+            'Creative Expression'
+          ];
+          
+          if (/^\d+$/.test(filename.replace(/[-_]/g, ''))) {
+            return poetryTitles[Math.floor(Math.random() * poetryTitles.length)];
+          }
+          
+          if (cleanName.length > 3) {
+            return cleanName;
+          }
+          
+          return poetryTitles[Math.floor(Math.random() * poetryTitles.length)];
+        }
+
+        function generateVideographyTitle(filename) {
+          const cleanName = filename
+            .replace(/^\d+[-_]/g, '')
+            .replace(/[-_]\d+$/g, '')
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .trim();
+          
+          const videographyTitles = [
+            'Creative Video',
+            'Visual Story',
+            'Motion Art',
+            'Cinematic Piece',
+            'Video Production',
+            'Creative Content',
+            'Visual Narrative',
+            'Motion Graphics',
+            'Video Art',
+            'Creative Film',
+            'Visual Expression',
+            'Motion Design',
+            'Video Story',
+            'Creative Motion',
+            'Visual Content'
+          ];
+          
+          if (/^\d+$/.test(filename.replace(/[-_]/g, ''))) {
+            return videographyTitles[Math.floor(Math.random() * videographyTitles.length)];
+          }
+          
+          if (cleanName.length > 3) {
+            return cleanName;
+          }
+          
+          return videographyTitles[Math.floor(Math.random() * videographyTitles.length)];
         }
 
         async function getNextOrderNumber(category) {
@@ -5834,17 +5983,33 @@ tags:
               const title = await generateAITitle(file, category);
               
               const itemDiv = document.createElement('div');
-              itemDiv.style.cssText = 'margin-bottom:15px;padding:10px;border:1px solid #eee;border-radius:4px;';
-              itemDiv.innerHTML = `
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <div style="flex:1;">
-                    <strong>${file.name}</strong>
-                    <br>
-                    <small style="color:#666;">${(file.size / 1024).toFixed(1)} KB</small>
+              itemDiv.style.cssText = 'margin-bottom:15px;padding:15px;border:1px solid #eee;border-radius:8px;background:#fafafa;';
+              
+              // Create thumbnail for images
+              let thumbnailHtml = '';
+              if (category === 'photography' || category === 'portfolio') {
+                const thumbnailUrl = URL.createObjectURL(file);
+                thumbnailHtml = `
+                  <div style="flex:0 0 120px;margin-right:15px;">
+                    <img src="${thumbnailUrl}" alt="Preview" style="width:120px;height:80px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">
                   </div>
-                  <div style="flex:2;">
-                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Title:</label>
-                    <input type="text" value="${title}" style="width:100%;padding:5px;border:1px solid #ddd;border-radius:3px;" data-file-index="${i}">
+                `;
+              }
+              
+              itemDiv.innerHTML = `
+                <div style="display:flex;align-items:flex-start;gap:15px;">
+                  ${thumbnailHtml}
+                  <div style="flex:1;">
+                    <div style="margin-bottom:10px;">
+                      <strong style="font-size:14px;color:#333;">${file.name}</strong>
+                      <br>
+                      <small style="color:#666;">${(file.size / 1024).toFixed(1)} KB</small>
+                    </div>
+                    <div>
+                      <label style="display:block;margin-bottom:5px;font-weight:bold;font-size:12px;color:#555;">AI Generated Title:</label>
+                      <input type="text" value="${title}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" data-file-index="${i}">
+                      <small style="color:#888;font-size:11px;">You can edit this title before uploading</small>
+                    </div>
                   </div>
                 </div>
               `;
