@@ -71,26 +71,8 @@
     <p style="text-align: center; margin: 0 auto;">{{ .Description }}</p>
   </div>
   {{- end }}
-  {{- if .Params.video_url }}
-  <div class="video-cover" style="position: relative; width: 100%; text-align: center; margin: 0; padding: 0;">
-    {{- if eq .Params.video_type "youtube" }}
-      {{- $videoId := index (split .Params.video_url "v=") 1 }}
-      {{- $videoId = index (split $videoId "&") 0 }}
-      <iframe width="100%" height="500" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
-    {{- else if eq .Params.video_type "vimeo" }}
-      {{- $videoId := index (split .Params.video_url "vimeo.com/") 1 }}
-      {{- $videoId = index (split $videoId "?") 0 }}
-      <iframe width="100%" height="500" src="https://player.vimeo.com/video/{{ $videoId }}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border-radius: 8px; max-width: 100%;"></iframe>
-    {{- else if eq .Params.video_type "uploaded" }}
-      <video width="100%" height="500" controls style="border-radius: 8px; max-width: 100%;">
-        <source src="{{ .Params.video_url }}" type="video/mp4">
-        <source src="{{ .Params.video_url }}" type="video/webm">
-        <source src="{{ .Params.video_url }}" type="video/mov">
-        Your browser does not support the video tag.
-      </video>
-    {{- end }}
-  </div>
-  {{- end }}
+  {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
+  {{- partial "cover_video.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
