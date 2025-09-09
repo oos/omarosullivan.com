@@ -12,6 +12,34 @@
     letter-spacing: -0.5px !important;
 }
 
+/* Unified video asset panel styling */
+.video-cover {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative;
+    text-align: center;
+}
+
+.video-cover iframe,
+.video-cover video {
+    width: 100% !important;
+    height: 500px !important;
+    border-radius: 8px !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Responsive video sizing */
+@media (max-width: 768px) {
+    .video-cover iframe,
+    .video-cover video {
+        height: 300px !important;
+    }
+}
+
 /* Alternative handwritten font option (commented out - uncomment to try) */
 /* .logo a {
     font-family: 'Caveat', cursive !important;
