@@ -3,13 +3,13 @@
 /* Import handwritten font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
 
-/* Logo styling - handwritten font with burnt orange color */
+/* Logo styling - original font with burnt orange color */
 .logo a {
     color: #CC5500 !important;
-    font-family: 'Kalam', cursive !important;
-    font-weight: 400 !important;
-    font-size: 1.1em !important;
-    letter-spacing: 0.5px !important;
+    font-family: inherit !important;
+    font-weight: inherit !important;
+    font-size: inherit !important;
+    letter-spacing: inherit !important;
 }
 
 /* Alternative handwritten font option (commented out - uncomment to try) */
