@@ -66,13 +66,13 @@
       {{- end }}
     </h2>
   </header>
+  {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
+  {{- partial "cover_video.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
   {{- if .Description }}
   <div class="entry-content" style="text-align: center; width: 100%; margin: 0 0 10px 0;">
     <p style="text-align: center; margin: 0 auto;">{{ .Description }}</p>
   </div>
   {{- end }}
-  {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
-  {{- partial "cover_video.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
 {{- end }}
