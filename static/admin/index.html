@@ -652,7 +652,12 @@
               log('[api] Loaded ' + items.length + ' sketches', 'token');
               
               // Show loading indicator
-              portfolioList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Loading sketches...</div>';
+              if (portfolioList) {
+                portfolioList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Loading sketches...</div>';
+              } else {
+                console.error('portfolioList element not found!');
+                return [];
+              }
               
               // Filter out non-markdown files and prepare for parallel loading
               const markdownItems = items.filter(item => item.name.endsWith('.md'));
@@ -835,6 +840,11 @@
             return [];
           } finally {
             window.isLoadingPortfolio = false;
+            // Ensure loading indicator is cleared even if there's an error
+            const portfolioList = document.getElementById('portfolio-list');
+            if (portfolioList && portfolioList.innerHTML.includes('Loading sketches')) {
+              portfolioList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading sketches. Please refresh the page.</div>';
+            }
           }
         }
 
