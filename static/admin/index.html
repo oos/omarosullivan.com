@@ -633,13 +633,13 @@
 
         async function loadPortfolioItems(token) {
           if (window.isLoadingPortfolio) {
-            log('[api] Already loading sketches, skipping...', 'token');
+            console.log('[api] Already loading sketches, skipping...');
             return;
           }
           
           window.isLoadingPortfolio = true;
           try {
-            log('[api] Loading sketches...', 'token');
+            console.log('[api] Loading sketches...');
             const response = await fetch('https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio', {
               headers: {
                 'Authorization': 'token ' + token,
@@ -649,7 +649,7 @@
 
             if (response.ok) {
               const items = await response.json();
-              log('[api] Loaded ' + items.length + ' sketches', 'token');
+              console.log('[api] Loaded', items.length, 'sketches');
               
               // Show loading indicator
               if (portfolioList) {
@@ -747,7 +747,9 @@
                 });
               
               // Wait for all file contents to load
+              console.log('[debug] Waiting for', filePromises.length, 'file promises to complete...');
               const fileResults = await Promise.all(filePromises);
+              console.log('[debug] File promises completed, got', fileResults.length, 'results');
               
               // Update the items with the loaded data
               fileResults.forEach(result => {
@@ -776,6 +778,7 @@
               });
               
               // Now display the sorted items
+              console.log('[debug] Displaying', itemsWithMetadata.length, 'sorted portfolio items');
               for (const itemData of itemsWithMetadata) {
                 if (itemData.isSectionPage) {
                   itemData.div.innerHTML = `
@@ -836,7 +839,8 @@
               return [];
             }
                       } catch (e) {
-            log('[api] Error loading sketches: ' + e.message, 'error');
+            console.error('[api] Error loading sketches:', e);
+            console.error('[api] Error stack:', e.stack);
             return [];
           } finally {
             window.isLoadingPortfolio = false;
@@ -4486,7 +4490,7 @@ description: "${description}"`;
 
         window.updatePortfolioOrder = async function(filename, sha, newOrder) {
           try {
-            // First, get all portfolio items to check for conflicts
+            // First, get all portfolio items
             const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
@@ -4501,40 +4505,11 @@ description: "${description}"`;
             
             const items = await listResponse.json();
             const itemsToUpdate = [];
+            const itemsWithOrders = [];
             
-            // Get the current item's content
-            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${filename}`, {
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            
-            if (!currentItemResponse.ok) {
-              alert('Error fetching current item');
-              return;
-            }
-            
-            const currentItemData = await currentItemResponse.json();
-            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
-            
-            // Update the current item
-            let updatedContent = currentContent;
-            if (currentContent.includes('order:')) {
-              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
-            } else {
-              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
-            }
-            
-            itemsToUpdate.push({
-              filename: filename,
-              content: updatedContent,
-              sha: currentItemData.sha
-            });
-            
-            // Check other items for conflicts and increment them
+            // Load all items and their current orders
             for (const item of items) {
-              if (item.name === filename || item.name === '_index.md') continue;
+              if (item.name === '_index.md') continue;
               
               const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/portfolio/${item.name}`, {
                 headers: {
@@ -4549,21 +4524,50 @@ description: "${description}"`;
                 
                 // Extract current order
                 const orderMatch = itemContent.match(/order:\s*(\d+)/);
-                if (orderMatch) {
-                  const currentOrder = parseInt(orderMatch[1]);
-                  if (currentOrder >= newOrder) {
-                    // Increment this item's order
-                    const newItemOrder = currentOrder + 1;
-                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
-                    
-                    itemsToUpdate.push({
-                      filename: item.name,
-                      content: updatedItemContent,
-                      sha: itemData.sha
-                    });
-                  }
-                }
+                const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                
+                itemsWithOrders.push({
+                  filename: item.name,
+                  content: itemContent,
+                  sha: itemData.sha,
+                  currentOrder: currentOrder,
+                  isCurrentItem: item.name === filename
+                });
               }
+            }
+            
+            // Sort items by current order
+            itemsWithOrders.sort((a, b) => a.currentOrder - b.currentOrder);
+            
+            // Renumber all items starting from 1
+            let orderCounter = 1;
+            for (const item of itemsWithOrders) {
+              let newItemOrder;
+              if (item.isCurrentItem) {
+                // For the item being edited, use the requested order
+                newItemOrder = parseInt(newOrder);
+              } else {
+                // For other items, assign sequential numbers, skipping the edited item's position
+                if (orderCounter >= parseInt(newOrder)) {
+                  orderCounter++; // Skip the position where the edited item will be
+                }
+                newItemOrder = orderCounter;
+                orderCounter++;
+              }
+              
+              // Update the order in the content
+              let updatedContent = item.content;
+              if (updatedContent.includes('order:')) {
+                updatedContent = updatedContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+              } else {
+                updatedContent = updatedContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newItemOrder}`);
+              }
+              
+              itemsToUpdate.push({
+                filename: item.filename,
+                content: updatedContent,
+                sha: item.sha
+              });
             }
             
             // Update all items
@@ -4596,7 +4600,7 @@ description: "${description}"`;
 
         window.updatePoetryOrder = async function(filename, sha, newOrder) {
           try {
-            // First, get all poetry items to check for conflicts
+            // First, get all poetry items
             const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
@@ -4611,40 +4615,11 @@ description: "${description}"`;
             
             const items = await listResponse.json();
             const itemsToUpdate = [];
+            const itemsWithOrders = [];
             
-            // Get the current item's content
-            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${filename}`, {
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            
-            if (!currentItemResponse.ok) {
-              alert('Error fetching current item');
-              return;
-            }
-            
-            const currentItemData = await currentItemResponse.json();
-            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
-            
-            // Update the current item
-            let updatedContent = currentContent;
-            if (currentContent.includes('order:')) {
-              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
-            } else {
-              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
-            }
-            
-            itemsToUpdate.push({
-              filename: filename,
-              content: updatedContent,
-              sha: currentItemData.sha
-            });
-            
-            // Check other items for conflicts and increment them
+            // Load all items and their current orders
             for (const item of items) {
-              if (item.name === filename || item.name === '_index.md') continue;
+              if (item.name === '_index.md') continue;
               
               const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/poetry/${item.name}`, {
                 headers: {
@@ -4659,21 +4634,50 @@ description: "${description}"`;
                 
                 // Extract current order
                 const orderMatch = itemContent.match(/order:\s*(\d+)/);
-                if (orderMatch) {
-                  const currentOrder = parseInt(orderMatch[1]);
-                  if (currentOrder >= newOrder) {
-                    // Increment this item's order
-                    const newItemOrder = currentOrder + 1;
-                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
-                    
-                    itemsToUpdate.push({
-                      filename: item.name,
-                      content: updatedItemContent,
-                      sha: itemData.sha
-                    });
-                  }
-                }
+                const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                
+                itemsWithOrders.push({
+                  filename: item.name,
+                  content: itemContent,
+                  sha: itemData.sha,
+                  currentOrder: currentOrder,
+                  isCurrentItem: item.name === filename
+                });
               }
+            }
+            
+            // Sort items by current order
+            itemsWithOrders.sort((a, b) => a.currentOrder - b.currentOrder);
+            
+            // Renumber all items starting from 1
+            let orderCounter = 1;
+            for (const item of itemsWithOrders) {
+              let newItemOrder;
+              if (item.isCurrentItem) {
+                // For the item being edited, use the requested order
+                newItemOrder = parseInt(newOrder);
+              } else {
+                // For other items, assign sequential numbers, skipping the edited item's position
+                if (orderCounter >= parseInt(newOrder)) {
+                  orderCounter++; // Skip the position where the edited item will be
+                }
+                newItemOrder = orderCounter;
+                orderCounter++;
+              }
+              
+              // Update the order in the content
+              let updatedContent = item.content;
+              if (updatedContent.includes('order:')) {
+                updatedContent = updatedContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+              } else {
+                updatedContent = updatedContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newItemOrder}`);
+              }
+              
+              itemsToUpdate.push({
+                filename: item.filename,
+                content: updatedContent,
+                sha: item.sha
+              });
             }
             
             // Update all items
@@ -4767,7 +4771,7 @@ description: "${description}"`;
 
         window.updateVideographyOrder = async function(filename, sha, newOrder) {
           try {
-            // First, get all videography items to check for conflicts
+            // First, get all videography items
             const listResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/`, {
               headers: {
                 'Authorization': 'token ' + currentToken,
@@ -4782,40 +4786,11 @@ description: "${description}"`;
             
             const items = await listResponse.json();
             const itemsToUpdate = [];
+            const itemsWithOrders = [];
             
-            // Get the current item's content
-            const currentItemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${filename}`, {
-              headers: {
-                'Authorization': 'token ' + currentToken,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            
-            if (!currentItemResponse.ok) {
-              alert('Error fetching current item');
-              return;
-            }
-            
-            const currentItemData = await currentItemResponse.json();
-            const currentContent = decodeURIComponent(escape(atob(currentItemData.content)));
-            
-            // Update the current item
-            let updatedContent = currentContent;
-            if (currentContent.includes('order:')) {
-              updatedContent = currentContent.replace(/order:\s*\d+/, `order: ${newOrder}`);
-            } else {
-              updatedContent = currentContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newOrder}`);
-            }
-            
-            itemsToUpdate.push({
-              filename: filename,
-              content: updatedContent,
-              sha: currentItemData.sha
-            });
-            
-            // Check other items for conflicts and increment them
+            // Load all items and their current orders
             for (const item of items) {
-              if (item.name === filename || item.name === '_index.md') continue;
+              if (item.name === '_index.md') continue;
               
               const itemResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/videography/${item.name}`, {
                 headers: {
@@ -4830,21 +4805,50 @@ description: "${description}"`;
                 
                 // Extract current order
                 const orderMatch = itemContent.match(/order:\s*(\d+)/);
-                if (orderMatch) {
-                  const currentOrder = parseInt(orderMatch[1]);
-                  if (currentOrder >= newOrder) {
-                    // Increment this item's order
-                    const newItemOrder = currentOrder + 1;
-                    let updatedItemContent = itemContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
-                    
-                    itemsToUpdate.push({
-                      filename: item.name,
-                      content: updatedItemContent,
-                      sha: itemData.sha
-                    });
-                  }
-                }
+                const currentOrder = orderMatch ? parseInt(orderMatch[1]) : 999;
+                
+                itemsWithOrders.push({
+                  filename: item.name,
+                  content: itemContent,
+                  sha: itemData.sha,
+                  currentOrder: currentOrder,
+                  isCurrentItem: item.name === filename
+                });
               }
+            }
+            
+            // Sort items by current order
+            itemsWithOrders.sort((a, b) => a.currentOrder - b.currentOrder);
+            
+            // Renumber all items starting from 1
+            let orderCounter = 1;
+            for (const item of itemsWithOrders) {
+              let newItemOrder;
+              if (item.isCurrentItem) {
+                // For the item being edited, use the requested order
+                newItemOrder = parseInt(newOrder);
+              } else {
+                // For other items, assign sequential numbers, skipping the edited item's position
+                if (orderCounter >= parseInt(newOrder)) {
+                  orderCounter++; // Skip the position where the edited item will be
+                }
+                newItemOrder = orderCounter;
+                orderCounter++;
+              }
+              
+              // Update the order in the content
+              let updatedContent = item.content;
+              if (updatedContent.includes('order:')) {
+                updatedContent = updatedContent.replace(/order:\s*\d+/, `order: ${newItemOrder}`);
+              } else {
+                updatedContent = updatedContent.replace(/(title:\s*[^\n]+)/, `$1\norder: ${newItemOrder}`);
+              }
+              
+              itemsToUpdate.push({
+                filename: item.filename,
+                content: updatedContent,
+                sha: item.sha
+              });
             }
             
             // Update all items
