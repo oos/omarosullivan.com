@@ -5593,6 +5593,7 @@ tags:
 
         async function deleteVideographyItem(filename, sha) {
           try {
+            console.log('deleteVideographyItem called with:', { filename, sha });
             if (!confirm(`Are you sure you want to delete the video "${filename}"? This action cannot be undone.`)) {
               return;
             }
@@ -5612,9 +5613,11 @@ tags:
 
             if (response.ok) {
               alert('Video deleted successfully!');
-              loadVideographyItems(currentToken);
+              await loadVideographyItems(currentToken);
             } else {
-              alert('Failed to delete video');
+              const error = await response.json().catch(() => ({}));
+              console.error('Delete video error:', response.status, error);
+              alert('Error deleting video: ' + (error.message || 'Unknown error'));
             }
           } catch (e) {
             alert('Error deleting video: ' + e.message);
