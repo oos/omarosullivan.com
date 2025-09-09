@@ -2496,10 +2496,19 @@ title: "${title}"`;
               return [];
             } else {
               log('[api] Failed to load poetry items: ' + response.status, 'error');
+              const poetryList = document.getElementById('poetry-list');
+              if (poetryList) {
+                poetryList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading poetry. Please refresh the page.</div>';
+              }
               return [];
             }
           } catch (e) {
             log('[api] Error loading poetry items: ' + e.message, 'error');
+            console.error('[api] Poetry loading error:', e);
+            const poetryList = document.getElementById('poetry-list');
+            if (poetryList) {
+              poetryList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading poetry. Please refresh the page.</div>';
+            }
             return [];
           } finally {
             window.isLoadingPoetry = false;
@@ -3840,9 +3849,18 @@ description: "${description}"`;
               clearInvalidTokens();
             } else {
               log(`[api] Failed to load photography items: ${response.status}`, 'error');
+              const photographyList = document.getElementById('photography-list');
+              if (photographyList) {
+                photographyList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading photography. Please refresh the page.</div>';
+              }
             }
           } catch (e) {
             log(`[api] Error loading photography items: ${e.message}`, 'error');
+            console.error('[api] Photography loading error:', e);
+            const photographyList = document.getElementById('photography-list');
+            if (photographyList) {
+              photographyList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading photography. Please refresh the page.</div>';
+            }
           } finally {
             window.isLoadingPhotography = false;
           }
@@ -5399,9 +5417,18 @@ tags:
               clearInvalidTokens();
             } else {
               log(`[api] Failed to load videography items: ${response.status}`, 'error');
+              const videographyList = document.getElementById('videography-list');
+              if (videographyList) {
+                videographyList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading videos. Please refresh the page.</div>';
+              }
             }
           } catch (e) {
             log(`[api] Error loading videography items: ${e.message}`, 'error');
+            console.error('[api] Videography loading error:', e);
+            const videographyList = document.getElementById('videography-list');
+            if (videographyList) {
+              videographyList.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading videos. Please refresh the page.</div>';
+            }
           } finally {
             window.isLoadingVideography = false;
           }
