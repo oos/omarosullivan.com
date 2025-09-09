@@ -777,6 +777,9 @@
                 return a.displayTitle.localeCompare(b.displayTitle);
               });
               
+              // Clear the loading indicator before populating content
+              portfolioList.innerHTML = '';
+              
               // Now display the sorted items
               console.log('[debug] Displaying', itemsWithMetadata.length, 'sorted portfolio items');
               for (const itemData of itemsWithMetadata) {
@@ -2445,6 +2448,9 @@ title: "${title}"`;
                 return a.displayTitle.localeCompare(b.displayTitle);
               });
               
+              // Clear the loading indicator before populating content
+              poetryList.innerHTML = '';
+              
               // Now display the sorted items
               for (const itemData of itemsWithMetadata) {
                 if (itemData.isSectionPage) {
@@ -3799,6 +3805,9 @@ description: "${description}"`;
                   // Finally sort by title alphabetically
                   return a.displayTitle.localeCompare(b.displayTitle);
                 });
+                
+                // Clear the loading indicator before populating content
+                photographyList.innerHTML = '';
                 
                 // Display items in the correct order
                 for (const item of itemsWithMetadata) {
@@ -5370,6 +5379,9 @@ tags:
                   // Finally sort by title alphabetically
                   return a.displayTitle.localeCompare(b.displayTitle);
                 });
+                
+                // Clear the loading indicator before populating content
+                videographyList.innerHTML = '';
                 
                 // Display items in the correct order
                 for (const item of itemsWithMetadata) {
