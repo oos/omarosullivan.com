@@ -3694,9 +3694,10 @@ description: "${description}"`;
                         const featuredDateMatch = content.match(/featured_date:\s*([^\n]+)/);
                         const featuredDate = featuredDateMatch ? featuredDateMatch[1].trim() : null;
                         
-                        // Check for order field
-                        const orderMatch = content.match(/order:\s*(\d+)/);
+                        // Check for order field - make regex more flexible
+                        const orderMatch = content.match(/order:\s*(\d+)/m);
                         const order = orderMatch ? parseInt(orderMatch[1]) : 999;
+                        console.log(`[debug] Order parsing for ${item.name}:`, { orderMatch, order, content: content.substring(0, 200) });
                         
                         return {
                           ...item,
@@ -3768,7 +3769,8 @@ description: "${description}"`;
                     const displayTitle = item.displayTitle;
                     const isFeatured = item.isFeatured;
                     const featuredDate = item.featuredDate;
-                    const currentOrder = item.order || 999;
+                    const currentOrder = item.order !== undefined ? item.order : 999;
+                    console.log(`[debug] Display order for ${item.name}:`, { order: item.order, currentOrder });
                     
                     // Format featured date for display
                     let featuredDateDisplay = '';
