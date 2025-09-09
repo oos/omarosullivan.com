@@ -10,7 +10,7 @@ title: "omaR"
   <p>I'm currently exploring the intersection of tech + creativity... building software products while also pursuing the arts (sketches, photography, music, writing, etc).</p>
 </div>
 
-<div>
+<div style="margin-top: 40px;">
 <h3>Recent Additions to the website...</h3>
 </div>
 
