@@ -9,7 +9,6 @@ body {
 
 {{- if not .IsHome | and .Title }}
 <header class="page-header">
-  {{- partial "breadcrumbs.html" . }}
   <h1>
     {{- .Title -}}
   </h1>
@@ -22,15 +21,6 @@ body {
 {{- end }}
 
 <article class="post">
-  <header class="post-header">
-    {{- partial "back_button.html" . }}
-    <h1 class="post-title">{{ .Title }}</h1>
-    {{- if .Description }}
-    <div class="post-description">
-      {{ .Description }}
-    </div>
-    {{- end }}
-  </header>
 
   {{- if not (.Param "hideMeta") }}
   <footer class="post-meta">
