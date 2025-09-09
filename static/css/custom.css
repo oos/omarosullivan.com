@@ -1,12 +1,12 @@
 /* Custom styling for omarosullivan.com */
 
 /* Import handwritten font from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 
 /* Logo styling - handwritten font with burnt orange color and bigger font */
 .logo a {
     color: #CC5500 !important;
-    font-family: 'Kalam', cursive !important;
+    font-family: 'Shadows Into Light', cursive !important;
     font-weight: 400 !important;
     font-size: 1.4em !important;
     letter-spacing: 0.5px !important;
