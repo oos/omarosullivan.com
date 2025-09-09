@@ -3,12 +3,12 @@
 /* Import handwritten font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
 
-/* Logo styling - original font with burnt orange color */
+/* Logo styling - original font with burnt orange color and bigger font */
 .logo a {
     color: #CC5500 !important;
     font-family: inherit !important;
     font-weight: inherit !important;
-    font-size: inherit !important;
+    font-size: 1.4em !important;
     letter-spacing: inherit !important;
 }
 

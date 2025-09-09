@@ -666,8 +666,8 @@
               const itemsWithMetadata = [];
               
               for (const item of markdownItems) {
-                const div = document.createElement('div');
-                div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
+                  const div = document.createElement('div');
+                  div.style.cssText = 'border:1px solid #ddd;padding:10px;margin:5px;border-radius:3px;';
                 
                 // Handle _index.md files differently (these are section pages, not individual portfolio items)
                 if (item.name === '_index.md') {
@@ -807,6 +807,10 @@
                           <strong>${displayTitle}</strong>
                           ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage' + featuredDateDisplay + '</span>' : ''}
                         </label>
+                        <div style="display:flex;gap:5px;margin-left:10px;">
+                          <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                          <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        </div>
                         <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                           <label style="font-size:12px;color:#666;">Order:</label>
                           <div style="display:inline-flex;align-items:center;gap:5px;">
@@ -814,10 +818,6 @@
                             <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePortfolioOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
                           </div>
                         </div>
-                      </div>
-                      <div style="display:flex;gap:5px;">
-                        <button onclick="editPortfolioItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                        <button onclick="deletePortfolioItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                       </div>
                     </div>
                   `;
@@ -2466,6 +2466,10 @@ title: "${title}"`;
                           <strong>${displayTitle}</strong>
                           ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage' + featuredDateDisplay + '</span>' : ''}
                         </label>
+                        <div style="display:flex;gap:5px;margin-left:10px;">
+                          <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                          <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                        </div>
                         <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                           <label style="font-size:12px;color:#666;">Order:</label>
                           <div style="display:inline-flex;align-items:center;gap:5px;">
@@ -2473,10 +2477,6 @@ title: "${title}"`;
                             <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePoetryOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
                           </div>
                         </div>
-                      </div>
-                      <div style="display:flex;gap:5px;">
-                        <button onclick="editPoetryItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                        <button onclick="deletePoetryItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                       </div>
                     </div>
                   `;
@@ -3801,6 +3801,10 @@ description: "${description}"`;
                             <strong>${displayTitle}</strong>
                             ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage' + featuredDateDisplay + '</span>' : ''}
                           </label>
+                          <div style="display:flex;gap:5px;margin-left:10px;">
+                            <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
                           <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                             <label style="font-size:12px;color:#666;">Order:</label>
                             <div style="display:inline-flex;align-items:center;gap:5px;">
@@ -3808,10 +3812,6 @@ description: "${description}"`;
                               <span class="save-icon" style="display:none;color:#28a745;cursor:pointer;font-size:16px;font-weight:bold;" onclick="updatePhotographyOrder('${item.name}', '${item.sha}', this.previousElementSibling.value)">✓</span>
                             </div>
                           </div>
-                        </div>
-                        <div style="display:flex;gap:5px;">
-                          <button onclick="editPhotographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                          <button onclick="deletePhotographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                         </div>
                       </div>
                     `;
@@ -5356,6 +5356,10 @@ tags:
                             <strong>${displayTitle}</strong>
                             ${isFeatured ? '<span style="background:#28a745;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;">Featured on Homepage' + featuredDateDisplay + '</span>' : ''}
                           </label>
+                          <div style="display:flex;gap:5px;margin-left:10px;">
+                            <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
+                            <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
+                          </div>
                           <div style="display:flex;align-items:center;gap:5px;margin-left:20px;">
                             <label style="font-size:12px;color:#666;">Order Field:</label>
                             <div style="display:inline-flex;align-items:center;gap:5px;">
@@ -5367,10 +5371,6 @@ tags:
                             <label style="font-size:12px;color:#666;">Date:</label>
                             <span style="font-size:12px;color:#333;">${date}</span>
                           </div>
-                        </div>
-                        <div style="display:flex;gap:5px;">
-                          <button onclick="editVideographyItem('${item.name}', '${item.sha}')" style="background:#007cba;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Edit</button>
-                          <button onclick="deleteVideographyItem('${item.name}', '${item.sha}')" style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:3px;cursor:pointer;">Delete</button>
                         </div>
                       </div>
                     `;
