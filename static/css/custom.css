@@ -48,3 +48,11 @@ body.dark #menu .active {
     border-bottom: 2px solid #CC5500 !important;
     color: #CC5500 !important;
 }
+
+/* Make videos in entry-cover match image width exactly */
+.entry-cover iframe,
+.entry-cover video {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: var(--radius);
+}
