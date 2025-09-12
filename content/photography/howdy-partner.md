@@ -1,9 +1,9 @@
 ---
-title: "This here mountain ain't big enough for the two of us"
-date: 2025-09-04
+title: "Why the long face?"
+date: 2025-09-12
 description: ""
+order: 19
 cover:
   image: "/uploads/photo-1756994022972.jpg"
-order: 19
 ---
 
