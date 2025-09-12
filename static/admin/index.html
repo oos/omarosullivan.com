@@ -462,6 +462,34 @@
             }
           });
 
+          // Handle image uploads in Quill editor
+          const toolbar = quill.getModule('toolbar');
+          toolbar.addHandler('image', function() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+
+            input.onchange = async function() {
+              const file = input.files[0];
+              if (file) {
+                try {
+                  // Upload the image first
+                  const imagePath = await uploadImage(file);
+                  if (imagePath) {
+                    // Insert the image into the editor
+                    const range = quill.getSelection();
+                    quill.insertEmbed(range.index, 'image', imagePath);
+                    quill.setSelection(range.index + 1);
+                  }
+                } catch (error) {
+                  console.error('Error uploading image:', error);
+                  alert('Error uploading image: ' + error.message);
+                }
+              }
+            };
+          });
+
           // Set initial content
           if (initialContent) {
             // Set content in both editors
@@ -1964,9 +1992,12 @@ ${content}
             
             document.getElementById('edit-page-form').addEventListener('submit', async (e) => {
               e.preventDefault();
+              console.log('Form submission started for page:', pageName);
               const newTitle = document.getElementById('edit-page-title').value;
               const newDescription = document.getElementById('edit-page-description').value;
               const newContent = contentEditor ? contentEditor.getContent() : document.getElementById('edit-page-content').value;
+              console.log('Content length:', newContent.length);
+              console.log('Content preview:', newContent.substring(0, 200) + '...');
               
               // Handle image upload and dimensions for all pages
               let imagePath = null;
@@ -2007,6 +2038,7 @@ ${content}
 
         async function updatePage(pageName, sha, title, description, content, imagePath = null, imageWidth = null, imageHeight = null) {
           try {
+            console.log('updatePage called with:', { pageName, sha, title, description, contentLength: content.length, imagePath, imageWidth, imageHeight });
             // Determine if this is a section (directory) or individual page
             const isSection = ['photography', 'poetry', 'portfolio'].includes(pageName);
             const filePath = isSection ? `${pageName}/_index.md` : `${pageName}.md`;
