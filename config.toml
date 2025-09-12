@@ -45,6 +45,11 @@ theme = "PaperMod"
   weight = 5
 
 [[menu.main]]
+  name = "Software"
+  url = "/software/"
+  weight = 8
+
+[[menu.main]]
   name = "Sketches"
   url = "/portfolio/"
   weight = 10
