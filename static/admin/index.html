@@ -1475,8 +1475,10 @@ ${content}
               await updatePortfolioItem(filename, sha, newTitle, newDescription, newTags, newContent, imageFile, newFeatured);
               
               if (imageFile) {
-                uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
-                uploadStatus.style.color = '#28a745';
+                if (!window.isBulkUpload) {
+                  uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
+                  uploadStatus.style.color = '#28a745';
+                }
               }
               
               form.remove();
@@ -1968,11 +1970,15 @@ ${content}
                 const uploadStatus = document.getElementById('edit-page-upload-status');
                 if (imageFile) {
                   try {
-                    uploadStatus.textContent = `Uploading ${imageFile.name}...`;
-                    uploadStatus.style.display = 'block';
+                    if (!window.isBulkUpload) {
+                      uploadStatus.textContent = `Uploading ${imageFile.name}...`;
+                      uploadStatus.style.display = 'block';
+                    }
                     imagePath = await uploadImage(imageFile);
-                    uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
-                    uploadStatus.style.color = '#28a745';
+                    if (!window.isBulkUpload) {
+                      uploadStatus.textContent = `✓ ${imageFile.name} uploaded successfully`;
+                      uploadStatus.style.color = '#28a745';
+                    }
                   } catch (error) {
                     uploadStatus.textContent = `✗ Upload failed: ${error.message}`;
                     uploadStatus.style.color = '#dc3545';
@@ -6146,6 +6152,9 @@ tags:
           uploadBtn.disabled = true;
           uploadBtn.textContent = 'Uploading...';
           
+          // Set flag to suppress individual success messages during bulk upload
+          window.isBulkUpload = true;
+          
           let successCount = 0;
           let errorCount = 0;
 
@@ -6210,6 +6219,9 @@ tags:
             }
           }
 
+          // Clear bulk upload flag
+          window.isBulkUpload = false;
+          
           // Show results
           if (errorCount === 0) {
             alert(`Successfully uploaded ${successCount} files!`);
