@@ -1748,6 +1748,7 @@ ${content}
             form.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
             // Check if this is the About page to add image upload and height control
             const isAboutPage = pageName === 'about';
+            const hasImageUpload = true; // Enable image upload for all pages
             
             // Parse existing image dimensions and path from content
             let existingImageWidth = '120px';
@@ -1768,7 +1769,7 @@ ${content}
               }
             }
             
-            const imageUploadField = isAboutPage ? `
+            const imageUploadField = hasImageUpload ? `
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Page Image:</label>
                     ${existingImagePath ? `
@@ -1862,8 +1863,8 @@ ${content}
               const contentEditor = createWysiwygEditor('edit-page-content', body);
             }, 100);
             
-            // Add image preview functionality for About page
-            if (isAboutPage) {
+            // Add image preview functionality for all pages
+            if (hasImageUpload) {
               const imageInput = document.getElementById('edit-page-image');
               const previewDiv = document.getElementById('edit-page-image-preview');
               const previewImg = document.getElementById('edit-page-preview-img');
@@ -1967,11 +1968,11 @@ ${content}
               const newDescription = document.getElementById('edit-page-description').value;
               const newContent = contentEditor ? contentEditor.getContent() : document.getElementById('edit-page-content').value;
               
-              // Handle image upload and dimensions for About page
+              // Handle image upload and dimensions for all pages
               let imagePath = null;
               let imageWidth = null;
               let imageHeight = null;
-              if (isAboutPage) {
+              if (hasImageUpload) {
                 const imageFile = document.getElementById('edit-page-image').files[0];
                 const uploadStatus = document.getElementById('edit-page-upload-status');
                 if (imageFile) {
@@ -2042,9 +2043,26 @@ title: "${title}"`;
             // Note: We don't add cover frontmatter for About page to avoid theme conflicts
             // The image is handled directly in the content
 
-            // Update image dimensions in content for About page
+            // Update image dimensions in content for all pages
             let updatedContent = content;
-            if (pageName === 'about' && (imageWidth || imageHeight)) {
+            if (imagePath || imageWidth || imageHeight) {
+              // If a new image was uploaded, update the image source
+              if (imagePath) {
+                // Find existing img tag and update src, or add new img tag if none exists
+                const imgTagRegex = /<img[^>]*src="[^"]*"[^>]*>/;
+                if (imgTagRegex.test(updatedContent)) {
+                  // Update existing img tag
+                  updatedContent = updatedContent.replace(
+                    /src="[^"]*"/,
+                    `src="${imagePath}"`
+                  );
+                } else {
+                  // Add new img tag at the beginning of content
+                  const imgTag = `<img src="${imagePath}" alt="${title}" style="float: right !important; width: 400px !important; height: 300px !important; object-fit: cover !important; border-radius: 8px !important; margin-left: 20px !important; margin-bottom: 10px !important; clear: right !important; display: inline-block !important; margin-top: 0 !important;">\n\n`;
+                  updatedContent = imgTag + updatedContent;
+                }
+              }
+              
               // Update the width in the img tag
               if (imageWidth) {
                 updatedContent = updatedContent.replace(
