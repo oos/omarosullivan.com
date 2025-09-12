@@ -1991,9 +1991,20 @@ ${content}
               });
             }
             
-            document.getElementById('edit-page-form').addEventListener('submit', async (e) => {
+            const formElement = document.getElementById('edit-page-form');
+            console.log('Form element found:', !!formElement);
+            if (!formElement) {
+              console.error('Form element not found!');
+              return;
+            }
+            
+            formElement.addEventListener('submit', async (e) => {
               e.preventDefault();
-              console.log('Form submission started for page:', pageName);
+              console.log('=== FORM SUBMISSION STARTED ===');
+              alert('Form submission triggered! Check console for details.');
+              console.log('Page name:', pageName);
+              console.log('File SHA:', file.sha);
+              console.log('Current token exists:', !!currentToken);
               const newTitle = document.getElementById('edit-page-title').value;
               const newDescription = document.getElementById('edit-page-description').value;
               
