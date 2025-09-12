@@ -475,7 +475,7 @@
               if (file) {
                 try {
                   // Upload the image first
-                  const imagePath = await uploadImage(file);
+                  const imagePath = await window.uploadImage(file);
                   if (imagePath) {
                     // Insert the image into the editor
                     const range = quill.getSelection();
@@ -1887,8 +1887,9 @@ ${content}
             // Initialize WYSIWYG editor for content
             console.log('Loading content into editor:', body.substring(0, 200) + '...');
             // Add a small delay to ensure DOM is ready
+            let contentEditor = null;
             setTimeout(() => {
-              const contentEditor = createWysiwygEditor('edit-page-content', body);
+              contentEditor = createWysiwygEditor('edit-page-content', body);
             }, 100);
             
             // Add image preview functionality for all pages
@@ -1995,7 +1996,17 @@ ${content}
               console.log('Form submission started for page:', pageName);
               const newTitle = document.getElementById('edit-page-title').value;
               const newDescription = document.getElementById('edit-page-description').value;
-              const newContent = contentEditor ? contentEditor.getContent() : document.getElementById('edit-page-content').value;
+              
+              // Wait for contentEditor to be initialized if it's not ready yet
+              let newContent;
+              if (contentEditor) {
+                newContent = contentEditor.getContent();
+              } else {
+                // Fallback to textarea if contentEditor is not ready
+                newContent = document.getElementById('edit-page-content').value;
+                console.log('Using fallback content from textarea');
+              }
+              
               console.log('Content length:', newContent.length);
               console.log('Content preview:', newContent.substring(0, 200) + '...');
               
@@ -2028,8 +2039,15 @@ ${content}
                 imageHeight = document.getElementById('edit-page-image-height').value;
               }
               
-              await updatePage(pageName, file.sha, newTitle, newDescription, newContent, imagePath, imageWidth, imageHeight);
-              form.remove();
+              try {
+                console.log('Calling updatePage...');
+                await updatePage(pageName, file.sha, newTitle, newDescription, newContent, imagePath, imageWidth, imageHeight);
+                console.log('updatePage completed successfully');
+                form.remove();
+              } catch (error) {
+                console.error('Error in form submission:', error);
+                alert('Error saving page: ' + error.message);
+              }
             });
           } catch (e) {
             alert('Error loading page: ' + e.message);
@@ -2147,12 +2165,15 @@ title: "${title}"`;
             });
 
             if (response.ok) {
+              console.log('Page updated successfully!');
               alert('Page updated successfully!');
             } else {
               const error = await response.json();
+              console.error('Error updating page:', error);
               alert('Error updating page: ' + (error.message || 'Unknown error'));
             }
           } catch (e) {
+            console.error('Error in updatePage:', e);
             alert('Error updating page: ' + e.message);
           }
         }
