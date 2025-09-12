@@ -464,7 +464,9 @@
 
           // Set initial content
           if (initialContent) {
+            // Set content in both editors
             quill.root.innerHTML = initialContent;
+            htmlTextarea.value = initialContent;
           }
 
           // Mode toggle functionality
@@ -1854,7 +1856,11 @@ ${content}
             document.body.appendChild(form);
             
             // Initialize WYSIWYG editor for content
-            const contentEditor = createWysiwygEditor('edit-page-content', body);
+            console.log('Loading content into editor:', body.substring(0, 200) + '...');
+            // Add a small delay to ensure DOM is ready
+            setTimeout(() => {
+              const contentEditor = createWysiwygEditor('edit-page-content', body);
+            }, 100);
             
             // Add image preview functionality for About page
             if (isAboutPage) {
