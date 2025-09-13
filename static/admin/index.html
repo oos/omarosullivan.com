@@ -445,6 +445,16 @@
           container.parentNode.insertBefore(editorContainer, container);
           container.style.display = 'none';
 
+          // Get editor elements first
+          const quillDiv = editorContainer.querySelector('.quill-editor');
+          const htmlTextarea = editorContainer.querySelector('.html-editor');
+          
+          // Ensure elements exist before proceeding
+          if (!quillDiv || !htmlTextarea) {
+            console.error('Editor elements not found:', { quillDiv: !!quillDiv, htmlTextarea: !!htmlTextarea });
+            return null;
+          }
+
           // Initialize Quill editor
           const quill = new Quill(`#${containerId}-quill`, {
             theme: 'snow',
@@ -523,14 +533,6 @@
 
           // Mode toggle functionality
           const modeRadios = editorContainer.querySelectorAll(`input[name="${containerId}-mode"]`);
-          const quillDiv = editorContainer.querySelector('.quill-editor');
-          const htmlTextarea = editorContainer.querySelector('.html-editor');
-          
-          // Ensure elements exist before proceeding
-          if (!quillDiv || !htmlTextarea) {
-            console.error('Editor elements not found:', { quillDiv: !!quillDiv, htmlTextarea: !!htmlTextarea });
-            return null;
-          }
 
           modeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
