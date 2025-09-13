@@ -492,9 +492,33 @@
 
           // Set initial content
           if (initialContent) {
+            console.log('Setting initial content in editor:', initialContent.substring(0, 200) + '...');
             // Set content in both editors
-            quill.root.innerHTML = initialContent;
-            htmlTextarea.value = initialContent;
+            try {
+              quill.root.innerHTML = initialContent;
+              htmlTextarea.value = initialContent;
+              console.log('Content set successfully in both editors');
+              
+              // If content is complex HTML, switch to HTML mode by default
+              if (initialContent.includes('<div') || initialContent.includes('<img') || initialContent.includes('style=')) {
+                console.log('Complex HTML detected, switching to HTML mode');
+                // Switch to HTML mode
+                const htmlRadio = editorContainer.querySelector('input[value="html"]');
+                if (htmlRadio) {
+                  htmlRadio.checked = true;
+                  htmlRadio.dispatchEvent(new Event('change'));
+                }
+              }
+            } catch (error) {
+              console.error('Error setting content in editor:', error);
+              // Fallback: just set in HTML textarea and switch to HTML mode
+              htmlTextarea.value = initialContent;
+              const htmlRadio = editorContainer.querySelector('input[value="html"]');
+              if (htmlRadio) {
+                htmlRadio.checked = true;
+                htmlRadio.dispatchEvent(new Event('change'));
+              }
+            }
           }
 
           // Mode toggle functionality
