@@ -3,7 +3,7 @@ title: "Software"
 ---
 
 <div style="overflow: hidden; margin: 0; max-width: 100%;">
-  <img src="/uploads/about-photo.jpg" alt="Software Development" style="float: right !important; width: 400px !important; height: 300px !important; object-fit: cover !important; border-radius: 8px !important; margin-left: 20px !important; margin-bottom: 10px !important; clear: right !important; display: inline-block !important; margin-top: 0 !important;">
+  <img src="/uploads/photo-1757747566427.jpg" alt="Software Development" style="float: right !important; width: 120px !important; height: 120px !important; object-fit: cover !important; border-radius: 8px !important; margin-left: 20px !important; margin-bottom: 10px !important; clear: right !important; display: inline-block !important; margin-top: 0 !important;">
   
   <p>Welcome to my software development journey!</p>
   
