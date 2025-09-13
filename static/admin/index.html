@@ -303,7 +303,7 @@
         // Test 3: Check if authentication variables are defined
         const authVars = ['currentToken', 'isAuthenticated', 'isLoading'];
         authVars.forEach(varName => {
-          const exists = window.hasOwnProperty(varName);
+          const exists = typeof window[varName] === 'function';
           tests.push({ test: `Variable ${varName} defined`, passed: exists });
           if (!exists) console.error(`❌ Missing variable: ${varName}`);
         });
@@ -404,6 +404,11 @@
         let currentToken = null;
         let isLoading = false;
         let isAuthenticated = false;
+        
+        // Expose variables to global scope for regression testing
+        window.currentToken = () => currentToken;
+        window.isAuthenticated = () => isAuthenticated;
+        window.isLoading = () => isLoading;
 
         function log(msg, kind) {
           // Debug logging disabled for production - only console logging
@@ -505,9 +510,15 @@
             console.log('Setting initial content in editor:', initialContent.substring(0, 200) + '...');
             // Set content in both editors
             try {
-              quill.root.innerHTML = initialContent;
+              // Always set in HTML textarea first
               htmlTextarea.value = initialContent;
-              console.log('Content set successfully in both editors');
+              
+              // For Quill, we need to be more careful with complex HTML
+              if (initialContent.trim()) {
+                // Try to set in Quill editor
+                quill.root.innerHTML = initialContent;
+                console.log('Content set successfully in both editors');
+              }
               
               // If content is complex HTML, switch to HTML mode by default
               if (initialContent.includes('<div') || initialContent.includes('<img') || initialContent.includes('style=')) {
@@ -517,6 +528,13 @@
                 if (htmlRadio) {
                   htmlRadio.checked = true;
                   htmlRadio.dispatchEvent(new Event('change'));
+                }
+              } else {
+                // For simple content, start in WYSIWYG mode
+                const wysiwygRadio = editorContainer.querySelector('input[value="wysiwyg"]');
+                if (wysiwygRadio) {
+                  wysiwygRadio.checked = true;
+                  wysiwygRadio.dispatchEvent(new Event('change'));
                 }
               }
             } catch (error) {
@@ -1905,7 +1923,7 @@ ${content}
                   ${imageUploadField}
                   <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Content - Optional:</label>
-                    <textarea id="edit-page-content" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;">${body}</textarea>
+                    <textarea id="edit-page-content" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;height:300px;"></textarea>
                   </div>
                   <div style="text-align:right;">
                     <button type="button" onclick="document.getElementById('edit-page-modal').remove()" style="background:#6c757d;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:10px;">Cancel</button>
@@ -1921,8 +1939,29 @@ ${content}
             // Add a small delay to ensure DOM is ready
             let contentEditor = null;
             setTimeout(() => {
+              // First set the content in the textarea
+              const textarea = document.getElementById('edit-page-content');
+              if (textarea) {
+                textarea.value = body;
+                console.log('Content set in textarea:', body.substring(0, 100) + '...');
+              }
+              
+              // Then create the WYSIWYG editor
               contentEditor = createWysiwygEditor('edit-page-content', body);
-            }, 100);
+              if (contentEditor) {
+                console.log('WYSIWYG editor initialized successfully with content');
+                
+                // Force update the editor content after initialization
+                setTimeout(() => {
+                  if (contentEditor.setContent) {
+                    contentEditor.setContent(body);
+                    console.log('Content force-updated in editor');
+                  }
+                }, 100);
+              } else {
+                console.error('Failed to initialize WYSIWYG editor');
+              }
+            }, 300);
             
             // Add image preview functionality for all pages
             if (hasImageUpload) {
