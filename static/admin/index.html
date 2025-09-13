@@ -501,6 +501,12 @@
           const modeRadios = editorContainer.querySelectorAll(`input[name="${containerId}-mode"]`);
           const quillDiv = editorContainer.querySelector('.quill-editor');
           const htmlTextarea = editorContainer.querySelector('.html-editor');
+          
+          // Ensure elements exist before proceeding
+          if (!quillDiv || !htmlTextarea) {
+            console.error('Editor elements not found:', { quillDiv: !!quillDiv, htmlTextarea: !!htmlTextarea });
+            return null;
+          }
 
           modeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -2001,7 +2007,6 @@ ${content}
             formElement.addEventListener('submit', async (e) => {
               e.preventDefault();
               console.log('=== FORM SUBMISSION STARTED ===');
-              alert('Form submission triggered! Check console for details.');
               console.log('Page name:', pageName);
               console.log('File SHA:', file.sha);
               console.log('Current token exists:', !!currentToken);
@@ -2057,7 +2062,8 @@ ${content}
                 form.remove();
               } catch (error) {
                 console.error('Error in form submission:', error);
-                alert('Error saving page: ' + error.message);
+                const errorMessage = error && error.message ? error.message : 'Unknown error occurred';
+                alert('Error saving page: ' + errorMessage);
               }
             });
           } catch (e) {
