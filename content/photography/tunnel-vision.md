@@ -1,6 +1,6 @@
 ---
 title: "Tunnel vision"
-order: 44
+order: 43
 date: 2025-09-12
 description: ""
 cover:
