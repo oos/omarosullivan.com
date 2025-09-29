@@ -1780,9 +1780,19 @@ ${content}
 
         async function editPage(pageName) {
           try {
+            console.log('editPage called for:', pageName);
+            console.log('currentToken available:', !!currentToken);
+            
+            if (!currentToken) {
+              alert('Authentication required. Please log in first.');
+              return;
+            }
+            
             // Determine if this is a section (directory) or individual page
             const isSection = ['photography', 'poetry', 'portfolio'].includes(pageName);
             const filePath = isSection ? `${pageName}/_index.md` : `${pageName}.md`;
+            
+            console.log('Fetching content from:', filePath);
             
             const response = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/${filePath}`, {
               headers: {
@@ -1792,12 +1802,15 @@ ${content}
             });
 
             if (!response.ok) {
-              alert('Error loading page');
+              console.error('Failed to fetch page content:', response.status, response.statusText);
+              alert(`Error loading page: ${response.status} ${response.statusText}`);
               return;
             }
 
             const file = await response.json();
             const content = decodeURIComponent(escape(atob(file.content)));
+            
+            console.log('Raw content loaded:', content.substring(0, 200) + '...');
             
             // Parse frontmatter
             const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -1812,6 +1825,11 @@ ${content}
               
               if (titleMatch) title = titleMatch[1];
               body = bodyContent;
+              
+              console.log('Frontmatter found, title:', title);
+              console.log('Body content:', body.substring(0, 200) + '...');
+            } else {
+              console.log('No frontmatter found, using full content as body');
             }
 
             // Remove any existing modal first
