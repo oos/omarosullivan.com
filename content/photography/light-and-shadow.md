@@ -7,6 +7,3 @@ cover:
   image: "/uploads/light-and-shadow-1757705618684.jpg"
 ---
 
-# Light and Shadow
-
-Uploaded via bulk upload
