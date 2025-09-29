@@ -3989,6 +3989,14 @@ description: "${description}"`;
                   return a.displayTitle.localeCompare(b.displayTitle);
                 });
                 
+                // Debug: Log the sorted order
+                console.log('[debug] Photography items sorted order:');
+                itemsWithMetadata.forEach((item, index) => {
+                  if (!item.isSectionPage) {
+                    console.log(`${index + 1}. ${item.displayTitle} - Order: ${item.order}`);
+                  }
+                });
+                
                 // Clear the loading indicator before populating content
                 photographyList.innerHTML = '';
                 
