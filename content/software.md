@@ -2,8 +2,9 @@
 title: "Software"
 ---
 
+
 <div style="overflow: hidden; margin: 0; max-width: 100%;">
-  <img src="/uploads/photo-1757747566427.jpg" alt="Software Development" style="float: right !important; width: 200px !important; height: 200px !important; object-fit: cover !important; border-radius: 8px !important; margin-left: 20px !important; margin-bottom: 10px !important; clear: right !important; display: inline-block !important; margin-top: 0 !important;">
+  <img src="/uploads/photo-1757747566427.jpg" alt="Software Development" style="float: right !important; width: 120px !important; height: 120px !important; object-fit: cover !important; border-radius: 8px !important; margin-left: 20px !important; margin-bottom: 10px !important; clear: right !important; display: inline-block !important; margin-top: 0 !important;">
   
   <p>Welcome to my software development journey!</p>
   
@@ -21,15 +22,12 @@ title: "Software"
   <li><strong>Backend:</strong> Node.js, Python, Go, RESTful APIs</li>
   <li><strong>Mobile:</strong> React Native, Flutter</li>
   <li><strong>Databases:</strong> PostgreSQL, MongoDB, Redis</li>
-  <li><strong>Cloud:</strong> AWS, Vercel, Netlify</li>
+  <li><strong>Cloud:</strong> AWS, Render, Netlify</li>
   <li><strong>Tools:</strong> Git, Docker, CI/CD pipelines</li>
 </ul>
 
 <h4>Current Projects</h4>
 <p>I'm always working on something new! Check back soon for updates on my latest software projects and experiments.</p>
-
-<h4>Open Source</h4>
-<p>I believe in the power of open source software and contribute to projects that align with my values. You can find my contributions on GitHub and other platforms.</p>
 
 </div>
 
