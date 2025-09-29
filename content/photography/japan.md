@@ -1,9 +1,10 @@
 ---
-title: "Japan"
-date: 2025-09-04
-description: ""
+title: "Boy in the Mirror 2"
+date: 2025-09-29
+description: "Hoi An, Japan"
+order: 26
 cover:
   image: "/uploads/photo-1757014029920.jpg"
-order: 25
 ---
 
+Hoi An, Japan
