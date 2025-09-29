@@ -1,5 +1,5 @@
 ---
-title: "Silver lining somewhere"
+title: "Silver line"
 date: 2025-09-29
 description: ""
 order: 6
