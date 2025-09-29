@@ -1,5 +1,5 @@
 ---
-title: "Two-faced"
+title: "Two-face"
 date: 2025-09-29
 description: ""
 order: 1
