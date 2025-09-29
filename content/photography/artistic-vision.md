@@ -2,7 +2,7 @@
 title: "Life in the Cracks"
 date: 2025-09-29
 description: ""
-order: 8
+order: 9
 cover:
   image: "/uploads/artistic-vision-1757705670017.jpg"
 ---
