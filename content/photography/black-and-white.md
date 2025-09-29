@@ -1,12 +1,9 @@
 ---
-title: "Black and White"
-date: 2025-09-12
-description: "Uploaded via bulk upload"
+title: "Green Sea"
+date: 2025-09-29
+description: ""
+order: 8
 cover:
   image: "/uploads/black-and-white-1757705672226.jpg"
-order: 8
 ---
 
-# Black and White
-
-Uploaded via bulk upload
