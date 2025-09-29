@@ -1,12 +1,9 @@
 ---
-title: "Emotional Capture"
-date: 2025-09-12
-description: "Uploaded via bulk upload"
+title: "Tight Quarters"
+date: 2025-09-29
+description: "Vietnamese night train"
+order: 10
 cover:
   image: "/uploads/emotional-capture-1757705677698.webp"
-order: 10
 ---
 
-# Emotional Capture
-
-Uploaded via bulk upload
