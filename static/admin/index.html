@@ -4723,31 +4723,35 @@ description: "${description}"`;
             
             console.log('[debug] Items to update:', itemsToUpdate.map(i => `${i.filename}: ${i.oldOrder} -> ${i.newOrder}`));
             
-            // Update all items that need changes with retry logic
+            // Refresh all SHAs before starting updates to prevent cascading conflicts
+            console.log('[debug] Refreshing all SHAs before batch update...');
             for (const itemToUpdate of itemsToUpdate) {
+              const freshResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
+                headers: {
+                  'Authorization': 'token ' + currentToken,
+                  'Accept': 'application/vnd.github.v3+json'
+                }
+              });
+              
+              if (freshResponse.ok) {
+                const freshData = await freshResponse.json();
+                itemToUpdate.sha = freshData.sha;
+                console.log(`[debug] Fresh SHA for ${itemToUpdate.filename}: ${freshData.sha}`);
+              }
+            }
+            
+            // Update items sequentially (one at a time) to prevent conflicts
+            console.log('[debug] Starting sequential updates...');
+            for (let i = 0; i < itemsToUpdate.length; i++) {
+              const itemToUpdate = itemsToUpdate[i];
+              console.log(`[debug] Updating ${i + 1}/${itemsToUpdate.length}: ${itemToUpdate.filename}`);
+              
               let retryCount = 0;
               const maxRetries = 3;
               let updateSuccess = false;
               
               while (retryCount < maxRetries && !updateSuccess) {
                 try {
-                  // If this is a retry, get the fresh SHA
-                  if (retryCount > 0) {
-                    console.log(`[debug] Retry ${retryCount} for ${itemToUpdate.filename}, fetching fresh SHA...`);
-                    const freshResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
-                      headers: {
-                        'Authorization': 'token ' + currentToken,
-                        'Accept': 'application/vnd.github.v3+json'
-                      }
-                    });
-                    
-                    if (freshResponse.ok) {
-                      const freshData = await freshResponse.json();
-                      itemToUpdate.sha = freshData.sha;
-                      console.log(`[debug] Fresh SHA for ${itemToUpdate.filename}: ${freshData.sha}`);
-                    }
-                  }
-                  
                   const updateResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
                     method: 'PUT',
                     headers: {
@@ -4769,7 +4773,22 @@ description: "${description}"`;
                     console.error(`[debug] Update error for ${itemToUpdate.filename}:`, errorData);
                     
                     if (errorData.status === '409' && retryCount < maxRetries - 1) {
-                      console.log(`[debug] 409 conflict for ${itemToUpdate.filename}, retrying...`);
+                      console.log(`[debug] 409 conflict for ${itemToUpdate.filename}, fetching fresh SHA and retrying...`);
+                      
+                      // Get fresh SHA for retry
+                      const freshResponse = await fetch(`https://api.github.com/repos/oos/omarosullivan.com/contents/content/photography/${itemToUpdate.filename}`, {
+                        headers: {
+                          'Authorization': 'token ' + currentToken,
+                          'Accept': 'application/vnd.github.v3+json'
+                        }
+                      });
+                      
+                      if (freshResponse.ok) {
+                        const freshData = await freshResponse.json();
+                        itemToUpdate.sha = freshData.sha;
+                        console.log(`[debug] Fresh SHA for retry: ${freshData.sha}`);
+                      }
+                      
                       retryCount++;
                       // Wait a bit before retrying
                       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -4793,6 +4812,11 @@ description: "${description}"`;
               if (!updateSuccess) {
                 alert(`Failed to update ${itemToUpdate.filename} after ${maxRetries} attempts`);
                 return;
+              }
+              
+              // Small delay between updates to prevent overwhelming the API
+              if (i < itemsToUpdate.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 200));
               }
             }
             
