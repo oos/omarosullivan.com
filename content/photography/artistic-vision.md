@@ -1,10 +1,10 @@
 ---
-title: "Artistic Vision"
-date: 2025-09-12
-description: "Uploaded via bulk upload"
+title: "Life in the Cracks"
+date: 2025-09-29
+description: ""
+order: 7
 cover:
   image: "/uploads/artistic-vision-1757705670017.jpg"
-order: 7
 ---
 
 # Artistic Vision

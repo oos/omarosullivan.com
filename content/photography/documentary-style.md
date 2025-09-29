@@ -7,4 +7,4 @@ cover:
   image: "/uploads/documentary-style-1757705615279.jpg"
 ---
 
-# Fractal Beauty
+
