@@ -433,17 +433,17 @@
             <div class="editor-toolbar">
               <div class="editor-mode-toggle">
                 <label>
-                  <input type="radio" name="${containerId}-mode" value="wysiwyg" checked>
+                  <input type="radio" name="${containerId}-mode" value="wysiwyg">
                   <span>✏️ Visual Editor</span>
                 </label>
                 <label>
-                  <input type="radio" name="${containerId}-mode" value="html">
+                  <input type="radio" name="${containerId}-mode" value="html" checked>
                   <span>📝 HTML Code</span>
                 </label>
               </div>
             </div>
-            <div id="${containerId}-quill" class="quill-editor active"></div>
-            <textarea id="${containerId}-html" class="html-editor" placeholder="HTML content...">${initialContent}</textarea>
+            <div id="${containerId}-quill" class="quill-editor"></div>
+            <textarea id="${containerId}-html" class="html-editor active" placeholder="HTML content..." style="width: 100%; min-height: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 14px;">${initialContent}</textarea>
           `;
 
           // Replace the original textarea
@@ -520,23 +520,23 @@
                 console.log('Content set successfully in both editors');
               }
               
-              // If content is complex HTML, switch to HTML mode by default
-              if (initialContent.includes('<div') || initialContent.includes('<img') || initialContent.includes('style=')) {
-                console.log('Complex HTML detected, switching to HTML mode');
-                // Switch to HTML mode
-                const htmlRadio = editorContainer.querySelector('input[value="html"]');
-                if (htmlRadio) {
-                  htmlRadio.checked = true;
-                  htmlRadio.dispatchEvent(new Event('change'));
-                }
-              } else {
-                // For simple content, start in WYSIWYG mode
-                const wysiwygRadio = editorContainer.querySelector('input[value="wysiwyg"]');
-                if (wysiwygRadio) {
-                  wysiwygRadio.checked = true;
-                  wysiwygRadio.dispatchEvent(new Event('change'));
-                }
+              // Always start in HTML mode for better compatibility with complex content
+              console.log('Switching to HTML mode for content editing');
+              const htmlRadio = editorContainer.querySelector('input[value="html"]');
+              if (htmlRadio) {
+                htmlRadio.checked = true;
+                htmlRadio.dispatchEvent(new Event('change'));
               }
+              
+              // Ensure HTML textarea is visible and has the content
+              setTimeout(() => {
+                const htmlTextarea = editorContainer.querySelector('.html-editor');
+                if (htmlTextarea) {
+                  htmlTextarea.value = initialContent;
+                  htmlTextarea.classList.add('active');
+                  console.log('Content set in HTML textarea:', initialContent.substring(0, 100) + '...');
+                }
+              }, 50);
             } catch (error) {
               console.error('Error setting content in editor:', error);
               // Fallback: just set in HTML textarea and switch to HTML mode
