@@ -26,6 +26,20 @@ collections:
       - { label: "Tags", name: "tags", widget: "list", required: false }
       - { label: "Body", name: "body", widget: "markdown" }
 
+  - name: "photography"
+    label: "Photography"
+    folder: "content/photography"
+    create: true
+    slug: "{{slug}}"
+    per_page: 100
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Publish Date", name: "date", widget: "datetime" }
+      - { label: "Order", name: "order", widget: "number" }
+      - { label: "Cover Image", name: "cover", widget: "object", fields: [{ label: "Image", name: "image", widget: "image" }], required: false }
+      - { label: "Description", name: "description", widget: "string", required: false }
+      - { label: "Body", name: "body", widget: "markdown" }
+
   - name: "pages"
     label: "Pages"
     folder: "content"
